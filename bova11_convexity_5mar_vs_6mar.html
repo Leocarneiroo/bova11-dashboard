@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOVA11 Convexity Analysis — 05/Mar vs 06/Mar</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --border: #30363d;
+            --gamma: #4ade80;
+            --vanna: #38bdf8;
+            --charm: #f472b6;
+            --mixed: #fbbf24;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, var(--gamma), var(--vanna), var(--charm));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+        
+        .spot-info {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .spot-box {
+            background: var(--bg-secondary);
+            padding: 15px 25px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        
+        .spot-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+        
+        .spot-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .spot-change {
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        .positive { color: var(--gamma); }
+        .negative { color: #f85149; }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+        
+        .stat-card.gamma::before { background: var(--gamma); }
+        .stat-card.vanna::before { background: var(--vanna); }
+        .stat-card.charm::before { background: var(--charm); }
+        .stat-card.mixed::before { background: var(--mixed); }
+        
+        .stat-title {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card.gamma .stat-value { color: var(--gamma); }
+        .stat-card.vanna .stat-value { color: var(--vanna); }
+        .stat-card.charm .stat-value { color: var(--charm); }
+        .stat-card.mixed .stat-value { color: var(--mixed); }
+        
+        .stat-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Tables */
+        h3 {
+            margin: 40px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 40px;
+            font-size: 0.9rem;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        th {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+        
+        tr:hover {
+            background: rgba(255,255,255,0.03);
+        }
+        
+        /* Methodology Section */
+        .methodology {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid var(--border);
+            margin-top: 40px;
+        }
+        
+        .methodology h3 {
+            margin-top: 0;
+            color: var(--vanna);
+        }
+        
+        .methodology h4 {
+            color: var(--text-primary);
+            margin: 20px 0 10px;
+        }
+        
+        .methodology p, .methodology li {
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+        
+        .methodology ul {
+            margin-left: 20px;
+        }
+        
+        .formula {
+            background: var(--bg-tertiary);
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            border-left: 3px solid var(--vanna);
+        }
+        
+        .legend {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 BOVA11 Convexity Analyzer</h1>
+            <p class="subtitle">Decomposição de ΔDelta em Vanna, Gamma e Charm — 05/Mar vs 06/Mar</p>
+            
+            <div class="spot-info">
+                <div class="spot-box">
+                    <div class="spot-label">Spot D-1 (05/Mar)</div>
+                    <div class="spot-value">176.75</div>
+                </div>
+                <div class="spot-box">
+                    <div class="spot-label">Spot D (06/Mar)</div>
+                    <div class="spot-value">175.81</div>
+                </div>
+                <div class="spot-box">
+                    <div class="spot-label">Variação Spot</div>
+                    <div class="spot-value negative">-0.94</div>
+                    <div class="spot-change negative">-0.53%</div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card gamma">
+                <div class="stat-title">Gamma-Driven</div>
+                <div class="stat-value">48.7%</div>
+                <div class="stat-desc">146 operações dominadas por movimento do spot</div>
+            </div>
+            <div class="stat-card vanna">
+                <div class="stat-title">Vanna-Driven</div>
+                <div class="stat-value">0.0%</div>
+                <div class="stat-desc">0 operações dominadas por variação de IV</div>
+            </div>
+            <div class="stat-card charm">
+                <div class="stat-title">Charm-Driven</div>
+                <div class="stat-value">42.3%</div>
+                <div class="stat-desc">127 operações dominadas por passagem do tempo</div>
+            </div>
+            <div class="stat-card mixed">
+                <div class="stat-title">Mixed Drivers</div>
+                <div class="stat-value">9.0%</div>
+                <div class="stat-desc">27 operações com múltiplos drivers significativos</div>
+            </div>
+        </div>
+        
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: var(--gamma);"></div>
+                <span>GAMMA/SPOT — Movimento do underlying</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: var(--vanna);"></div>
+                <span>VANNA/IV — Variação da volatilidade implícita</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: var(--charm);"></div>
+                <span>CHARM/TIME — Decaimento temporal (theta)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: var(--mixed);"></div>
+                <span>MIXED — Múltiplos drivers com peso similar</span>
+            </div>
+        </div>
+        
+        <!-- Top Overall -->
+        
+        <h3>🏆 Top 15 — Maior Impacto Geral</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Código</th>
+                    <th>Vencimento</th>
+                    <th>Strike</th>
+                    <th>Tipo</th>
+                    <th>Driver</th>
+                    <th>ΔDelta</th>
+                    <th>Gamma</th>
+                    <th>Vanna</th>
+                    <th>Charm</th>
+                    <th>OI Médio</th>
+                    <th>Impact Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td>1</td>
+            <td>BOVAC180W4</td>
+            <td>27 mar W4</td>
+            <td>180.00</td>
+            <td>CALL</td>
+            <td style="color: #4ade80; font-weight: bold;">GAMMA</td>
+            <td>-0.0500</td>
+            <td>-0.0372</td>
+            <td>-</td>
+            <td>-0.0128</td>
+            <td>490</td>
+            <td>1.11</td>
+        </tr>
+        
+        <tr>
+            <td>2</td>
+            <td>BOVAD185</td>
+            <td>27 mar W4</td>
+            <td>185.00</td>
+            <td>CALL</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>+0.0700</td>
+            <td>-0.0288</td>
+            <td>-</td>
+            <td>0.0988</td>
+            <td>150</td>
+            <td>0.86</td>
+        </tr>
+        
+        <tr>
+            <td>3</td>
+            <td>BOVAO181W4</td>
+            <td>27 mar W4</td>
+            <td>181.00</td>
+            <td>PUT</td>
+            <td style="color: #4ade80; font-weight: bold;">GAMMA</td>
+            <td>-0.0500</td>
+            <td>-0.0366</td>
+            <td>-</td>
+            <td>-0.0134</td>
+            <td>189</td>
+            <td>0.69</td>
+        </tr>
+        
+        <tr>
+            <td>4</td>
+            <td>BOVAO178W4</td>
+            <td>27 mar W4</td>
+            <td>178.00</td>
+            <td>PUT</td>
+            <td style="color: #4ade80; font-weight: bold;">GAMMA</td>
+            <td>-0.0400</td>
+            <td>-0.0373</td>
+            <td>-</td>
+            <td>-0.0027</td>
+            <td>242</td>
+            <td>0.62</td>
+        </tr>
+        
+        <tr>
+            <td>5</td>
+            <td>BOVAD184</td>
+            <td>27 mar W4</td>
+            <td>184.00</td>
+            <td>CALL</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>+0.0600</td>
+            <td>-0.0298</td>
+            <td>-</td>
+            <td>0.0898</td>
+            <td>100</td>
+            <td>0.60</td>
+        </tr>
+        
+        <tr>
+            <td>6</td>
+            <td>BOVAC177W1</td>
+            <td>6 mar W1</td>
+            <td>177.00</td>
+            <td>CALL</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>-0.5800</td>
+            <td>-0.0721</td>
+            <td>-</td>
+            <td>-0.5079</td>
+            <td>0</td>
+            <td>0.58</td>
+        </tr>
+        
+        <tr>
+            <td>7</td>
+            <td>BOVAO177W1</td>
+            <td>6 mar W1</td>
+            <td>177.00</td>
+            <td>PUT</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>-0.5700</td>
+            <td>-0.0722</td>
+            <td>-</td>
+            <td>-0.4978</td>
+            <td>0</td>
+            <td>0.57</td>
+        </tr>
+        
+        <tr>
+            <td>8</td>
+            <td>BOVAC175W4</td>
+            <td>27 mar W4</td>
+            <td>175.00</td>
+            <td>CALL</td>
+            <td style="color: #4ade80; font-weight: bold;">GAMMA</td>
+            <td>-0.0400</td>
+            <td>-0.0348</td>
+            <td>-</td>
+            <td>-0.0052</td>
+            <td>203</td>
+            <td>0.57</td>
+        </tr>
+        
+        <tr>
+            <td>9</td>
+            <td>BOVAC184W4</td>
+            <td>27 mar W4</td>
+            <td>184.00</td>
+            <td>CALL</td>
+            <td style="color: #4ade80; font-weight: bold;">GAMMA</td>
+            <td>-0.0400</td>
+            <td>-0.0329</td>
+            <td>-</td>
+            <td>-0.0071</td>
+            <td>200</td>
+            <td>0.57</td>
+        </tr>
+        
+        <tr>
+            <td>10</td>
+            <td>BOVAD180</td>
+            <td>27 mar W4</td>
+            <td>180.00</td>
+            <td>CALL</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>+0.0200</td>
+            <td>-0.0321</td>
+            <td>-</td>
+            <td>0.0521</td>
+            <td>490</td>
+            <td>0.44</td>
+        </tr>
+        
+        <tr>
+            <td>11</td>
+            <td>BOVAP184</td>
+            <td>27 mar W4</td>
+            <td>184.00</td>
+            <td>PUT</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>+0.0600</td>
+            <td>-0.0298</td>
+            <td>-</td>
+            <td>0.0898</td>
+            <td>51</td>
+            <td>0.43</td>
+        </tr>
+        
+        <tr>
+            <td>12</td>
+            <td>BOVAO178W1</td>
+            <td>6 mar W1</td>
+            <td>178.00</td>
+            <td>PUT</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>-0.4200</td>
+            <td>-0.0721</td>
+            <td>-</td>
+            <td>-0.3479</td>
+            <td>0</td>
+            <td>0.42</td>
+        </tr>
+        
+        <tr>
+            <td>13</td>
+            <td>BOVAC178W1</td>
+            <td>6 mar W1</td>
+            <td>178.00</td>
+            <td>CALL</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>-0.4200</td>
+            <td>-0.0721</td>
+            <td>-</td>
+            <td>-0.3479</td>
+            <td>0</td>
+            <td>0.42</td>
+        </tr>
+        
+        <tr>
+            <td>14</td>
+            <td>BOVAD182</td>
+            <td>6 mar W1</td>
+            <td>182.00</td>
+            <td>CALL</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>+0.4100</td>
+            <td>-0.0294</td>
+            <td>-</td>
+            <td>0.4394</td>
+            <td>0</td>
+            <td>0.41</td>
+        </tr>
+        
+        <tr>
+            <td>15</td>
+            <td>BOVAP182</td>
+            <td>6 mar W1</td>
+            <td>182.00</td>
+            <td>PUT</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>+0.4100</td>
+            <td>-0.0298</td>
+            <td>-</td>
+            <td>0.4398</td>
+            <td>0</td>
+            <td>0.41</td>
+        </tr>
+        
+            </tbody>
+        </table>
+        
+        
+        <!-- Top by Driver -->
+        
+        <h3>🟢 Gamma-Driven — Top 15</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Código</th>
+                    <th>Vencimento</th>
+                    <th>Strike</th>
+                    <th>Tipo</th>
+                    <th>Driver</th>
+                    <th>ΔDelta</th>
+                    <th>Gamma</th>
+                    <th>Vanna</th>
+                    <th>Charm</th>
+                    <th>OI Médio</th>
+                    <th>Impact Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td>1</td>
+            <td>BOVAC180W4</td>
+            <td>27 mar W4</td>
+            <td>180.00</td>
+            <td>CALL</td>
+            <td style="color: #4ade80; font-weight: bold;">GAMMA</td>
+            <td>-0.0500</td>
+            <td>-0.0372</td>
+            <td>-</td>
+            <td>-0.0128</td>
+            <td>490</td>
+            <td>1.11</td>
+        </tr>
+        
+        <tr>
+            <td>2</td>
+            <td>BOVAO181W4</td>
+            <td>27 mar W4</td>
+            <td>181.00</td>
+            <td>PUT</td>
+            <td style="color: #4ade80; font-weight: bold;">GAMMA</td>
+            <td>-0.0500</td>
+            <td>-0.0366</td>
+            <td>-</td>
+            <td>-0.0134</td>
+            <td>189</td>
+            <td>0.69</td>
+        </tr>
+        
+        <tr>
+            <td>3</td>
+            <td>BOVAO178W4</td>
+            <td>27 mar W4</td>
+            <td>178.00</td>
+            <td>PUT</td>
+            <td style="color: #4ade80; font-weight: bold;">GAMMA</td>
+            <td>-0.0400</td>
+            <td>-0.0373</td>
+            <td>-</td>
+            <td>-0.0027</td>
+            <td>242</td>
+            <td>0.62</td>
+        </tr>
+        
+        <tr>
+            <td>4</td>
+            <td>BOVAC175W4</td>
+            <td>27 mar W4</td>
+            <td>175.00</td>
+            <td>CALL</td>
+            <td style="color: #4ade80; font-weight: bold;">GAMMA</td>
+            <td>-0.0400</td>
+            <td>-0.0348</td>
+            <td>-</td>
+            <td>-0.0052</td>
+            <td>203</td>
+            <td>0.57</td>
+        </tr>
+        
+        <tr>
+            <td>5</td>
+            <td>BOVAC184W4</td>
+            <td>27 mar W4</td>
+            <td>184.00</td>
+            <td>CALL</td>
+            <td style="color: #4ade80; font-weight: bold;">GAMMA</td>
+            <td>-0.0400</td>
+            <td>-0.0329</td>
+            <td>-</td>
+            <td>-0.0071</td>
+            <td>200</td>
+            <td>0.57</td>
+        </tr>
+        
+        <tr>
+            <td>6</td>
+            <td>BOVAO184W4</td>
+            <td>27 mar W4</td>
+            <td>184.00</td>
+            <td>PUT</td>
+            <td style="color: #4ade80; font-weight: bold;">GAMMA</td>
+            <td>-0.0400</td>
+            <td>-0.0329</td>
+            <td>-</td>
+            <td>-0.0071</td>
+            <td>102</td>
+            <td>0.40</td>
+        </tr>
+        
+        <tr>
+            <td>7</td>
+            <td>BOVAD17</td>
+            <td>27 mar W4</td>
+            <td>175.00</td>
+            <td>CALL</td>
+            <td style="color: #4ade80; font-weight: bold;">GAMMA</td>
+            <td>-0.0300</td>
+            <td>-0.0297</td>
+            <td>-</td>
+            <td>-0.0003</td>
+            <td>102</td>
+            <td>0.30</td>
+        </tr>
+        
+        <tr>
+            <td>8</td>
+            <td>BOVAC183W4</td>
+            <td>27 mar W4</td>
+            <td>183.00</td>
+            <td>CALL</td>
+            <td style="color: #4ade80; font-weight: bold;">GAMMA</td>
+            <td>-0.0400</td>
+            <td>-0.0344</td>
+            <td>-</td>
+            <td>-0.0056</td>
+            <td>39</td>
+            <td>0.25</td>
+        </tr>
+        
+        <tr>
+            <td>9</td>
+            <td>BOVAO172W4</td>
+            <td>27 mar W4</td>
+            <td>172.00</td>
+            <td>PUT</td>
+            <td style="color: #4ade80; font-weight: bold;">GAMMA</td>
+            <td>-0.0300</td>
+            <td>-0.0296</td>
+            <td>-</td>
+            <td>-0.0004</td>
+            <td>40</td>
+            <td>0.19</td>
+        </tr>
+        
+        <tr>
+            <td>10</td>
+            <td>BOVAO175W4</td>
+            <td>27 mar W4</td>
+            <td>175.00</td>
+            <td>PUT</td>
+            <td style="color: #4ade80; font-weight: bold;">GAMMA</td>
+            <td>-0.0400</td>
+            <td>-0.0349</td>
+            <td>-</td>
+            <td>-0.0051</td>
+            <td>20</td>
+            <td>0.18</td>
+        </tr>
+        
+        <tr>
+            <td>11</td>
+            <td>BOVAD176</td>
+            <td>6 mar W1</td>
+            <td>176.00</td>
+            <td>CALL</td>
+            <td style="color: #4ade80; font-weight: bold;">GAMMA</td>
+            <td>-0.1000</td>
+            <td>-0.0748</td>
+            <td>-</td>
+            <td>-0.0252</td>
+            <td>0</td>
+            <td>0.10</td>
+        </tr>
+        
+        <tr>
+            <td>12</td>
+            <td>BOVAP176</td>
+            <td>6 mar W1</td>
+            <td>176.00</td>
+            <td>PUT</td>
+            <td style="color: #4ade80; font-weight: bold;">GAMMA</td>
+            <td>-0.1000</td>
+            <td>-0.0748</td>
+            <td>-</td>
+            <td>-0.0252</td>
+            <td>0</td>
+            <td>0.10</td>
+        </tr>
+        
+        <tr>
+            <td>13</td>
+            <td>BOVAC174W4</td>
+            <td>27 mar W4</td>
+            <td>174.00</td>
+            <td>CALL</td>
+            <td style="color: #4ade80; font-weight: bold;">GAMMA</td>
+            <td>-0.0300</td>
+            <td>-0.0334</td>
+            <td>-</td>
+            <td>0.0034</td>
+            <td>10</td>
+            <td>0.09</td>
+        </tr>
+        
+        <tr>
+            <td>14</td>
+            <td>BOVAC176W4</td>
+            <td>27 mar W4</td>
+            <td>176.00</td>
+            <td>CALL</td>
+            <td style="color: #4ade80; font-weight: bold;">GAMMA</td>
+            <td>-0.0400</td>
+            <td>-0.0360</td>
+            <td>-</td>
+            <td>-0.0040</td>
+            <td>5</td>
+            <td>0.09</td>
+        </tr>
+        
+        <tr>
+            <td>15</td>
+            <td>BOVAC180W2</td>
+            <td>13 mar W2</td>
+            <td>180.00</td>
+            <td>CALL</td>
+            <td style="color: #4ade80; font-weight: bold;">GAMMA</td>
+            <td>-0.0700</td>
+            <td>-0.0578</td>
+            <td>-</td>
+            <td>-0.0122</td>
+            <td>0</td>
+            <td>0.07</td>
+        </tr>
+        
+            </tbody>
+        </table>
+        
+        <h3>🔵 Vanna-Driven — Top 15</h3><p>Nenhum resultado encontrado.</p>
+        
+        <h3>🟣 Charm-Driven — Top 15</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Código</th>
+                    <th>Vencimento</th>
+                    <th>Strike</th>
+                    <th>Tipo</th>
+                    <th>Driver</th>
+                    <th>ΔDelta</th>
+                    <th>Gamma</th>
+                    <th>Vanna</th>
+                    <th>Charm</th>
+                    <th>OI Médio</th>
+                    <th>Impact Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td>1</td>
+            <td>BOVAD185</td>
+            <td>27 mar W4</td>
+            <td>185.00</td>
+            <td>CALL</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>+0.0700</td>
+            <td>-0.0288</td>
+            <td>-</td>
+            <td>0.0988</td>
+            <td>150</td>
+            <td>0.86</td>
+        </tr>
+        
+        <tr>
+            <td>2</td>
+            <td>BOVAD184</td>
+            <td>27 mar W4</td>
+            <td>184.00</td>
+            <td>CALL</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>+0.0600</td>
+            <td>-0.0298</td>
+            <td>-</td>
+            <td>0.0898</td>
+            <td>100</td>
+            <td>0.60</td>
+        </tr>
+        
+        <tr>
+            <td>3</td>
+            <td>BOVAC177W1</td>
+            <td>6 mar W1</td>
+            <td>177.00</td>
+            <td>CALL</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>-0.5800</td>
+            <td>-0.0721</td>
+            <td>-</td>
+            <td>-0.5079</td>
+            <td>0</td>
+            <td>0.58</td>
+        </tr>
+        
+        <tr>
+            <td>4</td>
+            <td>BOVAO177W1</td>
+            <td>6 mar W1</td>
+            <td>177.00</td>
+            <td>PUT</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>-0.5700</td>
+            <td>-0.0722</td>
+            <td>-</td>
+            <td>-0.4978</td>
+            <td>0</td>
+            <td>0.57</td>
+        </tr>
+        
+        <tr>
+            <td>5</td>
+            <td>BOVAD180</td>
+            <td>27 mar W4</td>
+            <td>180.00</td>
+            <td>CALL</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>+0.0200</td>
+            <td>-0.0321</td>
+            <td>-</td>
+            <td>0.0521</td>
+            <td>490</td>
+            <td>0.44</td>
+        </tr>
+        
+        <tr>
+            <td>6</td>
+            <td>BOVAP184</td>
+            <td>27 mar W4</td>
+            <td>184.00</td>
+            <td>PUT</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>+0.0600</td>
+            <td>-0.0298</td>
+            <td>-</td>
+            <td>0.0898</td>
+            <td>51</td>
+            <td>0.43</td>
+        </tr>
+        
+        <tr>
+            <td>7</td>
+            <td>BOVAO178W1</td>
+            <td>6 mar W1</td>
+            <td>178.00</td>
+            <td>PUT</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>-0.4200</td>
+            <td>-0.0721</td>
+            <td>-</td>
+            <td>-0.3479</td>
+            <td>0</td>
+            <td>0.42</td>
+        </tr>
+        
+        <tr>
+            <td>8</td>
+            <td>BOVAC178W1</td>
+            <td>6 mar W1</td>
+            <td>178.00</td>
+            <td>CALL</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>-0.4200</td>
+            <td>-0.0721</td>
+            <td>-</td>
+            <td>-0.3479</td>
+            <td>0</td>
+            <td>0.42</td>
+        </tr>
+        
+        <tr>
+            <td>9</td>
+            <td>BOVAD182</td>
+            <td>6 mar W1</td>
+            <td>182.00</td>
+            <td>CALL</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>+0.4100</td>
+            <td>-0.0294</td>
+            <td>-</td>
+            <td>0.4394</td>
+            <td>0</td>
+            <td>0.41</td>
+        </tr>
+        
+        <tr>
+            <td>10</td>
+            <td>BOVAP182</td>
+            <td>6 mar W1</td>
+            <td>182.00</td>
+            <td>PUT</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>+0.4100</td>
+            <td>-0.0298</td>
+            <td>-</td>
+            <td>0.4398</td>
+            <td>0</td>
+            <td>0.41</td>
+        </tr>
+        
+        <tr>
+            <td>11</td>
+            <td>BOVAP183</td>
+            <td>6 mar W1</td>
+            <td>183.00</td>
+            <td>PUT</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>+0.4000</td>
+            <td>-0.0212</td>
+            <td>-</td>
+            <td>0.4212</td>
+            <td>0</td>
+            <td>0.40</td>
+        </tr>
+        
+        <tr>
+            <td>12</td>
+            <td>BOVAD183</td>
+            <td>6 mar W1</td>
+            <td>183.00</td>
+            <td>CALL</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>+0.4000</td>
+            <td>-0.0211</td>
+            <td>-</td>
+            <td>0.4211</td>
+            <td>0</td>
+            <td>0.40</td>
+        </tr>
+        
+        <tr>
+            <td>13</td>
+            <td>BOVAD181</td>
+            <td>6 mar W1</td>
+            <td>181.00</td>
+            <td>CALL</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>+0.3900</td>
+            <td>-0.0431</td>
+            <td>-</td>
+            <td>0.4331</td>
+            <td>0</td>
+            <td>0.39</td>
+        </tr>
+        
+        <tr>
+            <td>14</td>
+            <td>BOVAP181</td>
+            <td>6 mar W1</td>
+            <td>181.00</td>
+            <td>PUT</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>+0.3900</td>
+            <td>-0.0431</td>
+            <td>-</td>
+            <td>0.4331</td>
+            <td>0</td>
+            <td>0.39</td>
+        </tr>
+        
+        <tr>
+            <td>15</td>
+            <td>BOVAD184</td>
+            <td>6 mar W1</td>
+            <td>184.00</td>
+            <td>CALL</td>
+            <td style="color: #f472b6; font-weight: bold;">CHARM</td>
+            <td>+0.3800</td>
+            <td>-0.0169</td>
+            <td>-</td>
+            <td>0.3969</td>
+            <td>0</td>
+            <td>0.38</td>
+        </tr>
+        
+            </tbody>
+        </table>
+        
+        
+        <h3>🟡 Mixed Drivers — Top 15</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Código</th>
+                    <th>Vencimento</th>
+                    <th>Strike</th>
+                    <th>Tipo</th>
+                    <th>Driver</th>
+                    <th>ΔDelta</th>
+                    <th>Gamma</th>
+                    <th>Vanna</th>
+                    <th>Charm</th>
+                    <th>OI Médio</th>
+                    <th>Impact Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td>1</td>
+            <td>BOVAP172</td>
+            <td>27 mar W4</td>
+            <td>172.00</td>
+            <td>PUT</td>
+            <td style="color: #fbbf24; font-weight: bold;">MIXED</td>
+            <td>-0.0500</td>
+            <td>-0.0257</td>
+            <td>-</td>
+            <td>-0.0243</td>
+            <td>20</td>
+            <td>0.22</td>
+        </tr>
+        
+        <tr>
+            <td>2</td>
+            <td>BOVAP174</td>
+            <td>13 mar W2</td>
+            <td>174.00</td>
+            <td>PUT</td>
+            <td style="color: #fbbf24; font-weight: bold;">MIXED</td>
+            <td>-0.0700</td>
+            <td>-0.0368</td>
+            <td>-</td>
+            <td>-0.0332</td>
+            <td>0</td>
+            <td>0.07</td>
+        </tr>
+        
+        <tr>
+            <td>3</td>
+            <td>BOVAD174</td>
+            <td>13 mar W2</td>
+            <td>174.00</td>
+            <td>CALL</td>
+            <td style="color: #fbbf24; font-weight: bold;">MIXED</td>
+            <td>-0.0700</td>
+            <td>-0.0368</td>
+            <td>-</td>
+            <td>-0.0332</td>
+            <td>0</td>
+            <td>0.07</td>
+        </tr>
+        
+        <tr>
+            <td>4</td>
+            <td>BOVAD171</td>
+            <td>27 mar W4</td>
+            <td>171.00</td>
+            <td>CALL</td>
+            <td style="color: #fbbf24; font-weight: bold;">MIXED</td>
+            <td>-0.0500</td>
+            <td>-0.0241</td>
+            <td>-</td>
+            <td>-0.0259</td>
+            <td>0</td>
+            <td>0.05</td>
+        </tr>
+        
+        <tr>
+            <td>5</td>
+            <td>BOVAD172</td>
+            <td>27 mar W4</td>
+            <td>172.00</td>
+            <td>CALL</td>
+            <td style="color: #fbbf24; font-weight: bold;">MIXED</td>
+            <td>-0.0500</td>
+            <td>-0.0257</td>
+            <td>-</td>
+            <td>-0.0243</td>
+            <td>0</td>
+            <td>0.05</td>
+        </tr>
+        
+        <tr>
+            <td>6</td>
+            <td>BOVAP171</td>
+            <td>27 mar W4</td>
+            <td>171.00</td>
+            <td>PUT</td>
+            <td style="color: #fbbf24; font-weight: bold;">MIXED</td>
+            <td>-0.0500</td>
+            <td>-0.0241</td>
+            <td>-</td>
+            <td>-0.0259</td>
+            <td>0</td>
+            <td>0.05</td>
+        </tr>
+        
+        <tr>
+            <td>7</td>
+            <td>BOVAD177</td>
+            <td>6 mar W1</td>
+            <td>177.00</td>
+            <td>CALL</td>
+            <td style="color: #fbbf24; font-weight: bold;">MIXED</td>
+            <td>+0.0100</td>
+            <td>-0.0854</td>
+            <td>-</td>
+            <td>0.0954</td>
+            <td>0</td>
+            <td>0.01</td>
+        </tr>
+        
+        <tr>
+            <td>8</td>
+            <td>BOVAC168W1</td>
+            <td>6 mar W1</td>
+            <td>168.00</td>
+            <td>CALL</td>
+            <td style="color: #fbbf24; font-weight: bold;">MIXED</td>
+            <td>0.0000</td>
+            <td>-0.0000</td>
+            <td>-</td>
+            <td>0.0000</td>
+            <td>0</td>
+            <td>0.00</td>
+        </tr>
+        
+        <tr>
+            <td>9</td>
+            <td>BOVAO168W1</td>
+            <td>6 mar W1</td>
+            <td>168.00</td>
+            <td>PUT</td>
+            <td style="color: #fbbf24; font-weight: bold;">MIXED</td>
+            <td>0.0000</td>
+            <td>-0.0000</td>
+            <td>-</td>
+            <td>0.0000</td>
+            <td>0</td>
+            <td>0.00</td>
+        </tr>
+        
+        <tr>
+            <td>10</td>
+            <td>BOVAC169W1</td>
+            <td>6 mar W1</td>
+            <td>169.00</td>
+            <td>CALL</td>
+            <td style="color: #fbbf24; font-weight: bold;">MIXED</td>
+            <td>0.0000</td>
+            <td>-0.0002</td>
+            <td>-</td>
+            <td>0.0002</td>
+            <td>0</td>
+            <td>0.00</td>
+        </tr>
+        
+        <tr>
+            <td>11</td>
+            <td>BOVAO169W1</td>
+            <td>6 mar W1</td>
+            <td>169.00</td>
+            <td>PUT</td>
+            <td style="color: #fbbf24; font-weight: bold;">MIXED</td>
+            <td>0.0000</td>
+            <td>-0.0002</td>
+            <td>-</td>
+            <td>0.0002</td>
+            <td>0</td>
+            <td>0.00</td>
+        </tr>
+        
+        <tr>
+            <td>12</td>
+            <td>BOVAC170W1</td>
+            <td>6 mar W1</td>
+            <td>170.00</td>
+            <td>CALL</td>
+            <td style="color: #fbbf24; font-weight: bold;">MIXED</td>
+            <td>0.0000</td>
+            <td>-0.0008</td>
+            <td>-</td>
+            <td>0.0008</td>
+            <td>0</td>
+            <td>0.00</td>
+        </tr>
+        
+        <tr>
+            <td>13</td>
+            <td>BOVAO170W1</td>
+            <td>6 mar W1</td>
+            <td>170.00</td>
+            <td>PUT</td>
+            <td style="color: #fbbf24; font-weight: bold;">MIXED</td>
+            <td>0.0000</td>
+            <td>-0.0008</td>
+            <td>-</td>
+            <td>0.0008</td>
+            <td>0</td>
+            <td>0.00</td>
+        </tr>
+        
+        <tr>
+            <td>14</td>
+            <td>BOVAC171W1</td>
+            <td>6 mar W1</td>
+            <td>171.00</td>
+            <td>CALL</td>
+            <td style="color: #fbbf24; font-weight: bold;">MIXED</td>
+            <td>0.0000</td>
+            <td>-0.0025</td>
+            <td>-</td>
+            <td>0.0025</td>
+            <td>0</td>
+            <td>0.00</td>
+        </tr>
+        
+        <tr>
+            <td>15</td>
+            <td>BOVAO171W1</td>
+            <td>6 mar W1</td>
+            <td>171.00</td>
+            <td>PUT</td>
+            <td style="color: #fbbf24; font-weight: bold;">MIXED</td>
+            <td>0.0000</td>
+            <td>-0.0025</td>
+            <td>-</td>
+            <td>0.0025</td>
+            <td>0</td>
+            <td>0.00</td>
+        </tr>
+        
+            </tbody>
+        </table>
+        
+        
+        <!-- Methodology -->
+        <div class="methodology">
+            <h3>📐 Metodologia de Decomposição de Convexidade</h3>
+            
+            <h4>1. Decomposição do ΔDelta</h4>
+            <p>A variação do Delta (ΔDelta) de uma opção pode ser decomposta em três componentes principais:</p>
+            
+            <div class="formula">
+                ΔDelta = Gamma_Contrib + Vanna_Contrib + Charm_Residual
+            </div>
+            
+            <h4>2. Componentes</h4>
+            <ul>
+                <li><strong style="color: var(--gamma);">Gamma (Γ)</strong>: Sensibilidade do Delta ao movimento do spot</li>
+                <li><strong style="color: var(--vanna);">Vanna</strong>: Sensibilidade do Delta à variação da volatilidade implícita (IV)</li>
+                <li><strong style="color: var(--charm);">Charm</strong>: Sensibilidade do Delta à passagem do tempo (também conhecido como Delta Decay)</li>
+            </ul>
+            
+            <h4>3. Fórmulas de Cálculo</h4>
+            <div class="formula">
+                GAMMA_CONTRIB = GAMMA_AVG × ΔSpot<br><br>
+                VANNA_obs = ΔDelta / ΔIV &nbsp;&nbsp;(se |ΔIV| > EPS_IV=0.5)<br>
+                VANNA_CONTRIB = VANNA_obs × ΔIV<br><br>
+                CHARM_residual = ΔDelta − GAMMA_CONTRIB − VANNA_CONTRIB
+            </div>
+            
+            <h4>4. Classificação do Driver</h4>
+            <p>O driver dominante é determinado comparando as contribuições absolutas:</p>
+            <div class="formula">
+                max(|GAMMA_CONTRIB|, |VANNA_CONTRIB|, |CHARM_residual|)
+            </div>
+            <p>Uma operação é classificada como <strong style="color: var(--mixed);">MIXED</strong> quando o segundo maior valor 
+            for maior ou igual a (1 − EPS_TIE) × maior valor, onde EPS_TIE = 0.15 (15%).</p>
+            
+            <h4>5. Impact Score</h4>
+            <p>O impact score pondera a variação do Delta pelo Open Interest:</p>
+            <div class="formula">
+                IMPACT_SCORE = |ΔDelta| × √(OI_MÉDIO)
+            </div>
+            
+            <h4>6. Interpretação</h4>
+            <ul>
+                <li><strong>GAMMA-driven</strong>: O movimento do spot foi o principal responsável pela mudança no Delta</li>
+                <li><strong>VANNA-driven</strong>: Mudanças na volatilidade implícita dominaram a variação</li>
+                <li><strong>CHARM-driven</strong>: O decaimento temporal (aproximação do vencimento) foi o fator principal</li>
+                <li><strong>MIXED</strong>: Múltiplos fatores contribuíram significativamente</li>
+            </ul>
+        </div>
+        
+        <footer>
+            <p>BOVA11 Convexity Analyzer — Gerado em 06/03/2026 18:22</p>
+            <p>Dados: B3 — Análise para fins educacionais</p>
+        </footer>
+    </div>
+</body>
+</html>

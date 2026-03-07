@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOVA11 Skew History — Todos os Vencimentos</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --bg2: #161b22;
+            --bg3: #21262d;
+            --text: #c9d1d9;
+            --text2: #8b949e;
+            --border: #30363d;
+            --red: #f85149;
+            --grn: #3fb950;
+            --blu: #58a6ff;
+            --yel: #d29922;
+            --pur: #bc8cff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, var(--bg2), var(--bg3));
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .header h1 { font-size: 1.8em; margin-bottom: 8px; }
+        .header .meta { color: var(--text2); font-size: 0.95em; }
+        .header .filter { color: var(--blu); font-weight: bold; }
+        .header .range { color: var(--grn); }
+        
+        .controls {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        .controls-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .controls-header h3 { color: var(--text); font-size: 1em; margin: 0; }
+        .controls-info { color: var(--text2); font-size: 0.85em; }
+
+        /* ── Calendar ── */
+        .cal-wrap {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+        .cal-month {
+            flex: 0 0 auto;
+            min-width: 200px;
+        }
+        .cal-month-title {
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.9em;
+            color: var(--blu);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            padding: 6px;
+            background: rgba(88,166,255,0.08);
+            border-radius: 6px;
+        }
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+        }
+        .cal-dow {
+            text-align: center;
+            font-size: 0.7em;
+            color: var(--text2);
+            padding: 4px 2px;
+            font-weight: 600;
+        }
+        .cal-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.82em;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+            user-select: none;
+            position: relative;
+        }
+        .cal-day.has-data {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        .cal-day.has-data:hover { background: rgba(88,166,255,0.15); border-color: var(--blu); }
+        .cal-day.selected {
+            background: var(--blu) !important;
+            color: #000 !important;
+            border-color: var(--blu) !important;
+            font-weight: 700;
+        }
+        .cal-day.empty { cursor: default; }
+        .cal-day.in-range {
+            background: rgba(88,166,255,0.18);
+            border-radius: 2px;
+        }
+        .cal-day.range-start { border-radius: 6px 2px 2px 6px; }
+        .cal-day.range-end   { border-radius: 2px 6px 6px 2px; }
+
+        .cal-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            background: var(--blu);
+            color: #000;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: opacity 0.15s;
+        }
+        .btn:hover { opacity: 0.85; }
+        .btn.secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+        .btn.danger    { background: rgba(248,81,73,0.15); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+        .range-hint { font-size: 0.78em; color: var(--text2); margin-top: 8px; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+        .stat-card .label { color: var(--text2); font-size: 0.85em; margin-bottom: 8px; }
+        .stat-card .value { font-size: 1.6em; font-weight: bold; }
+        .stat-card .sub { font-size: 0.8em; color: var(--text2); margin-top: 4px; }
+        
+        .chart-container {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            height: 380px;
+        }
+        .chart-title {
+            font-size: 1.1em;
+            margin-bottom: 16px;
+            color: var(--text2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 24px;
+        }
+        
+        .data-table {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+        th { color: var(--text2); font-weight: 600; }
+        tr:hover { background: var(--bg3); }
+        .positive { color: var(--grn); }
+        .negative { color: var(--red); }
+        
+        @media (max-width: 768px) {
+            .chart-grid { grid-template-columns: 1fr; }
+            .date-filters { max-height: 200px; overflow-y: auto; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 BOVA11 Skew History</h1>
+        <div class="meta">
+            Filtro: <span class="filter">Todos os Vencimentos</span> | 
+            Strikes: <span class="range">170 - 210</span> | 
+            Total de datas: <span id="total-dates">23</span> | 
+            Selecionadas: <span id="selected-count">23</span>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <div class="controls-header">
+            <h3>📅 Filtrar por Data</h3>
+            <span class="controls-info"><span id="selected-count">0</span> de <span id="total-dates">23</span> datas selecionadas</span>
+        </div>
+        <div class="cal-wrap" id="calWrap"></div>
+        <div class="cal-actions">
+            <button class="btn" onclick="selectAll()">✓ Selecionar Todas</button>
+            <button class="btn secondary" onclick="selectLast30()">Últimos 30 dias</button>
+            <button class="btn secondary" onclick="selectLast7()">Últimos 7 dias</button>
+            <button class="btn danger" onclick="deselectAll()">✕ Limpar</button>
+            <button class="btn" onclick="applyFilter()">▶ Aplicar</button>
+        </div>
+        <div class="range-hint">Dica: clique em uma data para selecioná-la · arraste ou clique + Shift para selecionar um intervalo</div>
+    </div>
+    
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+            <div class="label">IV Média Calls (último)</div>
+            <div class="value" id="statCallIv" style="color: var(--grn)">-</div>
+            <div class="sub" id="statCallChange"></div>
+        </div>
+        <div class="stat-card">
+            <div class="label">IV Média Puts (último)</div>
+            <div class="value" id="statPutIv" style="color: var(--red)">-</div>
+            <div class="sub" id="statPutChange"></div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Skew (Put - Call)</div>
+            <div class="value" id="statSkew" style="color: var(--yel)">-</div>
+            <div class="sub" id="statSkewChange"></div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Variação Skew (1d)</div>
+            <div class="value" id="statSkewDelta">-</div>
+        </div>
+    </div>
+    
+    <div class="chart-grid">
+        <div class="chart-container">
+            <div class="chart-title">
+                <span>📈 CALL — Evolução da Volatilidade Implícita</span>
+                <span style="font-size: 0.8em; color: var(--grn)">▼ Média filtrada</span>
+            </div>
+            <canvas id="callChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <div class="chart-title">
+                <span>📉 PUT — Evolução da Volatilidade Implícita</span>
+                <span style="font-size: 0.8em; color: var(--red)">▼ Média filtrada</span>
+            </div>
+            <canvas id="putChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="chart-container" style="height: 320px;">
+        <div class="chart-title">📊 SKEW — Diferença Put vs Call</div>
+        <canvas id="skewChart"></canvas>
+    </div>
+    
+    <div class="data-table">
+        <h3 style="margin-bottom: 16px; color: var(--text2)">📋 Dados Detalhados</h3>
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>IV Call (%)</th>
+                    <th>IV Put (%)</th>
+                    <th>Skew (%)</th>
+                    <th>Δ Call</th>
+                    <th>Δ Put</th>
+                    <th>Δ Skew</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+    
+    <script>
+        // Dados completos do servidor
+        const allData = [{"label": "2/Fev", "date_key": "02/fev", "call_iv": 21.14, "put_iv": 22.21, "skew": 1.06}, {"label": "3/Fev", "date_key": "03/fev", "call_iv": 20.78, "put_iv": 23.31, "skew": 2.52}, {"label": "4/Fev", "date_key": "04/fev", "call_iv": 25.33, "put_iv": 25.93, "skew": 0.6}, {"label": "5/Fev", "date_key": "05/fev", "call_iv": 24.03, "put_iv": 26.39, "skew": 2.36}, {"label": "6/Fev", "date_key": "06/fev", "call_iv": 22.77, "put_iv": 24.05, "skew": 1.27}, {"label": "9/Fev", "date_key": "09/fev", "call_iv": 20.06, "put_iv": 24.45, "skew": 4.39}, {"label": "10/Fev", "date_key": "10/fev", "call_iv": 20.5, "put_iv": 21.26, "skew": 0.76}, {"label": "11/Fev", "date_key": "11/fev", "call_iv": 21.51, "put_iv": 22.37, "skew": 0.86}, {"label": "12/Fev", "date_key": "12/fev", "call_iv": 23.87, "put_iv": 24.78, "skew": 0.91}, {"label": "13/Fev", "date_key": "13/fev", "call_iv": 20.21, "put_iv": 22.51, "skew": 2.3}, {"label": "18/Fev", "date_key": "18/fev", "call_iv": 22.41, "put_iv": 23.93, "skew": 1.52}, {"label": "19/Fev", "date_key": "19/fev", "call_iv": 21.9, "put_iv": 23.12, "skew": 1.22}, {"label": "20/Fev", "date_key": "20/fev", "call_iv": 19.68, "put_iv": 21.2, "skew": 1.51}, {"label": "23/Fev", "date_key": "23/fev", "call_iv": 20.2, "put_iv": 21.28, "skew": 1.08}, {"label": "24/Fev", "date_key": "24/fev", "call_iv": 20.05, "put_iv": 22.61, "skew": 2.56}, {"label": "25/Fev", "date_key": "25/fev", "call_iv": 20.88, "put_iv": 23.66, "skew": 2.78}, {"label": "26/Fev", "date_key": "26/fev", "call_iv": 19.62, "put_iv": 22.07, "skew": 2.45}, {"label": "27/Fev", "date_key": "27/fev", "call_iv": 20.12, "put_iv": 20.77, "skew": 0.65}, {"label": "2/Mar", "date_key": "02/mar", "call_iv": 20.43, "put_iv": 21.33, "skew": 0.9}, {"label": "3/Mar", "date_key": "03/mar", "call_iv": 28.28, "put_iv": 26.02, "skew": -2.25}, {"label": "4/Mar", "date_key": "04/mar", "call_iv": 24.58, "put_iv": 25.01, "skew": 0.42}, {"label": "5/Mar", "date_key": "05/mar", "call_iv": 29.46, "put_iv": 29.24, "skew": -0.22}, {"label": "6/Mar", "date_key": "06/mar", "call_iv": 25.31, "put_iv": 26.38, "skew": 1.06}];
+        let selectedDates = allData.map(d => d.label);
+        let charts = {};
+        
+        // ══════════════════════════════════════════
+        // CALENDAR ENGINE
+        // ══════════════════════════════════════════
+
+        // Map label ("2/Fev") → {year, month (0-idx), day}
+        const MONTHS_PT = {'Jan':0,'Fev':1,'Mar':2,'Abr':3,'Mai':4,'Jun':5,'Jul':6,'Ago':7,'Set':8,'Out':9,'Nov':10,'Dez':11};
+        const MONTHS_NAME = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+        function labelToDate(label) {
+            const [d, m] = label.split('/');
+            // pick year: if month is before current month in a year-wrap context use next year cautiously
+            const mo = MONTHS_PT[m];
+            return new Date(2025, mo, parseInt(d));  // year fixed to data year
+        }
+
+        function dateToKey(dt) {
+            return dt.getFullYear() + '-' + dt.getMonth() + '-' + dt.getDate();
+        }
+
+        // Build lookup: dateKey → label
+        const keyToLabel = {};
+        const labelToKey = {};
+        allData.forEach(d => {
+            const dt = labelToDate(d.label);
+            const k  = dateToKey(dt);
+            keyToLabel[k] = d.label;
+            labelToKey[d.label] = k;
+        });
+
+        // ── State ──
+        let isDragging   = false;
+        let dragStart    = null;  // dateKey
+        let lastAnchor   = null;  // for shift-click
+
+        function renderCalendar() {
+            const wrap = document.getElementById('calWrap');
+            wrap.innerHTML = '';
+
+            // Group available dates by year+month
+            const months = {};
+            allData.forEach(d => {
+                const dt  = labelToDate(d.label);
+                const key = dt.getFullYear() + '-' + dt.getMonth();
+                if (!months[key]) months[key] = { year: dt.getFullYear(), month: dt.getMonth(), days: [] };
+                months[key].days.push({ day: dt.getDate(), label: d.label, k: dateToKey(dt) });
+            });
+
+            const DOW = ['D','S','T','Q','Q','S','S'];
+
+            Object.values(months).sort((a,b) => a.year - b.year || a.month - b.month).forEach(m => {
+                const col = document.createElement('div');
+                col.className = 'cal-month';
+
+                const title = document.createElement('div');
+                title.className = 'cal-month-title';
+                title.textContent = MONTHS_NAME[m.month] + ' ' + m.year;
+                col.appendChild(title);
+
+                const grid = document.createElement('div');
+                grid.className = 'cal-grid';
+
+                // Day-of-week headers
+                DOW.forEach(h => {
+                    const dh = document.createElement('div');
+                    dh.className = 'cal-dow';
+                    dh.textContent = h;
+                    grid.appendChild(dh);
+                });
+
+                // Offset: first day of month
+                const firstDow = new Date(m.year, m.month, 1).getDay();
+                for (let i = 0; i < firstDow; i++) {
+                    const empty = document.createElement('div');
+                    empty.className = 'cal-day empty';
+                    grid.appendChild(empty);
+                }
+
+                // Days of month
+                const daysInMonth = new Date(m.year, m.month + 1, 0).getDate();
+                const dayMap = {};
+                m.days.forEach(d => { dayMap[d.day] = d; });
+
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const cell = document.createElement('div');
+                    const info = dayMap[d];
+                    if (info) {
+                        cell.className = 'cal-day has-data' + (selectedDates.includes(info.label) ? ' selected' : '');
+                        cell.textContent = d;
+                        cell.dataset.k = info.k;
+                        cell.dataset.label = info.label;
+
+                        // Mouse events for drag-select
+                        cell.addEventListener('mousedown', e => {
+                            if (e.shiftKey && lastAnchor) {
+                                rangeSelect(lastAnchor, info.k);
+                            } else {
+                                isDragging = true;
+                                dragStart  = info.k;
+                                lastAnchor = info.k;
+                                toggleLabel(info.label);
+                                cell.classList.toggle('selected', selectedDates.includes(info.label));
+                            }
+                            updateCount();
+                            e.preventDefault();
+                        });
+                        cell.addEventListener('mouseenter', e => {
+                            if (isDragging) {
+                                const sel = !selectedDates.includes(dragStart ? keyToLabel[dragStart] : info.label);
+                                if (sel && !selectedDates.includes(info.label)) {
+                                    selectedDates.push(info.label);
+                                } else if (!sel && selectedDates.includes(info.label)) {
+                                    selectedDates = selectedDates.filter(l => l !== info.label);
+                                }
+                                cell.classList.toggle('selected', selectedDates.includes(info.label));
+                                updateCount();
+                            }
+                        });
+                    } else {
+                        cell.className = 'cal-day empty';
+                        cell.textContent = d;
+                        cell.style.color = 'var(--text2)';
+                        cell.style.opacity = '0.25';
+                    }
+                    grid.appendChild(cell);
+                }
+                col.appendChild(grid);
+                wrap.appendChild(col);
+            });
+
+            document.addEventListener('mouseup', () => { isDragging = false; }, { once: false });
+        }
+
+        function toggleLabel(label) {
+            if (selectedDates.includes(label))
+                selectedDates = selectedDates.filter(l => l !== label);
+            else
+                selectedDates.push(label);
+        }
+
+        function rangeSelect(fromKey, toKey) {
+            // Collect all available sorted dates in range
+            const sorted = allData.map(d => ({ label: d.label, dt: labelToDate(d.label) })).sort((a,b) => a.dt - b.dt);
+            const fromDt = new Date(...fromKey.split('-').map((v,i)=>i===1?+v:+v));
+            const toDt   = new Date(...toKey.split('-').map((v,i)=>i===1?+v:+v));
+            const [lo, hi] = fromDt <= toDt ? [fromDt, toDt] : [toDt, fromDt];
+            sorted.forEach(item => {
+                if (item.dt >= lo && item.dt <= hi && !selectedDates.includes(item.label))
+                    selectedDates.push(item.label);
+            });
+            renderCalendar();
+        }
+
+        function updateCount() {
+            document.getElementById('selected-count').textContent = selectedDates.length;
+        }
+
+        function selectAll() {
+            selectedDates = allData.map(d => d.label);
+            renderCalendar();
+            updateCount();
+        }
+
+        function deselectAll() {
+            selectedDates = [];
+            renderCalendar();
+            updateCount();
+        }
+
+        function selectLast(n) {
+            const sorted = allData.map(d => ({ label: d.label, dt: labelToDate(d.label) })).sort((a,b) => b.dt - a.dt);
+            selectedDates = sorted.slice(0, n).map(d => d.label);
+            renderCalendar();
+            updateCount();
+        }
+        function selectLast7()  { selectLast(7);  }
+        function selectLast30() { selectLast(30); }
+
+        function applyFilter() {
+            updateDashboard();
+        }
+
+        // Obter dados filtrados
+        function getFilteredData() {
+            // Return in chronological order
+            return allData.filter(d => selectedDates.includes(d.label));
+        }
+        
+        // Atualizar dashboard
+        function updateDashboard() {
+            const data = getFilteredData();
+            
+            if (data.length === 0) return;
+            
+            // Atualizar estatísticas
+            const last = data[data.length - 1];
+            const prev = data.length > 1 ? data[data.length - 2] : null;
+            
+            document.getElementById('statCallIv').textContent = last.call_iv ? last.call_iv.toFixed(2) + '%' : 'N/A';
+            document.getElementById('statPutIv').textContent = last.put_iv ? last.put_iv.toFixed(2) + '%' : 'N/A';
+            document.getElementById('statSkew').textContent = last.skew ? last.skew.toFixed(2) + '%' : 'N/A';
+            
+            // Variações
+            if (prev && last.call_iv && prev.call_iv) {
+                const change = last.call_iv - prev.call_iv;
+                const el = document.getElementById('statCallChange');
+                el.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+                el.className = 'sub ' + (change >= 0 ? 'positive' : 'negative');
+            }
+            
+            if (prev && last.put_iv && prev.put_iv) {
+                const change = last.put_iv - prev.put_iv;
+                const el = document.getElementById('statPutChange');
+                el.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+                el.className = 'sub ' + (change >= 0 ? 'positive' : 'negative');
+            }
+            
+            if (prev && last.skew && prev.skew) {
+                const change = last.skew - prev.skew;
+                const el = document.getElementById('statSkewChange');
+                el.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+                el.className = 'sub ' + (change >= 0 ? 'positive' : 'negative');
+            }
+            
+            if (prev && last.skew && prev.skew) {
+                const delta = last.skew - prev.skew;
+                const el = document.getElementById('statSkewDelta');
+                el.textContent = (delta >= 0 ? '+' : '') + delta.toFixed(2) + '%';
+                el.style.color = delta >= 0 ? 'var(--red)' : 'var(--grn)';
+            }
+            
+            // Atualizar gráficos
+            updateCharts(data);
+            
+            // Atualizar tabela
+            updateTable(data);
+        }
+        
+        // Atualizar gráficos
+        function updateCharts(data) {
+            const labels = data.map(d => d.label);
+            const callData = data.map(d => d.call_iv);
+            const putData = data.map(d => d.put_iv);
+            const skewData = data.map(d => d.skew);
+            
+            // Destruir gráficos anteriores
+            Object.values(charts).forEach(c => c.destroy());
+            
+            // CALL Chart
+            charts.call = new Chart(document.getElementById('callChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'IV Call (%)',
+                        data: callData,
+                        borderColor: '#3fb950',
+                        backgroundColor: 'rgba(63, 185, 80, 0.1)',
+                        tension: 0.3,
+                        fill: true,
+                        pointRadius: 4,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#8b949e', maxRotation: 45 }, grid: { color: '#30363d' } },
+                        y: { ticks: { color: '#8b949e' }, grid: { color: '#30363d' }, title: { display: true, text: 'IV (%)', color: '#8b949e' } }
+                    }
+                }
+            });
+            
+            // PUT Chart
+            charts.put = new Chart(document.getElementById('putChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'IV Put (%)',
+                        data: putData,
+                        borderColor: '#f85149',
+                        backgroundColor: 'rgba(248, 81, 73, 0.1)',
+                        tension: 0.3,
+                        fill: true,
+                        pointRadius: 4,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#8b949e', maxRotation: 45 }, grid: { color: '#30363d' } },
+                        y: { ticks: { color: '#8b949e' }, grid: { color: '#30363d' }, title: { display: true, text: 'IV (%)', color: '#8b949e' } }
+                    }
+                }
+            });
+            
+            // SKEW Chart
+            charts.skew = new Chart(document.getElementById('skewChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Skew (Put - Call) %',
+                        data: skewData,
+                        borderColor: '#d29922',
+                        backgroundColor: 'rgba(210, 153, 34, 0.15)',
+                        tension: 0.3,
+                        fill: true,
+                        pointRadius: 5,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#8b949e', maxRotation: 45 }, grid: { color: '#30363d' } },
+                        y: { 
+                            ticks: { color: '#8b949e' }, 
+                            grid: { color: '#30363d' }, 
+                            title: { display: true, text: 'Skew (%)', color: '#8b949e' },
+                            suggestedMin: -2,
+                            suggestedMax: 5
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Atualizar tabela
+        function updateTable(data) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            data.forEach((row, i) => {
+                const prev = i > 0 ? data[i - 1] : null;
+                
+                const tr = document.createElement('tr');
+                
+                // Delta calculations
+                let dCall = '-', dPut = '-', dSkew = '-';
+                let cCall = '', cPut = '', cSkew = '';
+                
+                if (prev) {
+                    if (row.call_iv && prev.call_iv) {
+                        const d = row.call_iv - prev.call_iv;
+                        dCall = (d >= 0 ? '+' : '') + d.toFixed(2) + '%';
+                        cCall = d >= 0 ? 'positive' : 'negative';
+                    }
+                    if (row.put_iv && prev.put_iv) {
+                        const d = row.put_iv - prev.put_iv;
+                        dPut = (d >= 0 ? '+' : '') + d.toFixed(2) + '%';
+                        cPut = d >= 0 ? 'positive' : 'negative';
+                    }
+                    if (row.skew && prev.skew) {
+                        const d = row.skew - prev.skew;
+                        dSkew = (d >= 0 ? '+' : '') + d.toFixed(2) + '%';
+                        cSkew = d >= 0 ? 'positive' : 'negative';
+                    }
+                }
+                
+                tr.innerHTML = `
+                    <td><strong>${row.label}</strong></td>
+                    <td>${row.call_iv ? row.call_iv.toFixed(2) : '-'}</td>
+                    <td>${row.put_iv ? row.put_iv.toFixed(2) : '-'}</td>
+                    <td>${row.skew ? row.skew.toFixed(2) : '-'}</td>
+                    <td class="${cCall}">${dCall}</td>
+                    <td class="${cPut}">${dPut}</td>
+                    <td class="${cSkew}">${dSkew}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        
+        // Iniciar
+        renderCalendar();
+        updateCount();
+        updateDashboard();
+    </script>
+</body>
+</html>
