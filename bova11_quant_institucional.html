@@ -170,7 +170,13 @@
                 { label: 'EMA200', data: EMA200, borderColor: '#f85149', borderWidth: 1,   pointRadius: 0, opacity: 0.7 },
             ]
         },
-        options: COMMON_OPTS
+        options: {
+            ...COMMON_OPTS,
+            plugins: {
+                ...COMMON_OPTS.plugins,
+                zoom: ZOOM_PLUGIN
+            }
+        }
     }));
 
     // Gráfico 2: Momentum (barras)
@@ -206,6 +212,10 @@
         },
         options: {
             ...COMMON_OPTS,
+            plugins: {
+                ...COMMON_OPTS.plugins,
+                zoom: ZOOM_PLUGIN
+            },
             scales: {
                 ...COMMON_OPTS.scales,
                 y: { ...COMMON_OPTS.scales.y, min: 0, max: 100 }
@@ -220,7 +230,13 @@
             labels: LABELS,
             datasets: [{ label: 'ATR14', data: ATR14, borderColor: '#bc8cff', borderWidth: 1.5, pointRadius: 0, tension: 0.2, fill: false }]
         },
-        options: COMMON_OPTS
+        options: {
+            ...COMMON_OPTS,
+            plugins: {
+                ...COMMON_OPTS.plugins,
+                zoom: ZOOM_PLUGIN
+            }
+        }
     }));
     </script>
 </body>
