@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TEX DEX VEX — 6/Mar vs 9/Mar</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
     <style>
         :root {
             --bg:   #0d1117; --bg2:  #161b22; --bg3:  #21262d;
@@ -91,32 +89,31 @@
             font-style: italic;
         }
 
-        .chart-title {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            font-size: 0.9rem;
+
+        .mechanic-box {
+            background: var(--bg3);
+            border-left: 4px solid var(--blu);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+            line-height: 1.7;
         }
 
-        .reset-btn {
-            background: var(--blu);
-            color: #000;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
+        .mechanic-title {
+            font-weight: bold;
+            color: var(--blu);
+            margin-bottom: 10px;
+        }
+
+        .mechanic-positive {
+            color: var(--grn);
             font-weight: 500;
-            transition: opacity 0.2s;
         }
 
-        .reset-btn:hover {
-            opacity: 0.8;
-        }
-
-        .zoom-hint {
-            color: var(--text2);
-            font-size: 0.8rem;
+        .mechanic-negative {
+            color: var(--red);
+            font-weight: 500;
         }
 
         canvas {
@@ -211,7 +208,7 @@
     <div class="cards-grid">
         <div class="card">
             <div class="card-label">TEX Total</div>
-            <div class="card-value" style="color: var(--red)">-23701892.6M</div>
+            <div class="card-value" style="color: var(--red)">-23.7M</div>
         </div>
         <div class="card">
             <div class="card-label">TEX Max+</div>
@@ -224,7 +221,7 @@
 
         <div class="card">
             <div class="card-label">DEX Total</div>
-            <div class="card-value" style="color: var(--red)">-1901.6M</div>
+            <div class="card-value" style="color: var(--red)">-2k</div>
         </div>
         <div class="card">
             <div class="card-label">DEX Max+</div>
@@ -237,7 +234,7 @@
 
         <div class="card">
             <div class="card-label">VEX Total</div>
-            <div class="card-value" style="color: var(--grn)">2623994486.3M</div>
+            <div class="card-value" style="color: var(--grn)">2.6B</div>
         </div>
         <div class="card">
             <div class="card-label">VEX Max+</div>
@@ -249,52 +246,84 @@
         </div>
     </div>
 
-    <!-- TEX Chart -->
+    <!-- TEX Section -->
     <div class="chart-section">
         <h2>TEX — Theta Exposure</h2>
-        <p class="legend">
-            ✓ Positivo: MMs coletam theta (venderam opções)  •  ✗ Negativo: MMs pagam theta (compraram opções)
-        </p>
-        <div class="chart-title">
-            TEX por Strike
-            <div style="display: flex; gap: 12px; align-items: center;">
-                <button class="reset-btn" onclick="resetAll()">Reset Zoom</button>
-                <span class="zoom-hint">Scroll = zoom · Drag = pan</span>
+        <div class="mechanic-box">
+            <div class="mechanic-title">Mecânica do Theta</div>
+            <div>
+                <div><span class="mechanic-positive">TEX Positivo (+)</span></div>
+                <ul style="margin: 8px 0 12px 20px; color: var(--text2);">
+                    <li>Market makers <strong>ganham dinheiro</strong> com a passagem do tempo</li>
+                    <li>Venderam opções (coletam theta)</li>
+                    <li>Cada dia que passa = lucro automático</li>
+                    <li>Tempo é o melhor amigo dos vendedores</li>
+                </ul>
+                <div><span class="mechanic-negative">TEX Negativo (−)</span></div>
+                <ul style="margin: 8px 0 0 20px; color: var(--text2);">
+                    <li>Market makers <strong>perdem dinheiro</strong> com a passagem do tempo</li>
+                    <li>Compraram opções (pagam theta)</li>
+                    <li>Cada dia que passa = sangramento automático</li>
+                    <li>Tempo é o pior inimigo dos compradores</li>
+                </ul>
             </div>
         </div>
-        <canvas id="chartTEX" height="200"></canvas>
+        <h3 style="margin-top: 20px; margin-bottom: 12px;">TEX por Strike</h3>
+        <canvas id="chartTEX" height="250"></canvas>
     </div>
 
-    <!-- DEX Chart -->
+    <!-- DEX Section -->
     <div class="chart-section">
-        <h2>DEX — Delta Exposure</h2>
-        <p class="legend">
-            ✓ Positivo: pressão compradora se spot atingir o strike  •  ✗ Negativo: pressão vendedora
-        </p>
-        <div class="chart-title">
-            DEX por Strike
-            <div style="display: flex; gap: 12px; align-items: center;">
-                <button class="reset-btn" onclick="resetAll()">Reset Zoom</button>
-                <span class="zoom-hint">Scroll = zoom · Drag = pan</span>
+        <h2>DEX — Delta Exposure (Gamma Hedging)</h2>
+        <div class="mechanic-box">
+            <div class="mechanic-title">Mecânica do Delta Hedging</div>
+            <div>
+                <div><span class="mechanic-positive">DEX Positivo (+)</span></div>
+                <ul style="margin: 8px 0 12px 20px; color: var(--text2);">
+                    <li>Market makers vão ter que <strong>COMPRAR ações</strong> se preço chegar naquele strike</li>
+                    <li>Geralmente calls vendidas ou puts compradas</li>
+                    <li>Cria <strong>pressão compradora</strong> conforme preço se aproxima</li>
+                    <li>Mais alto = mais combustível para movimento</li>
+                </ul>
+                <div><span class="mechanic-negative">DEX Negativo (−)</span></div>
+                <ul style="margin: 8px 0 0 20px; color: var(--text2);">
+                    <li>Market makers vão ter que <strong>VENDER ações</strong> se preço chegar naquele strike</li>
+                    <li>Geralmente puts vendidas ou calls compradas</li>
+                    <li>Cria <strong>pressão vendedora</strong> conforme preço se aproxima</li>
+                    <li>Mais baixo = mais resistência ao movimento</li>
+                </ul>
             </div>
         </div>
-        <canvas id="chartDEX" height="200"></canvas>
+        <h3 style="margin-top: 20px; margin-bottom: 12px;">DEX por Strike</h3>
+        <canvas id="chartDEX" height="250"></canvas>
     </div>
 
-    <!-- VEX Chart -->
+    <!-- VEX Section -->
     <div class="chart-section">
-        <h2>VEX — Vega Exposure</h2>
-        <p class="legend">
-            ✓ Positivo: MMs têm vega líquido positivo (comprados em vol)  •  ✗ Negativo: MMs vendidos em vol
-        </p>
-        <div class="chart-title">
-            VEX por Strike
-            <div style="display: flex; gap: 12px; align-items: center;">
-                <button class="reset-btn" onclick="resetAll()">Reset Zoom</button>
-                <span class="zoom-hint">Scroll = zoom · Drag = pan</span>
+        <h2>VEX — Vega Exposure (Volatilidade)</h2>
+        <div class="mechanic-box">
+            <div class="mechanic-title">Mecânica do Vega com Contexto Histórico</div>
+            <div>
+                <div><span class="mechanic-positive">VEX Positivo + IV Baixa vs Histórico</span></div>
+                <ul style="margin: 8px 0 12px 20px; color: var(--text2);">
+                    <li>Setup ideal para <strong>comprar volatilidade</strong></li>
+                    <li>MMs vulneráveis (short vega descoberto)</li>
+                    <li>IV comprimida vs média histórica</li>
+                    <li>Opções relativamente baratas</li>
+                    <li><strong>Estratégia:</strong> Long straddles/strangles</li>
+                </ul>
+                <div><span class="mechanic-negative">VEX Negativo + IV Alta vs Histórico</span></div>
+                <ul style="margin: 8px 0 0 20px; color: var(--text2);">
+                    <li>Setup ideal para <strong>vender volatilidade</strong></li>
+                    <li>MMs long vega (querem IV alta)</li>
+                    <li>IV inflada vs média histórica</li>
+                    <li>Opções relativamente caras</li>
+                    <li><strong>Estratégia:</strong> Short straddles/iron condors</li>
+                </ul>
             </div>
         </div>
-        <canvas id="chartVEX" height="200"></canvas>
+        <h3 style="margin-top: 20px; margin-bottom: 12px;">VEX por Strike</h3>
+        <canvas id="chartVEX" height="250"></canvas>
     </div>
 
     <!-- IV Context -->
@@ -326,41 +355,11 @@
     </div>
 
     <script>
-        const ALL_CHARTS = [];
-
-        function syncZoom(ctx) {
-            const src = ctx.chart;
-            if (!src.scales.x) return;
-            const {min, max} = src.scales.x;
-            ALL_CHARTS.forEach(c => {
-                if (c === src) return;
-                c.zoomScale('x', {min, max}, 'none');
-            });
-        }
-
-        function resetAll() {
-            ALL_CHARTS.forEach(c => c.resetZoom());
-        }
-
-        const ZOOM_PLUGIN = {
-            zoom: {
-                wheel: {enabled: true},
-                pinch: {enabled: true},
-                mode: 'x',
-                onZoom: syncZoom
-            },
-            pan: {
-                enabled: true,
-                mode: 'x',
-                onPan: syncZoom
-            }
-        };
-
         const COMMON_OPTS = {
             responsive: true,
             maintainAspectRatio: true,
             interaction: {mode: 'index', intersect: false},
-            plugins: ZOOM_PLUGIN,
+            plugins: {legend: {display: true, position: 'top'}},
             scales: {
                 x: {
                     grid: {color: 'rgba(88,166,255,0.05)'},
@@ -388,7 +387,7 @@
 
         // TEX Chart
         const ctxTEX = document.getElementById('chartTEX').getContext('2d');
-        const chartTEX = new Chart(ctxTEX, {
+        new Chart(ctxTEX, {
             type: 'bar',
             data: {
                 labels: STRIKES,
@@ -422,11 +421,10 @@
             },
             options: COMMON_OPTS
         });
-        ALL_CHARTS.push(chartTEX);
 
         // DEX Chart
         const ctxDEX = document.getElementById('chartDEX').getContext('2d');
-        const chartDEX = new Chart(ctxDEX, {
+        new Chart(ctxDEX, {
             type: 'bar',
             data: {
                 labels: STRIKES,
@@ -460,11 +458,10 @@
             },
             options: COMMON_OPTS
         });
-        ALL_CHARTS.push(chartDEX);
 
         // VEX Chart
         const ctxVEX = document.getElementById('chartVEX').getContext('2d');
-        const chartVEX = new Chart(ctxVEX, {
+        new Chart(ctxVEX, {
             type: 'bar',
             data: {
                 labels: STRIKES,
@@ -498,7 +495,6 @@
             },
             options: COMMON_OPTS
         });
-        ALL_CHARTS.push(chartVEX);
     </script>
 </body>
 </html>
