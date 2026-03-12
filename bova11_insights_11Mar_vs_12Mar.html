@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BOVA11 — Insights 11/Mar → 12/Mar 2025</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#06090f;--bg2:#0b1019;--card:#0e1525;--card-hover:#121b30;
+  --brd:#1a2540;--brd2:#243157;--text:#dce4f2;--text2:#8a9abb;--mut:#4d5f82;
+  --grn:#00e676;--grn2:#0a3d25;--red:#ff5252;--red2:#3d1a1a;
+  --blu:#448aff;--blu2:#1a2f5e;--yel:#ffd740;--yel2:#3d3310;
+  --pur:#b388ff;--org:#ff8a65;--cyn:#26c6da;--cyn2:#0d3038
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;line-height:1.6;min-height:100vh}
+.header{position:relative;padding:40px 32px 32px;border-bottom:1px solid var(--brd);background:linear-gradient(160deg,#0b1225,#111d3a 40%,#0e1628)}
+.header::before{content:'';position:absolute;top:-60%;right:-10%;width:500px;height:500px;background:radial-gradient(circle,rgba(68,138,255,.06),transparent 70%);pointer-events:none}
+.header-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--blu);letter-spacing:3px;text-transform:uppercase;margin-bottom:8px}
+.header h1{font-size:28px;font-weight:900;letter-spacing:-.5px}
+.header h1 span{color:var(--blu)}
+.header-sub{color:var(--text2);font-size:13px;margin-top:6px}
+.header-sub b{color:var(--yel)}
+.header-meta{display:flex;gap:24px;margin-top:16px;flex-wrap:wrap}
+.meta-chip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.03);border:1px solid var(--brd);border-radius:8px;padding:8px 14px;font-size:12px;font-family:'JetBrains Mono',monospace}
+.meta-chip .label{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:1px}
+.meta-chip .value{font-weight:700;font-size:14px}
+.main{max-width:1200px;margin:0 auto;padding:32px 24px 60px}
+.overview{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:40px}
+.overview-card{background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:16px 18px;transition:border-color .2s,transform .15s}
+.overview-card:hover{border-color:var(--brd2);transform:translateY(-1px)}
+.overview-card .oc-label{font-size:9px;color:var(--mut);letter-spacing:1px;text-transform:uppercase;font-weight:700}
+.overview-card .oc-value{font-size:22px;font-weight:900;margin-top:4px;font-family:'JetBrains Mono',monospace}
+.overview-card .oc-sub{font-size:11px;color:var(--text2);margin-top:3px}
+.section-title{font-size:11px;color:var(--blu);letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--brd)}
+.exp-card{background:var(--card);border:1px solid var(--brd);border-radius:14px;margin-bottom:24px;overflow:hidden;transition:border-color .2s}
+.exp-card:hover{border-color:var(--brd2)}
+.exp-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--brd);background:rgba(255,255,255,.01);flex-wrap:wrap;gap:12px}
+.exp-header-left{display:flex;align-items:center;gap:14px}
+.exp-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.exp-name{font-size:18px;font-weight:900}
+.exp-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 10px;border-radius:6px;font-weight:700}
+.exp-header-right{display:flex;gap:16px;flex-wrap:wrap}
+.exp-stat{text-align:center}
+.exp-stat .es-label{font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
+.exp-stat .es-value{font-size:15px;font-weight:900;font-family:'JetBrains Mono',monospace}
+.exp-stat .es-delta{font-size:10px;font-family:'JetBrains Mono',monospace}
+.exp-body{padding:20px 24px}
+.exp-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+@media(max-width:800px){.exp-grid{grid-template-columns:1fr}}
+.insight-block{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:16px}
+.insight-block h4{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.insight-block h4 .icon{font-size:14px}
+.insight-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(26,37,64,.5);font-size:12px}
+.insight-row:last-child{border-bottom:none}
+.insight-row .ir-label{color:var(--text2);font-family:'JetBrains Mono',monospace;font-size:11px}
+.insight-row .ir-value{font-weight:700;font-family:'JetBrains Mono',monospace;font-size:12px}
+.narrative{background:linear-gradient(135deg,rgba(68,138,255,.04),rgba(68,138,255,.01));border:1px solid rgba(68,138,255,.12);border-radius:10px;padding:18px 20px;margin-top:4px}
+.narrative h4{font-size:12px;color:var(--blu);font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.narrative p{font-size:13px;color:var(--text2);line-height:1.7}
+.narrative .highlight{color:var(--text);font-weight:700}
+.narrative .grn{color:var(--grn)} .narrative .red{color:var(--red)} .narrative .yel{color:var(--yel)}
+.narrative .cyn{color:var(--cyn)} .narrative .blu{color:var(--blu)} .narrative .org{color:var(--org)}
+.bar-row{display:flex;align-items:center;gap:8px;margin:4px 0}
+.bar-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);width:36px;text-align:right;flex-shrink:0}
+.bar-track{flex:1;height:8px;background:rgba(255,255,255,.03);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.bar-val{font-family:'JetBrains Mono',monospace;font-size:10px;width:52px;flex-shrink:0}
+.global-insight{background:var(--card);border:1px solid var(--brd);border-radius:14px;padding:28px;margin-top:40px}
+.global-insight h3{font-size:16px;font-weight:900;margin-bottom:16px}
+.global-insight p{font-size:13px;color:var(--text2);line-height:1.8;margin-bottom:12px}
+.global-insight p:last-child{margin-bottom:0}
+.pos{color:var(--grn)} .neg{color:var(--red)} .neut{color:var(--mut)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.exp-card{animation:fadeUp .5s ease both}
+.exp-card:nth-child(1){animation-delay:.05s}
+.exp-card:nth-child(2){animation-delay:.12s}
+.exp-card:nth-child(3){animation-delay:.19s}
+.exp-card:nth-child(4){animation-delay:.26s}
+.overview-card{animation:fadeUp .4s ease both}
+.overview-card:nth-child(1){animation-delay:0s}
+.overview-card:nth-child(2){animation-delay:.05s}
+.overview-card:nth-child(3){animation-delay:.1s}
+.overview-card:nth-child(4){animation-delay:.15s}
+.overview-card:nth-child(5){animation-delay:.2s}
+.disclaimer{text-align:center;color:var(--mut);font-size:10px;margin-top:40px;padding-top:20px;border-top:1px solid var(--brd);font-family:'JetBrains Mono',monospace}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-label">Análise de Opções BOVA11</div>
+  <h1>📊 <span>Insights</span> — Variações 11/Mar → 12/Mar</h1>
+  <div class="header-sub">Comparativo entre fechamentos de <b>11/Mar</b> e <b>12/Mar</b> de 2025</div>
+  <div class="header-meta">
+    <div class="meta-chip">
+      <div><div class="label">Spot</div><div class="value" style="color:var(--yel)">175.64</div></div>
+    </div>
+    <div class="meta-chip">
+      <div><div class="label">GEX Agregado</div><div class="value" style="color:var(--red)">−405.0M</div></div>
+    </div>
+    <div class="meta-chip">
+      <div><div class="label">Flip Agregado</div><div class="value" style="color:var(--cyn)">183.0</div></div>
+    </div>
+    <div class="meta-chip">
+      <div><div class="label">Regime</div><div class="value" style="color:var(--red)">Short Gamma</div></div>
+    </div>
+    <div class="meta-chip">
+      <div><div class="label">Vencimentos</div><div class="value" style="color:var(--blu)">5</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="section-title" style="margin-top:8px">Visão Geral do Dia</div>
+  <div class="overview">
+    <div class="overview-card">
+      <div class="oc-label">IV Call ATM (média)</div>
+      <div class="oc-value" style="color:var(--cyn)">30.8%</div>
+      <div class="oc-sub"><span class="neg">↓ queda generalizada de vol implícita</span></div>
+    </div>
+    <div class="overview-card">
+      <div class="oc-label">OI Total Agregado</div>
+      <div class="oc-value">153.1M</div>
+      <div class="oc-sub">Call: 62.8M · Put: 90.3M</div>
+    </div>
+    <div class="overview-card">
+      <div class="oc-label">Variação OI Líquida</div>
+      <div class="oc-value pos">+193k</div>
+      <div class="oc-sub">ΔCall: −827k · ΔPut: +1.0M</div>
+    </div>
+    <div class="overview-card">
+      <div class="oc-label">Volume D (12/Mar)</div>
+      <div class="oc-value">152.9M</div>
+      <div class="oc-sub">Call: 68.0M · Put: 84.9M</div>
+    </div>
+    <div class="overview-card">
+      <div class="oc-label">ΔVolume vs D-1</div>
+      <div class="oc-value pos">+65.7M</div>
+      <div class="oc-sub">75.4% de variação</div>
+    </div>
+  </div>
+
+  <div class="section-title">Por Vencimento</div>
+  
+  <div class="exp-card">
+    <div class="exp-header">
+      <div class="exp-header-left">
+        <div class="exp-dot" style="background: var(--red);"></div>
+        <div class="exp-name">13 mar W2</div>
+        <div class="exp-badge" style="background: var(--red2); color: var(--red);">?</div>
+      </div>
+      <div class="exp-header-right">
+        <div class="exp-stat">
+          <div class="es-label">IV Call ATM</div>
+          <div class="es-value" style="color:var(--cyn)">34.17%</div>
+          <div class="es-delta pos">+3.77pp</div>
+        </div>
+        <div class="exp-stat">
+          <div class="es-label">MaxPain</div>
+          <div class="es-value">K184</div>
+        </div>
+        <div class="exp-stat">
+          <div class="es-label">PCR OI</div>
+          <div class="es-value">1.18</div>
+          <div class="es-delta pos">+0.04</div>
+        </div>
+        <div class="exp-stat">
+          <div class="es-label">GEX</div>
+          <div class="es-value neg">−63.2M</div>
+        </div>
+        <div class="exp-stat">
+          <div class="es-label">Flip</div>
+          <div class="es-value" style="color:var(--yel)">179.6</div>
+        </div>
+      </div>
+    </div>
+    <div class="exp-body">
+      <div class="exp-grid">
+        <div class="insight-block">
+          <h4><span class="icon">📊</span> Open Interest</h4>
+          
+          <div class="insight-row">
+            <span class="ir-label">OI Call</span>
+            <span class="ir-value">15.7M <span class="neg">−471k</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">OI Put</span>
+            <span class="ir-value">18.5M <span class="pos">+37k</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Maior saída OI Call</span>
+            <span class="ir-value neg">K175 (−184k)</span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Maior entrada OI Put</span>
+            <span class="ir-value pos">K175 (+184k)</span>
+          </div>
+        </div>
+        <div class="insight-block">
+          <h4><span class="icon">📈</span> Volume</h4>
+          
+          <div class="insight-row">
+            <span class="ir-label">Vol Total</span>
+            <span class="ir-value">13.2M <span class="pos">+3.5M vs D-1</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Vol Call</span>
+            <span class="ir-value">4.7M <span class="neg">−739k</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Vol Put</span>
+            <span class="ir-value">8.5M <span class="pos">+4.2M</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Top Strike Vol</span>
+            <span class="ir-value" style="color:var(--yel)">K180 (1.5M)</span>
+          </div>
+        </div>
+        <div class="insight-block">
+          <h4><span class="icon">🌡️</span> Volatilidade Implícita</h4>
+          
+          <div class="insight-row">
+            <span class="ir-label">IV Call ATM</span>
+            <span class="ir-value">34.17% <span class="pos">+3.77pp</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">IV Put ATM</span>
+            <span class="ir-value">33.06% <span class="pos">+1.29pp</span></span>
+          </div>
+          
+          <div class="insight-row">
+            <span class="ir-label">Skew Put-Call ATM</span>
+            <span class="ir-value" style="color:var(--org)">-1.11pp</span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Maior variação IV Call</span>
+            <span class="ir-value" style="color:var(--red)">K172 (+37.93pp)</span>
+          </div>
+        </div>
+        <div class="insight-block">
+          <h4><span class="icon">💰</span> Preço — Destaques</h4>
+          
+          <div class="insight-row">
+            <span class="ir-label">Call +baixa</span>
+            <span class="ir-value neg">K182 (-94.8%)</span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Put +alta</span>
+            <span class="ir-value pos">K182 (+261.4%)</span>
+          </div>
+        </div>
+      </div>
+      
+        <div class="insight-block" style="margin-bottom:16px">
+          <h4><span class="icon">🔥</span> Top 5 Strikes por Volume Total (12/Mar)</h4>
+          
+            <div class="bar-row">
+              <span class="bar-label">K180</span>
+              <div class="bar-track"><div class="bar-fill" style="width:100%;background:linear-gradient(90deg,var(--red),var(--blu))"></div></div>
+              <span class="bar-val">1.5M</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">K176</span>
+              <div class="bar-track"><div class="bar-fill" style="width:75%;background:linear-gradient(90deg,var(--red),var(--blu))"></div></div>
+              <span class="bar-val">1.1M</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">K178</span>
+              <div class="bar-track"><div class="bar-fill" style="width:73%;background:linear-gradient(90deg,var(--red),var(--blu))"></div></div>
+              <span class="bar-val">1.1M</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">K177</span>
+              <div class="bar-track"><div class="bar-fill" style="width:73%;background:linear-gradient(90deg,var(--red),var(--blu))"></div></div>
+              <span class="bar-val">1.1M</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">K175</span>
+              <div class="bar-track"><div class="bar-fill" style="width:71%;background:linear-gradient(90deg,var(--red),var(--blu))"></div></div>
+              <span class="bar-val">1.1M</span>
+            </div>
+        </div>
+      <div class="narrative">
+        <h4>💡 Leitura do Vencimento</h4>
+        <p>com <span class="highlight red">queda acentuada de IV</span> (+3.77pp call, +1.29pp put) — típico theta crush de fim de semana. O <span class="highlight grn">volume subiu 36%</span> vs D-1 (+3.5M). com <span class="highlight">K180 como o mais negociado (1.5M)</span>. Com <span class="highlight">MaxPain em K184</span> e spot em 176, há uma <span class="highlight red">distância significativa (8 pontos)</span>. O <span class="highlight red">GEX negativo (−63.2M)</span> com flip em 179.6 indica <span class="highlight red">regime Short Gamma</span> — movimentos podem ser amplificados. O <span class="highlight org">skew put-call ATM de -1.11pp</span> mostra que o mercado precifica mais demanda por calls.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="exp-card">
+    <div class="exp-header">
+      <div class="exp-header-left">
+        <div class="exp-dot" style="background: var(--blu);"></div>
+        <div class="exp-name">20 mar Mensal</div>
+        <div class="exp-badge" style="background: var(--blu2); color: var(--blu);">8 DTE</div>
+      </div>
+      <div class="exp-header-right">
+        <div class="exp-stat">
+          <div class="es-label">IV Call ATM</div>
+          <div class="es-value" style="color:var(--cyn)">29.36%</div>
+          <div class="es-delta pos">+6.39pp</div>
+        </div>
+        <div class="exp-stat">
+          <div class="es-label">MaxPain</div>
+          <div class="es-value">K178</div>
+        </div>
+        <div class="exp-stat">
+          <div class="es-label">PCR OI</div>
+          <div class="es-value">1.5</div>
+          <div class="es-delta pos">+0.03</div>
+        </div>
+        <div class="exp-stat">
+          <div class="es-label">GEX</div>
+          <div class="es-value neg">−273.1M</div>
+        </div>
+        <div class="exp-stat">
+          <div class="es-label">Flip</div>
+          <div class="es-value" style="color:var(--yel)">175.8</div>
+        </div>
+      </div>
+    </div>
+    <div class="exp-body">
+      <div class="exp-grid">
+        <div class="insight-block">
+          <h4><span class="icon">📊</span> Open Interest</h4>
+          
+          <div class="insight-row">
+            <span class="ir-label">OI Call</span>
+            <span class="ir-value">33.9M <span class="neg">−1.1M</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">OI Put</span>
+            <span class="ir-value">50.9M <span class="neg">−420k</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Maior saída OI Call</span>
+            <span class="ir-value neg">K176 (−270k)</span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Maior saída OI Put</span>
+            <span class="ir-value neg">K180 (−140k)</span>
+          </div>
+        </div>
+        <div class="insight-block">
+          <h4><span class="icon">📈</span> Volume</h4>
+          
+          <div class="insight-row">
+            <span class="ir-label">Vol Total</span>
+            <span class="ir-value">78.5M <span class="pos">+1.1M vs D-1</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Vol Call</span>
+            <span class="ir-value">37.0M <span class="neg">−15.9M</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Vol Put</span>
+            <span class="ir-value">41.5M <span class="pos">+17.0M</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Top Strike Vol</span>
+            <span class="ir-value" style="color:var(--yel)">K180 (11.7M)</span>
+          </div>
+        </div>
+        <div class="insight-block">
+          <h4><span class="icon">🌡️</span> Volatilidade Implícita</h4>
+          
+          <div class="insight-row">
+            <span class="ir-label">IV Call ATM</span>
+            <span class="ir-value">29.36% <span class="pos">+6.39pp</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">IV Put ATM</span>
+            <span class="ir-value">29.9% <span class="pos">+1.11pp</span></span>
+          </div>
+          
+          <div class="insight-row">
+            <span class="ir-label">Skew Put-Call ATM</span>
+            <span class="ir-value" style="color:var(--org)">+0.54pp</span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Maior variação IV Call</span>
+            <span class="ir-value" style="color:var(--red)">K173 (+29.61pp)</span>
+          </div>
+        </div>
+        <div class="insight-block">
+          <h4><span class="icon">💰</span> Preço — Destaques</h4>
+          
+          <div class="insight-row">
+            <span class="ir-label">Call +baixa</span>
+            <span class="ir-value neg">K184 (-62.0%)</span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Put +alta</span>
+            <span class="ir-value pos">K172 (+121.7%)</span>
+          </div>
+        </div>
+      </div>
+      
+        <div class="insight-block" style="margin-bottom:16px">
+          <h4><span class="icon">🔥</span> Top 5 Strikes por Volume Total (12/Mar)</h4>
+          
+            <div class="bar-row">
+              <span class="bar-label">K180</span>
+              <div class="bar-track"><div class="bar-fill" style="width:100%;background:linear-gradient(90deg,var(--blu),var(--blu))"></div></div>
+              <span class="bar-val">11.7M</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">K176</span>
+              <div class="bar-track"><div class="bar-fill" style="width:71%;background:linear-gradient(90deg,var(--blu),var(--blu))"></div></div>
+              <span class="bar-val">8.3M</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">K178</span>
+              <div class="bar-track"><div class="bar-fill" style="width:70%;background:linear-gradient(90deg,var(--blu),var(--blu))"></div></div>
+              <span class="bar-val">8.2M</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">K172</span>
+              <div class="bar-track"><div class="bar-fill" style="width:52%;background:linear-gradient(90deg,var(--blu),var(--blu))"></div></div>
+              <span class="bar-val">6.1M</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">K175</span>
+              <div class="bar-track"><div class="bar-fill" style="width:50%;background:linear-gradient(90deg,var(--blu),var(--blu))"></div></div>
+              <span class="bar-val">5.8M</span>
+            </div>
+        </div>
+      <div class="narrative">
+        <h4>💡 Leitura do Vencimento</h4>
+        <p>Vencimento de <span class="highlight">médio prazo (8 DTE)</span>. com <span class="highlight red">queda acentuada de IV</span> (+6.39pp call, +1.11pp put) — típico theta crush de fim de semana. com <span class="highlight">K180 como o mais negociado (11.7M)</span>. <span class="highlight">MaxPain em K178</span> próximo do spot (176). O <span class="highlight red">GEX negativo (−273.1M)</span> com flip em 175.8 indica <span class="highlight red">regime Short Gamma</span> — movimentos podem ser amplificados.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="exp-card">
+    <div class="exp-header">
+      <div class="exp-header-left">
+        <div class="exp-dot" style="background: var(--grn);"></div>
+        <div class="exp-name">27 mar W4</div>
+        <div class="exp-badge" style="background: var(--grn2); color: var(--grn);">?</div>
+      </div>
+      <div class="exp-header-right">
+        <div class="exp-stat">
+          <div class="es-label">IV Call ATM</div>
+          <div class="es-value" style="color:var(--cyn)">26.7%</div>
+          <div class="es-delta pos">+26.70pp</div>
+        </div>
+        <div class="exp-stat">
+          <div class="es-label">MaxPain</div>
+          <div class="es-value">K181</div>
+        </div>
+        <div class="exp-stat">
+          <div class="es-label">PCR OI</div>
+          <div class="es-value">1.99</div>
+          <div class="es-delta pos">+0.04</div>
+        </div>
+        <div class="exp-stat">
+          <div class="es-label">GEX</div>
+          <div class="es-value neg">−5.4M</div>
+        </div>
+        <div class="exp-stat">
+          <div class="es-label">Flip</div>
+          <div class="es-value" style="color:var(--yel)">173.7</div>
+        </div>
+      </div>
+    </div>
+    <div class="exp-body">
+      <div class="exp-grid">
+        <div class="insight-block">
+          <h4><span class="icon">📊</span> Open Interest</h4>
+          
+          <div class="insight-row">
+            <span class="ir-label">OI Call</span>
+            <span class="ir-value">439k <span class="pos">+70k</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">OI Put</span>
+            <span class="ir-value">873k <span class="pos">+154k</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Maior saída OI Call</span>
+            <span class="ir-value neg">K183 (−76k)</span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Maior entrada OI Put</span>
+            <span class="ir-value pos">K177 (+32k)</span>
+          </div>
+        </div>
+        <div class="insight-block">
+          <h4><span class="icon">📈</span> Volume</h4>
+          
+          <div class="insight-row">
+            <span class="ir-label">Vol Total</span>
+            <span class="ir-value">1.9M <span class="pos">+1.9M vs D-1</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Vol Call</span>
+            <span class="ir-value">708k <span class="pos">+708k</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Vol Put</span>
+            <span class="ir-value">1.2M <span class="pos">+1.2M</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Top Strike Vol</span>
+            <span class="ir-value" style="color:var(--yel)">K180 (356k)</span>
+          </div>
+        </div>
+        <div class="insight-block">
+          <h4><span class="icon">🌡️</span> Volatilidade Implícita</h4>
+          
+          <div class="insight-row">
+            <span class="ir-label">IV Call ATM</span>
+            <span class="ir-value">26.7% <span class="pos">+26.70pp</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">IV Put ATM</span>
+            <span class="ir-value">27.35% <span class="pos">+27.35pp</span></span>
+          </div>
+          
+          <div class="insight-row">
+            <span class="ir-label">Skew Put-Call ATM</span>
+            <span class="ir-value" style="color:var(--org)">+0.65pp</span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Maior variação IV Call</span>
+            <span class="ir-value" style="color:var(--red)">K168 (+0.00pp)</span>
+          </div>
+        </div>
+        <div class="insight-block">
+          <h4><span class="icon">💰</span> Preço — Destaques</h4>
+          
+          <div class="insight-row">
+            <span class="ir-label">Call +alta</span>
+            <span class="ir-value pos">K176 (+2215.0%)</span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Call +baixa</span>
+            <span class="ir-value neg">K177 (-49.3%)</span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Put +alta</span>
+            <span class="ir-value pos">K175 (+30700.0%)</span>
+          </div>
+        </div>
+      </div>
+      
+        <div class="insight-block" style="margin-bottom:16px">
+          <h4><span class="icon">🔥</span> Top 5 Strikes por Volume Total (12/Mar)</h4>
+          
+            <div class="bar-row">
+              <span class="bar-label">K180</span>
+              <div class="bar-track"><div class="bar-fill" style="width:100%;background:linear-gradient(90deg,var(--grn),var(--blu))"></div></div>
+              <span class="bar-val">356k</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">K178</span>
+              <div class="bar-track"><div class="bar-fill" style="width:70%;background:linear-gradient(90deg,var(--grn),var(--blu))"></div></div>
+              <span class="bar-val">249k</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">K175</span>
+              <div class="bar-track"><div class="bar-fill" style="width:66%;background:linear-gradient(90deg,var(--grn),var(--blu))"></div></div>
+              <span class="bar-val">237k</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">K177</span>
+              <div class="bar-track"><div class="bar-fill" style="width:50%;background:linear-gradient(90deg,var(--grn),var(--blu))"></div></div>
+              <span class="bar-val">177k</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">K182</span>
+              <div class="bar-track"><div class="bar-fill" style="width:48%;background:linear-gradient(90deg,var(--grn),var(--blu))"></div></div>
+              <span class="bar-val">169k</span>
+            </div>
+        </div>
+      <div class="narrative">
+        <h4>💡 Leitura do Vencimento</h4>
+        <p>com <span class="highlight red">queda acentuada de IV</span> (+26.70pp call, +27.35pp put) — típico theta crush de fim de semana. com <span class="highlight">K180 como o mais negociado (356k)</span>. Com <span class="highlight">MaxPain em K181</span> e spot em 176, há uma <span class="highlight red">distância significativa (5 pontos)</span>. O <span class="highlight red">GEX negativo (−5.4M)</span> com flip em 173.7 indica <span class="highlight red">regime Long Gamma</span> — movimentos podem ser amplificados.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="exp-card">
+    <div class="exp-header">
+      <div class="exp-header-left">
+        <div class="exp-dot" style="background: var(--yel);"></div>
+        <div class="exp-name">2 abr W1</div>
+        <div class="exp-badge" style="background: var(--yel2); color: var(--yel);">?</div>
+      </div>
+      <div class="exp-header-right">
+        <div class="exp-stat">
+          <div class="es-label">IV Call ATM</div>
+          <div class="es-value" style="color:var(--cyn)">39.64%</div>
+          <div class="es-delta pos">+21.34pp</div>
+        </div>
+        <div class="exp-stat">
+          <div class="es-label">MaxPain</div>
+          <div class="es-value">K181</div>
+        </div>
+        <div class="exp-stat">
+          <div class="es-label">PCR OI</div>
+          <div class="es-value">288.45</div>
+          <div class="es-delta neg">-0.76</div>
+        </div>
+        <div class="exp-stat">
+          <div class="es-label">GEX</div>
+          <div class="es-value neg">−0.9M</div>
+        </div>
+        <div class="exp-stat">
+          <div class="es-label">Flip</div>
+          <div class="es-value" style="color:var(--yel)">174.4</div>
+        </div>
+      </div>
+    </div>
+    <div class="exp-body">
+      <div class="exp-grid">
+        <div class="insight-block">
+          <h4><span class="icon">📊</span> Open Interest</h4>
+          
+          <div class="insight-row">
+            <span class="ir-label">OI Call</span>
+            <span class="ir-value">378 <span class="pos">+1</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">OI Put</span>
+            <span class="ir-value">109k <span class="pos">+0</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Maior entrada OI Call</span>
+            <span class="ir-value pos">K182 (+1)</span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Maior entrada OI Put</span>
+            <span class="ir-value pos">K168 (+0)</span>
+          </div>
+        </div>
+        <div class="insight-block">
+          <h4><span class="icon">📈</span> Volume</h4>
+          
+          <div class="insight-row">
+            <span class="ir-label">Vol Total</span>
+            <span class="ir-value">83k <span class="pos">+74k vs D-1</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Vol Call</span>
+            <span class="ir-value">3k <span class="pos">+115</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Vol Put</span>
+            <span class="ir-value">80k <span class="pos">+74k</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Top Strike Vol</span>
+            <span class="ir-value" style="color:var(--yel)">K169 (37k)</span>
+          </div>
+        </div>
+        <div class="insight-block">
+          <h4><span class="icon">🌡️</span> Volatilidade Implícita</h4>
+          
+          <div class="insight-row">
+            <span class="ir-label">IV Call ATM</span>
+            <span class="ir-value">39.64% <span class="pos">+21.34pp</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">IV Put ATM</span>
+            <span class="ir-value">27.23% <span class="neg">-6.52pp</span></span>
+          </div>
+          
+          <div class="insight-row">
+            <span class="ir-label">Skew Put-Call ATM</span>
+            <span class="ir-value" style="color:var(--org)">-12.41pp</span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Maior variação IV Call</span>
+            <span class="ir-value" style="color:var(--red)">K176 (+25.86pp)</span>
+          </div>
+        </div>
+        <div class="insight-block">
+          <h4><span class="icon">💰</span> Preço — Destaques</h4>
+          
+          <div class="insight-row">
+            <span class="ir-label">Put +alta</span>
+            <span class="ir-value pos">K173 (+256.2%)</span>
+          </div>
+        </div>
+      </div>
+      
+        <div class="insight-block" style="margin-bottom:16px">
+          <h4><span class="icon">🔥</span> Top 5 Strikes por Volume Total (12/Mar)</h4>
+          
+            <div class="bar-row">
+              <span class="bar-label">K169</span>
+              <div class="bar-track"><div class="bar-fill" style="width:100%;background:linear-gradient(90deg,var(--yel),var(--blu))"></div></div>
+              <span class="bar-val">37k</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">K168</span>
+              <div class="bar-track"><div class="bar-fill" style="width:83%;background:linear-gradient(90deg,var(--yel),var(--blu))"></div></div>
+              <span class="bar-val">31k</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">K181</span>
+              <div class="bar-track"><div class="bar-fill" style="width:9%;background:linear-gradient(90deg,var(--yel),var(--blu))"></div></div>
+              <span class="bar-val">3k</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">K174</span>
+              <div class="bar-track"><div class="bar-fill" style="width:7%;background:linear-gradient(90deg,var(--yel),var(--blu))"></div></div>
+              <span class="bar-val">3k</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">K173</span>
+              <div class="bar-track"><div class="bar-fill" style="width:7%;background:linear-gradient(90deg,var(--yel),var(--blu))"></div></div>
+              <span class="bar-val">3k</span>
+            </div>
+        </div>
+      <div class="narrative">
+        <h4>💡 Leitura do Vencimento</h4>
+        <p>com <span class="highlight red">queda acentuada de IV</span> (+21.34pp call, -6.52pp put) — típico theta crush de fim de semana. O <span class="highlight">PCR OI caiu de 289.21 para 288.45</span>, mostrando que calls ganharam participação relativa. O <span class="highlight grn">volume subiu 842%</span> vs D-1 (+74k). com <span class="highlight">K169 como o mais negociado (37k)</span>. Com <span class="highlight">MaxPain em K181</span> e spot em 176, há uma <span class="highlight red">distância significativa (5 pontos)</span>. O <span class="highlight red">GEX negativo (−854k)</span> com flip em 174.4 indica <span class="highlight red">regime Long Gamma</span> — movimentos podem ser amplificados. O <span class="highlight org">skew put-call ATM de -12.41pp</span> mostra que o mercado precifica mais demanda por calls.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="exp-card">
+    <div class="exp-header">
+      <div class="exp-header-left">
+        <div class="exp-dot" style="background: var(--pur);"></div>
+        <div class="exp-name">17 abr Mensal</div>
+        <div class="exp-badge" style="background: #2a1a3d; color: var(--pur);">?</div>
+      </div>
+      <div class="exp-header-right">
+        <div class="exp-stat">
+          <div class="es-label">IV Call ATM</div>
+          <div class="es-value" style="color:var(--cyn)">24.26%</div>
+          <div class="es-delta pos">+24.26pp</div>
+        </div>
+        <div class="exp-stat">
+          <div class="es-label">MaxPain</div>
+          <div class="es-value">K180</div>
+        </div>
+        <div class="exp-stat">
+          <div class="es-label">PCR OI</div>
+          <div class="es-value">1.56</div>
+          <div class="es-delta pos">+0.01</div>
+        </div>
+        <div class="exp-stat">
+          <div class="es-label">GEX</div>
+          <div class="es-value neg">−62.4M</div>
+        </div>
+        <div class="exp-stat">
+          <div class="es-label">Flip</div>
+          <div class="es-value" style="color:var(--yel)">175.9</div>
+        </div>
+      </div>
+    </div>
+    <div class="exp-body">
+      <div class="exp-grid">
+        <div class="insight-block">
+          <h4><span class="icon">📊</span> Open Interest</h4>
+          
+          <div class="insight-row">
+            <span class="ir-label">OI Call</span>
+            <span class="ir-value">12.8M <span class="pos">+694k</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">OI Put</span>
+            <span class="ir-value">20.0M <span class="pos">+1.2M</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Maior entrada OI Call</span>
+            <span class="ir-value pos">K176 (+343k)</span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Maior entrada OI Put</span>
+            <span class="ir-value pos">K176 (+314k)</span>
+          </div>
+        </div>
+        <div class="insight-block">
+          <h4><span class="icon">📈</span> Volume</h4>
+          
+          <div class="insight-row">
+            <span class="ir-label">Vol Total</span>
+            <span class="ir-value">59.2M <span class="pos">+59.2M vs D-1</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Vol Call</span>
+            <span class="ir-value">25.6M <span class="pos">+25.6M</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Vol Put</span>
+            <span class="ir-value">33.6M <span class="pos">+33.6M</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Top Strike Vol</span>
+            <span class="ir-value" style="color:var(--yel)">K180 (9.9M)</span>
+          </div>
+        </div>
+        <div class="insight-block">
+          <h4><span class="icon">🌡️</span> Volatilidade Implícita</h4>
+          
+          <div class="insight-row">
+            <span class="ir-label">IV Call ATM</span>
+            <span class="ir-value">24.26% <span class="pos">+24.26pp</span></span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">IV Put ATM</span>
+            <span class="ir-value">25.62% <span class="pos">+25.62pp</span></span>
+          </div>
+          
+          <div class="insight-row">
+            <span class="ir-label">Skew Put-Call ATM</span>
+            <span class="ir-value" style="color:var(--org)">+1.36pp</span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Maior variação IV Call</span>
+            <span class="ir-value" style="color:var(--red)">K168 (+0.00pp)</span>
+          </div>
+        </div>
+        <div class="insight-block">
+          <h4><span class="icon">💰</span> Preço — Destaques</h4>
+          
+          <div class="insight-row">
+            <span class="ir-label">Call +alta</span>
+            <span class="ir-value pos">K177 (+21.2%)</span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Call +baixa</span>
+            <span class="ir-value neg">K183 (-39.2%)</span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Put +alta</span>
+            <span class="ir-value pos">K177 (+70.7%)</span>
+          </div>
+          <div class="insight-row">
+            <span class="ir-label">Put +baixa</span>
+            <span class="ir-value neg">K174 (-18.0%)</span>
+          </div>
+        </div>
+      </div>
+      
+        <div class="insight-block" style="margin-bottom:16px">
+          <h4><span class="icon">🔥</span> Top 5 Strikes por Volume Total (12/Mar)</h4>
+          
+            <div class="bar-row">
+              <span class="bar-label">K180</span>
+              <div class="bar-track"><div class="bar-fill" style="width:100%;background:linear-gradient(90deg,var(--pur),var(--blu))"></div></div>
+              <span class="bar-val">9.9M</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">K179</span>
+              <div class="bar-track"><div class="bar-fill" style="width:70%;background:linear-gradient(90deg,var(--pur),var(--blu))"></div></div>
+              <span class="bar-val">7.0M</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">K182</span>
+              <div class="bar-track"><div class="bar-fill" style="width:56%;background:linear-gradient(90deg,var(--pur),var(--blu))"></div></div>
+              <span class="bar-val">5.6M</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">K176</span>
+              <div class="bar-track"><div class="bar-fill" style="width:51%;background:linear-gradient(90deg,var(--pur),var(--blu))"></div></div>
+              <span class="bar-val">5.0M</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">K170</span>
+              <div class="bar-track"><div class="bar-fill" style="width:43%;background:linear-gradient(90deg,var(--pur),var(--blu))"></div></div>
+              <span class="bar-val">4.2M</span>
+            </div>
+        </div>
+      <div class="narrative">
+        <h4>💡 Leitura do Vencimento</h4>
+        <p>com <span class="highlight red">queda acentuada de IV</span> (+24.26pp call, +25.62pp put) — típico theta crush de fim de semana. com <span class="highlight">K180 como o mais negociado (9.9M)</span>. <span class="highlight">MaxPain em K180</span> próximo do spot (176). O <span class="highlight red">GEX negativo (−62.4M)</span> com flip em 175.9 indica <span class="highlight red">regime Short Gamma</span> — movimentos podem ser amplificados. O <span class="highlight org">skew put-call ATM de +1.36pp</span> mostra que o mercado precifica mais risco de queda.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="global-insight">
+    <h3>🧠 Conclusão Global</h3>
+    <p>O mercado de opções do BOVA11 apresenta <b style="color:var(--red)">Short Gamma</b> com spot (176) abaixo do flip agregado (183.0), o que sugere que dealers estão hedgeando contra a direção do mercado — <b>movimentos tendem a ser amplificados</b>.</p>
+    <p>A <b style="color:var(--red)">queda generalizada de IV</b> (+3.8pp a +26.7pp dependendo do vencimento) é coerente com o típico crush de fim de semana. A compressão foi mais agressiva nos vencimentos curtos e menor nos longos, refletindo a estrutura a termo normal.</p>
+    <p>O <b>vencimento 20 mar Mensal domina o fluxo</b> — com 67% do GEX e grandes movimentações de OI.</p>
+    <p>A <b>construção de OI nos vencimentos 27 mar W4, 17 abr Mensal</b> indica migração e abertura de novas posições.</p>
+    <p><b>Níveis-chave a monitorar:</b> <b style="color:var(--yel)">K169</b>, <b style="color:var(--yel)">K173</b>, <b style="color:var(--yel)">K175</b>, <b style="color:var(--yel)">K178</b>, <b style="color:var(--yel)">K180</b>, <b style="color:var(--yel)">K181</b>, <b style="color:var(--yel)">K184</b>.</p>
+  </div>
+
+  <div class="disclaimer">
+    Dados de fechamento B3 · Geração automática · Não constitui recomendação de investimento
+  </div>
+</div>
+
+</body>
+</html>
