@@ -100,6 +100,7 @@
             grid-template-columns: repeat(7, 1fr);
             gap: 4px;
             margin-bottom: 15px;
+            max-width: 300px;
         }
 
         .cal-day {
@@ -108,13 +109,14 @@
             align-items: center;
             justify-content: center;
             border: 1px solid #30363d;
-            border-radius: 4px;
+            border-radius: 3px;
             background: #0d1117;
             color: #c9d1d9;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 500;
             transition: all 0.2s;
+            min-height: 32px;
         }
 
         .cal-day:hover {
@@ -514,7 +516,7 @@
             let html = '<div class="table-wrapper">';
             html += '<div class="table-title">' + title + ' — ' + entries.length + ' strikes</div>';
             html += '<table>';
-            html += '<tr><th>Strike</th><th>OI Δ</th><th>Volume</th><th>Gráfico</th></tr>';
+            html += '<tr><th>Strike</th><th>OI Δ</th><th>Vol Call</th><th>Vol Put</th><th>Gráfico</th></tr>';
 
             for (const entry of entries) {
                 const strike = entry.strike;
@@ -523,10 +525,19 @@
                 const color = type === 'entry' ? '#3fb950' : '#f85149';
                 const formattedValue = value > 0 ? '+' + value.toLocaleString('pt-BR') : value.toLocaleString('pt-BR');
 
+                // Get volume data for this strike from filtered data
+                const filtered = getFilteredData();
+                const volData = filtered[strike] || {cv_sum: 0, pv_sum: 0};
+                const volCall = Math.round(volData.cv_sum || 0);
+                const volPut = Math.round(volData.pv_sum || 0);
+                const volCallFormatted = volCall > 0 ? (volCall / 1000000).toFixed(2) + 'M' : (volCall / 1000).toFixed(1) + 'k';
+                const volPutFormatted = volPut > 0 ? (volPut / 1000000).toFixed(2) + 'M' : (volPut / 1000).toFixed(1) + 'k';
+
                 html += '<tr>';
                 html += '<td class="strike-cell">' + strike + '</td>';
                 html += '<td class="number-cell ' + (type === 'entry' ? 'entry' : 'exit') + '">' + formattedValue + '</td>';
-                html += '<td class="number-cell">-</td>';
+                html += '<td class="number-cell" style="color: #58a6ff;">' + volCallFormatted + '</td>';
+                html += '<td class="number-cell" style="color: #bc8cff;">' + volPutFormatted + '</td>';
                 html += '<td><div class="bar bar-' + type + '" style="width:' + barWidth + 'px;"></div></td>';
                 html += '</tr>';
             }
