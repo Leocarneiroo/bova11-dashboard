@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEX DEX VEX — 17/Mar vs 18/Mar</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg:   #0d1117; --bg2:  #161b22; --bg3:  #21262d;
+            --text: #c9d1d9; --text2: #8b949e; --border: #30363d;
+            --grn:  #3fb950; --red:  #f85149; --blu:  #58a6ff;
+            --yel:  #d29922; --pur:  #bc8cff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 30px;
+            line-height: 1.6;
+        }
+
+        header {
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .header-meta {
+            font-size: 0.95rem;
+            color: var(--text2);
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .card-label {
+            font-size: 0.85rem;
+            color: var(--text2);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .chart-section {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .legend {
+            font-size: 0.9rem;
+            color: var(--text2);
+            margin-bottom: 16px;
+            font-style: italic;
+        }
+
+
+        .mechanic-box {
+            background: var(--bg3);
+            border-left: 4px solid var(--blu);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        .mechanic-title {
+            font-weight: bold;
+            color: var(--blu);
+            margin-bottom: 10px;
+        }
+
+        .mechanic-positive {
+            color: var(--grn);
+            font-weight: 500;
+        }
+
+        .mechanic-negative {
+            color: var(--red);
+            font-weight: 500;
+        }
+
+        canvas {
+            max-height: 300px;
+        }
+
+        .context-box {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-left: 4px solid;
+            border-radius: 8px;
+            padding: 24px;
+            margin-top: 30px;
+        }
+
+        .iv-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin: 16px 0;
+        }
+
+        .iv-item {
+            padding: 12px;
+            background: var(--bg3);
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .iv-item-label {
+            font-size: 0.85rem;
+            color: var(--text2);
+            margin-bottom: 6px;
+        }
+
+        .iv-item-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .interpretation {
+            margin: 16px 0;
+            padding: 12px;
+            background: var(--bg3);
+            border-radius: 6px;
+            border-left: 3px solid var(--blu);
+        }
+
+        .strategy-chips {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        .chip {
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .chip-buy {
+            background: rgba(63, 185, 80, 0.2);
+            color: var(--grn);
+            border: 1px solid var(--grn);
+        }
+
+        .chip-sell {
+            background: rgba(248, 81, 73, 0.2);
+            color: var(--red);
+            border: 1px solid var(--red);
+        }
+
+        .chip-neutral {
+            background: rgba(88, 166, 255, 0.2);
+            color: var(--blu);
+            border: 1px solid var(--blu);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>TEX | DEX | VEX — Exposição de Gregos por Strike</h1>
+        <div class="header-meta">
+            📅 17/Mar vs 18/Mar  •  Spot: 176.83 → 176.46
+        </div>
+    </header>
+
+    <div class="cards-grid">
+        <div class="card">
+            <div class="card-label">TEX Total</div>
+            <div class="card-value" style="color: var(--red)">-24.5M</div>
+        </div>
+        <div class="card">
+            <div class="card-label">TEX Max+</div>
+            <div class="card-value">K169</div>
+        </div>
+        <div class="card">
+            <div class="card-label">TEX Max−</div>
+            <div class="card-value">K180</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">DEX Total</div>
+            <div class="card-value" style="color: var(--red)">-1k</div>
+        </div>
+        <div class="card">
+            <div class="card-label">DEX Max+</div>
+            <div class="card-value">K174</div>
+        </div>
+        <div class="card">
+            <div class="card-label">DEX Max−</div>
+            <div class="card-value">K180</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">VEX Total</div>
+            <div class="card-value" style="color: var(--grn)">2.1B</div>
+        </div>
+        <div class="card">
+            <div class="card-label">VEX Max+</div>
+            <div class="card-value">K180</div>
+        </div>
+        <div class="card">
+            <div class="card-label">VEX Max−</div>
+            <div class="card-value">K169</div>
+        </div>
+    </div>
+
+    <!-- TEX Section -->
+    <div class="chart-section">
+        <h2>TEX — Theta Exposure</h2>
+        <div class="mechanic-box">
+            <div class="mechanic-title">Mecânica do Theta</div>
+            <div>
+                <div><span class="mechanic-positive">TEX Positivo (+)</span></div>
+                <ul style="margin: 8px 0 12px 20px; color: var(--text2);">
+                    <li>Market makers <strong>ganham dinheiro</strong> com a passagem do tempo</li>
+                    <li>Venderam opções (coletam theta)</li>
+                    <li>Cada dia que passa = lucro automático</li>
+                    <li>Tempo é o melhor amigo dos vendedores</li>
+                </ul>
+                <div><span class="mechanic-negative">TEX Negativo (−)</span></div>
+                <ul style="margin: 8px 0 0 20px; color: var(--text2);">
+                    <li>Market makers <strong>perdem dinheiro</strong> com a passagem do tempo</li>
+                    <li>Compraram opções (pagam theta)</li>
+                    <li>Cada dia que passa = sangramento automático</li>
+                    <li>Tempo é o pior inimigo dos compradores</li>
+                </ul>
+            </div>
+        </div>
+        <h3 style="margin-top: 20px; margin-bottom: 12px;">TEX por Strike</h3>
+        <canvas id="chartTEX" height="250"></canvas>
+    </div>
+
+    <!-- DEX Section -->
+    <div class="chart-section">
+        <h2>DEX — Delta Exposure (Gamma Hedging)</h2>
+        <div class="mechanic-box">
+            <div class="mechanic-title">Mecânica do Delta Hedging</div>
+            <div>
+                <div><span class="mechanic-positive">DEX Positivo (+)</span></div>
+                <ul style="margin: 8px 0 12px 20px; color: var(--text2);">
+                    <li>Market makers vão ter que <strong>COMPRAR ações</strong> se preço chegar naquele strike</li>
+                    <li>Geralmente calls vendidas ou puts compradas</li>
+                    <li>Cria <strong>pressão compradora</strong> conforme preço se aproxima</li>
+                    <li>Mais alto = mais combustível para movimento</li>
+                </ul>
+                <div><span class="mechanic-negative">DEX Negativo (−)</span></div>
+                <ul style="margin: 8px 0 0 20px; color: var(--text2);">
+                    <li>Market makers vão ter que <strong>VENDER ações</strong> se preço chegar naquele strike</li>
+                    <li>Geralmente puts vendidas ou calls compradas</li>
+                    <li>Cria <strong>pressão vendedora</strong> conforme preço se aproxima</li>
+                    <li>Mais baixo = mais resistência ao movimento</li>
+                </ul>
+            </div>
+        </div>
+        <h3 style="margin-top: 20px; margin-bottom: 12px;">DEX por Strike</h3>
+        <canvas id="chartDEX" height="250"></canvas>
+    </div>
+
+    <!-- VEX Section -->
+    <div class="chart-section">
+        <h2>VEX — Vega Exposure (Volatilidade)</h2>
+        <div class="mechanic-box">
+            <div class="mechanic-title">Mecânica do Vega com Contexto Histórico</div>
+            <div>
+                <div><span class="mechanic-positive">VEX Positivo + IV Baixa vs Histórico</span></div>
+                <ul style="margin: 8px 0 12px 20px; color: var(--text2);">
+                    <li>Setup ideal para <strong>comprar volatilidade</strong></li>
+                    <li>MMs vulneráveis (short vega descoberto)</li>
+                    <li>IV comprimida vs média histórica</li>
+                    <li>Opções relativamente baratas</li>
+                    <li><strong>Estratégia:</strong> Long straddles/strangles</li>
+                </ul>
+                <div><span class="mechanic-negative">VEX Negativo + IV Alta vs Histórico</span></div>
+                <ul style="margin: 8px 0 0 20px; color: var(--text2);">
+                    <li>Setup ideal para <strong>vender volatilidade</strong></li>
+                    <li>MMs long vega (querem IV alta)</li>
+                    <li>IV inflada vs média histórica</li>
+                    <li>Opções relativamente caras</li>
+                    <li><strong>Estratégia:</strong> Short straddles/iron condors</li>
+                </ul>
+            </div>
+        </div>
+        <h3 style="margin-top: 20px; margin-bottom: 12px;">VEX por Strike</h3>
+        <canvas id="chartVEX" height="250"></canvas>
+    </div>
+
+    <!-- IV Context -->
+    <div class="context-box" style="border-left-color: #f85149">
+        <h3>Contexto de Volatilidade Implícita ↑</h3>
+        <div class="iv-summary">
+            <div class="iv-item">
+                <div class="iv-item-label">IV D-1 (média)</div>
+                <div class="iv-item-value">25.59%</div>
+            </div>
+            <div class="iv-item">
+                <div class="iv-item-label">IV D (média)</div>
+                <div class="iv-item-value">28.26%</div>
+            </div>
+            <div class="iv-item" style="border-color: #f85149; border-width: 2px;">
+                <div class="iv-item-label">Direção</div>
+                <div class="iv-item-value" style="color: #f85149">28.26%pp</div>
+            </div>
+        </div>
+        <p class="interpretation" style="border-left-color: #f85149">
+            <strong style="color: #f85149">VENDER volatilidade — IV acima do recente</strong><br>
+            IV subiu de 25.59% para 28.26% (+2.67pp)
+        </p>
+        <div class="strategy-chips">
+            
+            <span class="chip chip-sell">📉 SHORT VOL (iron condor)</span>
+            
+        </div>
+    </div>
+
+    <script>
+        const COMMON_OPTS = {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: {mode: 'index', intersect: false},
+            plugins: {legend: {display: true, position: 'top'}},
+            scales: {
+                x: {
+                    grid: {color: 'rgba(88,166,255,0.05)'},
+                    ticks: {color: '#8b949e', maxRotation: 0},
+                },
+                y: {
+                    grid: {color: 'rgba(88,166,255,0.05)'},
+                    ticks: {color: '#8b949e'},
+                },
+            },
+        };
+
+        const STRIKES = ["168", "169", "170", "171", "172", "173", "174", "175", "176", "177", "178", "179", "180", "181", "182", "183", "184"];
+        const TEX_CALL = [-182370434000.0, -95523544400.0, -398138682000.0, -192774592000.0, -259500255000.0, -410442168000.0, -1094745000000.0, -583352792000.0, -664456693000.0, -1198841763000.0, -958526176000.0, -2908616110000.0, -3485787195000.0, -824301348000.0, -514017657000.0, -340254788000.0, -421731612000.0];
+        const TEX_PUT = [-75152210000.0, -53159428500.0, -299275136000.0, -187225452000.0, -422555398000.0, -2003023147000.0, -824953486000.0, -908428280000.0, -729514473500.0, -780325306000.0, -819033295400.0, -1326493620000.0, -1352510690000.0, -232126718000.0, -120243246000.0, 47402403000.0, 72718304000.0];
+        const TEX_NET = [-257522644000.0, -148682972900.0, -697413818000.0, -380000044000.0, -682055653000.0, -2413465315000.0, -1919698486000.0, -1491781072000.0, -1393971166500.0, -1979167069000.0, -1777559471400.0, -4235109730000.0, -4838297885000.0, -1056428066000.0, -634260903000.0, -292852385000.0, -349013308000.0];
+
+        const DEX_CALL = [137884440.0, 67277431.0, 237038720.0, 99267110.0, 111924880.0, 140901500.0, 286903450.0, 147033680.0, 148896330.0, 185723760.0, 133413320.0, 708950100.0, 792020850.0, 145810720.0, 70048470.0, 48989330.0, 85313840.0];
+        const DEX_PUT = [-17115020.0, -9608336.0, -67692560.0, -40736520.0, -76133250.0, -187727010.0, -112076000.0, -162071590.0, -173461243.0, -181333430.0, -299063297.0, -926464010.0, -1234120290.0, -338794640.0, -393155740.0, -225860650.0, -217743110.0];
+        const DEX_NET = [120769420.0, 57669095.0, 169346160.0, 58530590.0, 35791630.0, -46825510.0, 174827450.0, -15037910.0, -24564913.0, 4390330.0, -165649977.0, -217513910.0, -442099440.0, -192983920.0, -323107270.0, -176871320.0, -132429270.0];
+
+        const VEX_CALL = [7159876109000.0, 3638653763300.0, 18844818808000.0, 7963918040000.0, 13739348868000.0, 15042425364000.0, 28604665410000.0, 27332815032000.0, 33811670386000.0, 38382900244000.0, 33110611108000.0, 259496645480000.0, 318200505705000.0, 64119454082000.0, 31389267675000.0, 24427457218000.0, 45919997888000.0];
+        const VEX_PUT = [13375357468000.0, 6594872404300.0, 44887858038000.0, 23849613782000.0, 40385356770999.99, 56610876510000.0, 38455062054000.0, 52894725346000.0, 53697253607800.0, 34796851818000.0, 65832003480700.0, 262833261491000.0, 304170647607000.0, 65786419651000.0, 66682860786000.0, 17281452691000.0, 22011080929000.0];
+        const VEX_NET = [20535233577000.0, 10233526167600.0, 63732676846000.0, 31813531822000.0, 54124705638999.99, 71653301874000.0, 67059727464000.0, 80227540378000.0, 87508923993800.0, 73179752062000.0, 98942614588700.0, 522329906971000.0, 622371153312000.0, 129905873733000.0, 98072128461000.0, 41708909909000.0, 67931078817000.0];
+
+        // TEX Chart
+        const ctxTEX = document.getElementById('chartTEX').getContext('2d');
+        new Chart(ctxTEX, {
+            type: 'bar',
+            data: {
+                labels: STRIKES,
+                datasets: [
+                    {
+                        type: 'bar',
+                        label: 'Call TEX',
+                        data: TEX_CALL,
+                        backgroundColor: 'rgba(63, 185, 80, 0.65)',
+                        stack: 'stack0',
+                        borderRadius: 0,
+                    },
+                    {
+                        type: 'bar',
+                        label: 'Put TEX',
+                        data: TEX_PUT,
+                        backgroundColor: 'rgba(248, 81, 73, 0.65)',
+                        stack: 'stack0',
+                        borderRadius: 0,
+                    },
+                    {
+                        type: 'line',
+                        label: 'Net TEX',
+                        data: TEX_NET,
+                        borderColor: '#58a6ff',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        yAxisID: 'y',
+                    },
+                ]
+            },
+            options: COMMON_OPTS
+        });
+
+        // DEX Chart
+        const ctxDEX = document.getElementById('chartDEX').getContext('2d');
+        new Chart(ctxDEX, {
+            type: 'bar',
+            data: {
+                labels: STRIKES,
+                datasets: [
+                    {
+                        type: 'bar',
+                        label: 'Call DEX',
+                        data: DEX_CALL,
+                        backgroundColor: 'rgba(63, 185, 80, 0.65)',
+                        stack: 'stack1',
+                        borderRadius: 0,
+                    },
+                    {
+                        type: 'bar',
+                        label: 'Put DEX',
+                        data: DEX_PUT,
+                        backgroundColor: 'rgba(248, 81, 73, 0.65)',
+                        stack: 'stack1',
+                        borderRadius: 0,
+                    },
+                    {
+                        type: 'line',
+                        label: 'Net DEX',
+                        data: DEX_NET,
+                        borderColor: '#58a6ff',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        yAxisID: 'y',
+                    },
+                ]
+            },
+            options: COMMON_OPTS
+        });
+
+        // VEX Chart
+        const ctxVEX = document.getElementById('chartVEX').getContext('2d');
+        new Chart(ctxVEX, {
+            type: 'bar',
+            data: {
+                labels: STRIKES,
+                datasets: [
+                    {
+                        type: 'bar',
+                        label: 'Call VEX',
+                        data: VEX_CALL,
+                        backgroundColor: 'rgba(63, 185, 80, 0.65)',
+                        stack: 'stack2',
+                        borderRadius: 0,
+                    },
+                    {
+                        type: 'bar',
+                        label: 'Put VEX',
+                        data: VEX_PUT,
+                        backgroundColor: 'rgba(248, 81, 73, 0.65)',
+                        stack: 'stack2',
+                        borderRadius: 0,
+                    },
+                    {
+                        type: 'line',
+                        label: 'Net VEX',
+                        data: VEX_NET,
+                        borderColor: '#58a6ff',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        yAxisID: 'y',
+                    },
+                ]
+            },
+            options: COMMON_OPTS
+        });
+    </script>
+</body>
+</html>
