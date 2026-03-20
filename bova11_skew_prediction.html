@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skew Prediction — BOVA11</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg: #0d1117; --bg2: #161b22; --bg3: #21262d;
+            --text: #c9d1d9; --text2: #8b949e; --border: #30363d;
+            --grn: #3fb950; --red: #f85149; --blu: #58a6ff;
+            --yel: #d29922;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                background: var(--bg); color: var(--text); padding: 30px; line-height: 1.6; }
+
+        header { margin-bottom: 32px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+        h1 { font-size: 1.9rem; margin-bottom: 6px; color: #fff; }
+        .header-meta { font-size: 0.9rem; color: var(--text2); }
+
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                       gap: 16px; margin-bottom: 28px; }
+        .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+                 padding: 18px; text-align: center; }
+        .card-label { font-size: 0.8rem; color: var(--text2); text-transform: uppercase;
+                       letter-spacing: 0.5px; margin-bottom: 8px; }
+        .card-value { font-size: 1.6rem; font-weight: bold; }
+        .card-sub { font-size: 0.8rem; color: var(--text2); margin-top: 4px; }
+
+        .exp-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px;
+                     padding: 14px; background: var(--bg2); border-radius: 8px;
+                     border: 1px solid var(--border); }
+        .exp-tab { padding: 8px 14px; border: 1px solid var(--border); background: var(--bg3);
+                    border-radius: 8px; color: var(--text2); cursor: pointer; font-weight: 700;
+                    font-size: 12px; transition: all 0.2s; }
+        .exp-tab:hover { border-color: var(--text2); }
+        .exp-tab.on { color: #fff; border-color: transparent; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+        .exp-tab.agg { background: linear-gradient(135deg,#1a237e,#283593); color: #fff;
+                        border-color: #3949ab; }
+
+        .chart-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+                      padding: 24px; margin-bottom: 28px; }
+        .chart-box h2 { font-size: 1.1rem; color: #fff; margin-bottom: 16px; }
+        canvas { max-height: 300px; }
+
+        .table-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+                      padding: 24px; margin-bottom: 28px; overflow-x: auto; }
+        .table-box h2 { font-size: 1.1rem; color: #fff; margin-bottom: 16px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th { padding: 10px 12px; text-align: left; color: var(--text2); font-weight: 600;
+              border-bottom: 2px solid var(--border); font-size: 0.8rem; text-transform: uppercase; }
+        td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+        tr:hover td { background: rgba(88,166,255,0.04); }
+        tr:last-child td { border-bottom: none; }
+
+        .signal-alta  { color: var(--grn); font-weight: bold; }
+        .signal-queda { color: var(--red); font-weight: bold; }
+        .signal-neutro { color: var(--text2); }
+
+        .result-ok  { color: var(--grn); font-weight: bold; }
+        .result-err { color: var(--red); font-weight: bold; }
+        .result-na  { color: var(--text2); }
+        .result-pend { color: var(--yel); }
+
+        .formula-box { background: var(--bg3); border-left: 4px solid var(--blu); border-radius: 6px;
+                        padding: 16px; margin-bottom: 24px; font-size: 0.9rem; line-height: 1.8; }
+        .formula-box code { color: var(--blu); font-family: monospace; font-size: 1rem; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🎯 Skew Prediction — BOVA11</h1>
+        <div class="header-meta">
+            Sinal baseado em ΔSkew = ΔPut − ΔCall &nbsp;•&nbsp;
+            Lag de 1 dia (sinal em D prediz D+1) &nbsp;•&nbsp;
+            31 datas analisadas
+        </div>
+    </header>
+
+    <div class="formula-box">
+        <strong style="color:var(--blu)">Fórmula:</strong>
+        <code>ΔSkew(D) = [IV_put(D) − IV_put(D−1)] − [IV_call(D) − IV_call(D−1)]</code><br>
+        <span style="color:var(--grn)">ΔSkew &lt; −1</span> → Sinal de <strong>ALTA</strong> no dia seguinte &nbsp;|&nbsp;
+        <span style="color:var(--red)">ΔSkew &gt; +1</span> → Sinal de <strong>QUEDA</strong> no dia seguinte &nbsp;|&nbsp;
+        <span style="color:var(--text2)">entre −1 e +1</span> → <strong>NEUTRO</strong>
+    </div>
+
+    <div class="cards-grid">
+        <div class="card">
+            <div class="card-label">% Acerto</div>
+            <div class="card-value" id="card-accuracy"
+                 style="color: var(--grn)">
+                64.3%
+            </div>
+            <div class="card-sub">9 acertos / 5 erros</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Último Sinal (19/mar)</div>
+            <div class="card-value" style="color: #f85149">
+                ↓ QUEDA
+            </div>
+            <div class="card-sub">ΔSkew = +1.40</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Dias com Sinal</div>
+            <div class="card-value">31</div>
+            <div class="card-sub">17 neutros excluídos</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Dias Totais</div>
+            <div class="card-value">31</div>
+            <div class="card-sub">desde o início do histórico</div>
+        </div>
+    </div>
+
+    <div class="exp-tabs" id="expTabs"></div>
+
+    <div class="chart-box">
+        <h2>ΔSkew ao longo do tempo + Fechamento BOVA11</h2>
+        <canvas id="chartPred" height="250"></canvas>
+    </div>
+
+    <div class="table-box">
+        <h2>Histórico de Previsões</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Fechamento</th>
+                    <th>ΔSkew</th>
+                    <th>Sinal p/ D+1</th>
+                    <th>Fech. D+1</th>
+                    <th>Variação %</th>
+                    <th>Resultado</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        const ALL_TAB_DATA = {"AGG": [{"date": "03/fev", "close": 182.19, "delta_skew": 0.5575, "signal": "NEUTRO", "next_close": 178.2, "variation_pct": -2.19, "result": "N/A"}, {"date": "04/fev", "close": 178.2, "delta_skew": -1.926, "signal": "ALTA", "next_close": 178.65, "variation_pct": 0.25, "result": "ACERTOU"}, {"date": "05/fev", "close": 178.65, "delta_skew": 1.76, "signal": "QUEDA", "next_close": 179.24, "variation_pct": 0.33, "result": "ERROU"}, {"date": "06/fev", "close": 179.24, "delta_skew": -1.285, "signal": "ALTA", "next_close": 182.79, "variation_pct": 1.98, "result": "ACERTOU"}, {"date": "09/fev", "close": 182.79, "delta_skew": 0.5175, "signal": "NEUTRO", "next_close": 182.4, "variation_pct": -0.21, "result": "N/A"}, {"date": "10/fev", "close": 182.4, "delta_skew": -1.0275, "signal": "ALTA", "next_close": 185.99, "variation_pct": 1.97, "result": "ACERTOU"}, {"date": "11/fev", "close": 185.99, "delta_skew": 0.1, "signal": "NEUTRO", "next_close": 184.28, "variation_pct": -0.92, "result": "N/A"}, {"date": "12/fev", "close": 184.28, "delta_skew": 0.0475, "signal": "NEUTRO", "next_close": 182.98, "variation_pct": -0.71, "result": "N/A"}, {"date": "13/fev", "close": 182.98, "delta_skew": -0.09, "signal": "NEUTRO", "next_close": 182.43, "variation_pct": -0.3, "result": "N/A"}, {"date": "18/fev", "close": 182.43, "delta_skew": 0.525, "signal": "NEUTRO", "next_close": 184.99, "variation_pct": 1.4, "result": "N/A"}, {"date": "19/fev", "close": 184.99, "delta_skew": -0.2925, "signal": "NEUTRO", "next_close": 186.69, "variation_pct": 0.92, "result": "N/A"}, {"date": "20/fev", "close": 186.69, "delta_skew": -0.2233, "signal": "NEUTRO", "next_close": 185.17, "variation_pct": -0.81, "result": "N/A"}, {"date": "23/fev", "close": 185.17, "delta_skew": -0.5525, "signal": "NEUTRO", "next_close": 187.78, "variation_pct": 1.41, "result": "N/A"}, {"date": "24/fev", "close": 187.78, "delta_skew": 1.48, "signal": "QUEDA", "next_close": 187.46, "variation_pct": -0.17, "result": "ACERTOU"}, {"date": "25/fev", "close": 187.46, "delta_skew": 0.222, "signal": "NEUTRO", "next_close": 187.35, "variation_pct": -0.06, "result": "N/A"}, {"date": "26/fev", "close": 187.35, "delta_skew": -0.334, "signal": "NEUTRO", "next_close": 185.16, "variation_pct": -1.17, "result": "N/A"}, {"date": "27/fev", "close": 185.16, "delta_skew": -1.355, "signal": "ALTA", "next_close": 185.5, "variation_pct": 0.18, "result": "ACERTOU"}, {"date": "02/mar", "close": 185.5, "delta_skew": 0.88, "signal": "NEUTRO", "next_close": 179.3, "variation_pct": -3.34, "result": "N/A"}, {"date": "03/mar", "close": 179.3, "delta_skew": -3.154, "signal": "ALTA", "next_close": 181.6, "variation_pct": 1.28, "result": "ACERTOU"}, {"date": "04/mar", "close": 181.6, "delta_skew": 2.674, "signal": "QUEDA", "next_close": 176.75, "variation_pct": -2.67, "result": "ACERTOU"}, {"date": "05/mar", "close": 176.75, "delta_skew": -0.646, "signal": "NEUTRO", "next_close": 175.89, "variation_pct": -0.49, "result": "N/A"}, {"date": "06/mar", "close": 175.89, "delta_skew": 1.258, "signal": "QUEDA", "next_close": 177.26, "variation_pct": 0.78, "result": "ERROU"}, {"date": "09/mar", "close": 177.26, "delta_skew": 0.51, "signal": "NEUTRO", "next_close": 179.75, "variation_pct": 1.4, "result": "N/A"}, {"date": "10/mar", "close": 179.75, "delta_skew": 1.4725, "signal": "QUEDA", "next_close": 180.21, "variation_pct": 0.26, "result": "ERROU"}, {"date": "11/mar", "close": 180.21, "delta_skew": 1.57, "signal": "QUEDA", "next_close": 175.85, "variation_pct": -2.42, "result": "ACERTOU"}, {"date": "12/mar", "close": 175.85, "delta_skew": -11.2233, "signal": "ALTA", "next_close": 174.55, "variation_pct": -0.74, "result": "ERROU"}, {"date": "13/mar", "close": 174.55, "delta_skew": 3.736, "signal": "QUEDA", "next_close": 176.55, "variation_pct": 1.15, "result": "ERROU"}, {"date": "16/mar", "close": 176.55, "delta_skew": 0.702, "signal": "NEUTRO", "next_close": 176.83, "variation_pct": 0.16, "result": "N/A"}, {"date": "17/mar", "close": 176.83, "delta_skew": 0.454, "signal": "NEUTRO", "next_close": 175.8, "variation_pct": -0.58, "result": "N/A"}, {"date": "18/mar", "close": 175.8, "delta_skew": -0.516, "signal": "NEUTRO", "next_close": 177.15, "variation_pct": 0.77, "result": "N/A"}, {"date": "19/mar", "close": 177.15, "delta_skew": 1.398, "signal": "QUEDA", "next_close": 128.98, "variation_pct": -27.19, "result": "ACERTOU"}], "6 fev W1": [{"date": "03/fev", "close": 182.19, "delta_skew": 0.33, "signal": "NEUTRO", "next_close": 178.2, "variation_pct": -2.19, "result": "N/A"}, {"date": "04/fev", "close": 178.2, "delta_skew": -0.15, "signal": "NEUTRO", "next_close": 178.65, "variation_pct": 0.25, "result": "N/A"}, {"date": "05/fev", "close": 178.65, "delta_skew": 0.93, "signal": "NEUTRO", "next_close": 179.24, "variation_pct": 0.33, "result": "N/A"}], "13 fev W2": [{"date": "03/fev", "close": 182.19, "delta_skew": 1.56, "signal": "QUEDA", "next_close": 178.2, "variation_pct": -2.19, "result": "ACERTOU"}, {"date": "04/fev", "close": 178.2, "delta_skew": -1.9, "signal": "ALTA", "next_close": 178.65, "variation_pct": 0.25, "result": "ACERTOU"}, {"date": "05/fev", "close": 178.65, "delta_skew": 1.33, "signal": "QUEDA", "next_close": 179.24, "variation_pct": 0.33, "result": "ERROU"}, {"date": "06/fev", "close": 179.24, "delta_skew": -1.53, "signal": "ALTA", "next_close": 182.79, "variation_pct": 1.98, "result": "ACERTOU"}, {"date": "09/fev", "close": 182.79, "delta_skew": 3.25, "signal": "QUEDA", "next_close": 182.4, "variation_pct": -0.21, "result": "ACERTOU"}, {"date": "10/fev", "close": 182.4, "delta_skew": -3.59, "signal": "ALTA", "next_close": 185.99, "variation_pct": 1.97, "result": "ACERTOU"}, {"date": "11/fev", "close": 185.99, "delta_skew": 0.2, "signal": "NEUTRO", "next_close": 184.28, "variation_pct": -0.92, "result": "N/A"}, {"date": "12/fev", "close": 184.28, "delta_skew": 0.29, "signal": "NEUTRO", "next_close": 182.98, "variation_pct": -0.71, "result": "N/A"}], "20 fev Mensal": [{"date": "03/fev", "close": 182.19, "delta_skew": 0.43, "signal": "NEUTRO", "next_close": 178.2, "variation_pct": -2.19, "result": "N/A"}, {"date": "04/fev", "close": 178.2, "delta_skew": -0.32, "signal": "NEUTRO", "next_close": 178.65, "variation_pct": 0.25, "result": "N/A"}, {"date": "05/fev", "close": 178.65, "delta_skew": 0.04, "signal": "NEUTRO", "next_close": 179.24, "variation_pct": 0.33, "result": "N/A"}, {"date": "06/fev", "close": 179.24, "delta_skew": -0.44, "signal": "NEUTRO", "next_close": 182.79, "variation_pct": 1.98, "result": "N/A"}, {"date": "09/fev", "close": 182.79, "delta_skew": -0.03, "signal": "NEUTRO", "next_close": 182.4, "variation_pct": -0.21, "result": "N/A"}, {"date": "10/fev", "close": 182.4, "delta_skew": -0.0, "signal": "NEUTRO", "next_close": 185.99, "variation_pct": 1.97, "result": "N/A"}, {"date": "11/fev", "close": 185.99, "delta_skew": 0.15, "signal": "NEUTRO", "next_close": 184.28, "variation_pct": -0.92, "result": "N/A"}, {"date": "12/fev", "close": 184.28, "delta_skew": -0.06, "signal": "NEUTRO", "next_close": 182.98, "variation_pct": -0.71, "result": "N/A"}, {"date": "19/fev", "close": 184.99, "delta_skew": -0.92, "signal": "NEUTRO", "next_close": 186.69, "variation_pct": 0.92, "result": "N/A"}], "27 fev W4": [{"date": "04/fev", "close": 178.2, "delta_skew": -6.68, "signal": "ALTA", "next_close": 178.65, "variation_pct": 0.25, "result": "ACERTOU"}, {"date": "05/fev", "close": 178.65, "delta_skew": 5.88, "signal": "QUEDA", "next_close": 179.24, "variation_pct": 0.33, "result": "ERROU"}, {"date": "06/fev", "close": 179.24, "delta_skew": -3.02, "signal": "ALTA", "next_close": 182.79, "variation_pct": 1.98, "result": "ACERTOU"}, {"date": "09/fev", "close": 182.79, "delta_skew": -1.16, "signal": "ALTA", "next_close": 182.4, "variation_pct": -0.21, "result": "ERROU"}, {"date": "10/fev", "close": 182.4, "delta_skew": -0.34, "signal": "NEUTRO", "next_close": 185.99, "variation_pct": 1.97, "result": "N/A"}, {"date": "11/fev", "close": 185.99, "delta_skew": 0.0, "signal": "NEUTRO", "next_close": 184.28, "variation_pct": -0.92, "result": "N/A"}, {"date": "12/fev", "close": 184.28, "delta_skew": 0.0, "signal": "NEUTRO", "next_close": 182.98, "variation_pct": -0.71, "result": "N/A"}, {"date": "13/fev", "close": 182.98, "delta_skew": 0.0, "signal": "NEUTRO", "next_close": 182.43, "variation_pct": -0.3, "result": "N/A"}, {"date": "18/fev", "close": 182.43, "delta_skew": 0.29, "signal": "NEUTRO", "next_close": 184.99, "variation_pct": 1.4, "result": "N/A"}, {"date": "19/fev", "close": 184.99, "delta_skew": -0.87, "signal": "NEUTRO", "next_close": 186.69, "variation_pct": 0.92, "result": "N/A"}, {"date": "20/fev", "close": 186.69, "delta_skew": 0.63, "signal": "NEUTRO", "next_close": 185.17, "variation_pct": -0.81, "result": "N/A"}, {"date": "23/fev", "close": 185.17, "delta_skew": -0.68, "signal": "NEUTRO", "next_close": 187.78, "variation_pct": 1.41, "result": "N/A"}, {"date": "24/fev", "close": 187.78, "delta_skew": 3.32, "signal": "QUEDA", "next_close": 187.46, "variation_pct": -0.17, "result": "ACERTOU"}, {"date": "25/fev", "close": 187.46, "delta_skew": -2.32, "signal": "ALTA", "next_close": 187.35, "variation_pct": -0.06, "result": "ERROU"}, {"date": "26/fev", "close": 187.35, "delta_skew": 3.01, "signal": "QUEDA", "next_close": 185.16, "variation_pct": -1.17, "result": "ACERTOU"}], "6 mar W1": [{"date": "19/fev", "close": 184.99, "delta_skew": 1.38, "signal": "QUEDA", "next_close": 186.69, "variation_pct": 0.92, "result": "ERROU"}, {"date": "20/fev", "close": 186.69, "delta_skew": -1.42, "signal": "ALTA", "next_close": 185.17, "variation_pct": -0.81, "result": "ERROU"}, {"date": "23/fev", "close": 185.17, "delta_skew": -0.93, "signal": "NEUTRO", "next_close": 187.78, "variation_pct": 1.41, "result": "N/A"}, {"date": "24/fev", "close": 187.78, "delta_skew": 0.72, "signal": "NEUTRO", "next_close": 187.46, "variation_pct": -0.17, "result": "N/A"}, {"date": "25/fev", "close": 187.46, "delta_skew": -0.25, "signal": "NEUTRO", "next_close": 187.35, "variation_pct": -0.06, "result": "N/A"}, {"date": "26/fev", "close": 187.35, "delta_skew": 0.19, "signal": "NEUTRO", "next_close": 185.16, "variation_pct": -1.17, "result": "N/A"}, {"date": "27/fev", "close": 185.16, "delta_skew": -1.09, "signal": "ALTA", "next_close": 185.5, "variation_pct": 0.18, "result": "ACERTOU"}, {"date": "02/mar", "close": 185.5, "delta_skew": 1.51, "signal": "QUEDA", "next_close": 179.3, "variation_pct": -3.34, "result": "ACERTOU"}, {"date": "03/mar", "close": 179.3, "delta_skew": -2.5, "signal": "ALTA", "next_close": 181.6, "variation_pct": 1.28, "result": "ACERTOU"}, {"date": "04/mar", "close": 181.6, "delta_skew": 0.5, "signal": "NEUTRO", "next_close": 176.75, "variation_pct": -2.67, "result": "N/A"}, {"date": "05/mar", "close": 176.75, "delta_skew": -0.26, "signal": "NEUTRO", "next_close": 175.89, "variation_pct": -0.49, "result": "N/A"}, {"date": "06/mar", "close": 175.89, "delta_skew": 2.59, "signal": "QUEDA", "next_close": 177.26, "variation_pct": 0.78, "result": "ERROU"}], "13 mar W2": [{"date": "24/fev", "close": 187.78, "delta_skew": 2.87, "signal": "QUEDA", "next_close": 187.46, "variation_pct": -0.17, "result": "ACERTOU"}, {"date": "25/fev", "close": 187.46, "delta_skew": -0.19, "signal": "NEUTRO", "next_close": 187.35, "variation_pct": -0.06, "result": "N/A"}, {"date": "26/fev", "close": 187.35, "delta_skew": -0.91, "signal": "NEUTRO", "next_close": 185.16, "variation_pct": -1.17, "result": "N/A"}, {"date": "27/fev", "close": 185.16, "delta_skew": -2.91, "signal": "ALTA", "next_close": 185.5, "variation_pct": 0.18, "result": "ACERTOU"}, {"date": "02/mar", "close": 185.5, "delta_skew": 0.84, "signal": "NEUTRO", "next_close": 179.3, "variation_pct": -3.34, "result": "N/A"}, {"date": "03/mar", "close": 179.3, "delta_skew": -1.55, "signal": "ALTA", "next_close": 181.6, "variation_pct": 1.28, "result": "ACERTOU"}, {"date": "04/mar", "close": 181.6, "delta_skew": 2.48, "signal": "QUEDA", "next_close": 176.75, "variation_pct": -2.67, "result": "ACERTOU"}, {"date": "05/mar", "close": 176.75, "delta_skew": 1.72, "signal": "QUEDA", "next_close": 175.89, "variation_pct": -0.49, "result": "ACERTOU"}, {"date": "06/mar", "close": 175.89, "delta_skew": -2.13, "signal": "ALTA", "next_close": 177.26, "variation_pct": 0.78, "result": "ACERTOU"}, {"date": "09/mar", "close": 177.26, "delta_skew": -0.86, "signal": "NEUTRO", "next_close": 179.75, "variation_pct": 1.4, "result": "N/A"}, {"date": "10/mar", "close": 179.75, "delta_skew": 4.77, "signal": "QUEDA", "next_close": 180.21, "variation_pct": 0.26, "result": "ERROU"}, {"date": "11/mar", "close": 180.21, "delta_skew": -2.25, "signal": "ALTA", "next_close": 175.85, "variation_pct": -2.42, "result": "ERROU"}, {"date": "12/mar", "close": 175.85, "delta_skew": -4.14, "signal": "ALTA", "next_close": 174.55, "variation_pct": -0.74, "result": "ERROU"}, {"date": "13/mar", "close": 174.55, "delta_skew": 2.19, "signal": "QUEDA", "next_close": 176.55, "variation_pct": 1.15, "result": "ERROU"}], "20 mar Mensal": [{"date": "03/fev", "close": 182.19, "delta_skew": -0.09, "signal": "NEUTRO", "next_close": 178.2, "variation_pct": -2.19, "result": "N/A"}, {"date": "04/fev", "close": 178.2, "delta_skew": -0.58, "signal": "NEUTRO", "next_close": 178.65, "variation_pct": 0.25, "result": "N/A"}, {"date": "05/fev", "close": 178.65, "delta_skew": 0.62, "signal": "NEUTRO", "next_close": 179.24, "variation_pct": 0.33, "result": "N/A"}, {"date": "06/fev", "close": 179.24, "delta_skew": -0.15, "signal": "NEUTRO", "next_close": 182.79, "variation_pct": 1.98, "result": "N/A"}, {"date": "09/fev", "close": 182.79, "delta_skew": 0.01, "signal": "NEUTRO", "next_close": 182.4, "variation_pct": -0.21, "result": "N/A"}, {"date": "10/fev", "close": 182.4, "delta_skew": -0.18, "signal": "NEUTRO", "next_close": 185.99, "variation_pct": 1.97, "result": "N/A"}, {"date": "11/fev", "close": 185.99, "delta_skew": 0.05, "signal": "NEUTRO", "next_close": 184.28, "variation_pct": -0.92, "result": "N/A"}, {"date": "12/fev", "close": 184.28, "delta_skew": -0.04, "signal": "NEUTRO", "next_close": 182.98, "variation_pct": -0.71, "result": "N/A"}, {"date": "13/fev", "close": 182.98, "delta_skew": -0.18, "signal": "NEUTRO", "next_close": 182.43, "variation_pct": -0.3, "result": "N/A"}, {"date": "18/fev", "close": 182.43, "delta_skew": 0.76, "signal": "NEUTRO", "next_close": 184.99, "variation_pct": 1.4, "result": "N/A"}, {"date": "19/fev", "close": 184.99, "delta_skew": -0.76, "signal": "NEUTRO", "next_close": 186.69, "variation_pct": 0.92, "result": "N/A"}, {"date": "20/fev", "close": 186.69, "delta_skew": 0.12, "signal": "NEUTRO", "next_close": 185.17, "variation_pct": -0.81, "result": "N/A"}, {"date": "23/fev", "close": 185.17, "delta_skew": -0.39, "signal": "NEUTRO", "next_close": 187.78, "variation_pct": 1.41, "result": "N/A"}, {"date": "24/fev", "close": 187.78, "delta_skew": 0.23, "signal": "NEUTRO", "next_close": 187.46, "variation_pct": -0.17, "result": "N/A"}, {"date": "25/fev", "close": 187.46, "delta_skew": 2.02, "signal": "QUEDA", "next_close": 187.35, "variation_pct": -0.06, "result": "ACERTOU"}, {"date": "26/fev", "close": 187.35, "delta_skew": -2.0, "signal": "ALTA", "next_close": 185.16, "variation_pct": -1.17, "result": "ERROU"}, {"date": "27/fev", "close": 185.16, "delta_skew": -0.7, "signal": "NEUTRO", "next_close": 185.5, "variation_pct": 0.18, "result": "N/A"}, {"date": "02/mar", "close": 185.5, "delta_skew": 0.59, "signal": "NEUTRO", "next_close": 179.3, "variation_pct": -3.34, "result": "N/A"}, {"date": "03/mar", "close": 179.3, "delta_skew": -1.15, "signal": "ALTA", "next_close": 181.6, "variation_pct": 1.28, "result": "ACERTOU"}, {"date": "04/mar", "close": 181.6, "delta_skew": 0.55, "signal": "NEUTRO", "next_close": 176.75, "variation_pct": -2.67, "result": "N/A"}, {"date": "05/mar", "close": 176.75, "delta_skew": -0.11, "signal": "NEUTRO", "next_close": 175.89, "variation_pct": -0.49, "result": "N/A"}, {"date": "06/mar", "close": 175.89, "delta_skew": 0.61, "signal": "NEUTRO", "next_close": 177.26, "variation_pct": 0.78, "result": "N/A"}, {"date": "09/mar", "close": 177.26, "delta_skew": -0.23, "signal": "NEUTRO", "next_close": 179.75, "variation_pct": 1.4, "result": "N/A"}, {"date": "10/mar", "close": 179.75, "delta_skew": 0.02, "signal": "NEUTRO", "next_close": 180.21, "variation_pct": 0.26, "result": "N/A"}, {"date": "11/mar", "close": 180.21, "delta_skew": 5.39, "signal": "QUEDA", "next_close": 175.85, "variation_pct": -2.42, "result": "ACERTOU"}, {"date": "12/mar", "close": 175.85, "delta_skew": -5.77, "signal": "ALTA", "next_close": 174.55, "variation_pct": -0.74, "result": "ERROU"}, {"date": "13/mar", "close": 174.55, "delta_skew": 0.36, "signal": "NEUTRO", "next_close": 176.55, "variation_pct": 1.15, "result": "N/A"}, {"date": "16/mar", "close": 176.55, "delta_skew": -1.1, "signal": "ALTA", "next_close": 176.83, "variation_pct": 0.16, "result": "ACERTOU"}, {"date": "17/mar", "close": 176.83, "delta_skew": 0.64, "signal": "NEUTRO", "next_close": 175.8, "variation_pct": -0.58, "result": "N/A"}, {"date": "18/mar", "close": 175.8, "delta_skew": -0.57, "signal": "NEUTRO", "next_close": 177.15, "variation_pct": 0.77, "result": "N/A"}, {"date": "19/mar", "close": 177.15, "delta_skew": 0.97, "signal": "NEUTRO", "next_close": 128.98, "variation_pct": -27.19, "result": "N/A"}], "27 mar W4": [{"date": "03/mar", "close": 179.3, "delta_skew": -9.91, "signal": "ALTA", "next_close": 181.6, "variation_pct": 1.28, "result": "ACERTOU"}, {"date": "04/mar", "close": 181.6, "delta_skew": 8.42, "signal": "QUEDA", "next_close": 176.75, "variation_pct": -2.67, "result": "ACERTOU"}, {"date": "05/mar", "close": 176.75, "delta_skew": -3.25, "signal": "ALTA", "next_close": 175.89, "variation_pct": -0.49, "result": "ERROU"}, {"date": "06/mar", "close": 175.89, "delta_skew": 5.01, "signal": "QUEDA", "next_close": 177.26, "variation_pct": 0.78, "result": "ERROU"}, {"date": "09/mar", "close": 177.26, "delta_skew": 2.9, "signal": "QUEDA", "next_close": 179.75, "variation_pct": 1.4, "result": "ERROU"}, {"date": "10/mar", "close": 179.75, "delta_skew": 1.34, "signal": "QUEDA", "next_close": 180.21, "variation_pct": 0.26, "result": "ERROU"}, {"date": "13/mar", "close": 174.55, "delta_skew": 0.64, "signal": "NEUTRO", "next_close": 176.55, "variation_pct": 1.15, "result": "N/A"}, {"date": "16/mar", "close": 176.55, "delta_skew": 0.61, "signal": "NEUTRO", "next_close": 176.83, "variation_pct": 0.16, "result": "N/A"}, {"date": "17/mar", "close": 176.83, "delta_skew": 0.55, "signal": "NEUTRO", "next_close": 175.8, "variation_pct": -0.58, "result": "N/A"}, {"date": "18/mar", "close": 175.8, "delta_skew": -0.32, "signal": "NEUTRO", "next_close": 177.15, "variation_pct": 0.77, "result": "N/A"}, {"date": "19/mar", "close": 177.15, "delta_skew": -1.26, "signal": "ALTA", "next_close": 128.98, "variation_pct": -27.19, "result": "ERROU"}], "2 abr W1": [{"date": "12/mar", "close": 175.85, "delta_skew": -23.76, "signal": "ALTA", "next_close": 174.55, "variation_pct": -0.74, "result": "ERROU"}, {"date": "13/mar", "close": 174.55, "delta_skew": 15.47, "signal": "QUEDA", "next_close": 176.55, "variation_pct": 1.15, "result": "ERROU"}, {"date": "16/mar", "close": 176.55, "delta_skew": 3.33, "signal": "QUEDA", "next_close": 176.83, "variation_pct": 0.16, "result": "ERROU"}, {"date": "17/mar", "close": 176.83, "delta_skew": 0.28, "signal": "NEUTRO", "next_close": 175.8, "variation_pct": -0.58, "result": "N/A"}, {"date": "18/mar", "close": 175.8, "delta_skew": -0.75, "signal": "NEUTRO", "next_close": 177.15, "variation_pct": 0.77, "result": "N/A"}, {"date": "19/mar", "close": 177.15, "delta_skew": 1.6, "signal": "QUEDA", "next_close": 128.98, "variation_pct": -27.19, "result": "ACERTOU"}], "10 abr W2": [{"date": "16/mar", "close": 176.55, "delta_skew": 0.78, "signal": "NEUTRO", "next_close": 176.83, "variation_pct": 0.16, "result": "N/A"}, {"date": "17/mar", "close": 176.83, "delta_skew": 0.91, "signal": "NEUTRO", "next_close": 175.8, "variation_pct": -0.58, "result": "N/A"}, {"date": "18/mar", "close": 175.8, "delta_skew": -0.99, "signal": "NEUTRO", "next_close": 177.15, "variation_pct": 0.77, "result": "N/A"}, {"date": "19/mar", "close": 177.15, "delta_skew": 5.33, "signal": "QUEDA", "next_close": 128.98, "variation_pct": -27.19, "result": "ACERTOU"}], "17 abr Mensal": [{"date": "23/fev", "close": 185.17, "delta_skew": -0.21, "signal": "NEUTRO", "next_close": 187.78, "variation_pct": 1.41, "result": "N/A"}, {"date": "24/fev", "close": 187.78, "delta_skew": 0.26, "signal": "NEUTRO", "next_close": 187.46, "variation_pct": -0.17, "result": "N/A"}, {"date": "25/fev", "close": 187.46, "delta_skew": 1.85, "signal": "QUEDA", "next_close": 187.35, "variation_pct": -0.06, "result": "ACERTOU"}, {"date": "26/fev", "close": 187.35, "delta_skew": -1.96, "signal": "ALTA", "next_close": 185.16, "variation_pct": -1.17, "result": "ERROU"}, {"date": "27/fev", "close": 185.16, "delta_skew": -0.72, "signal": "NEUTRO", "next_close": 185.5, "variation_pct": 0.18, "result": "N/A"}, {"date": "02/mar", "close": 185.5, "delta_skew": 0.58, "signal": "NEUTRO", "next_close": 179.3, "variation_pct": -3.34, "result": "N/A"}, {"date": "03/mar", "close": 179.3, "delta_skew": -0.66, "signal": "NEUTRO", "next_close": 181.6, "variation_pct": 1.28, "result": "N/A"}, {"date": "04/mar", "close": 181.6, "delta_skew": 1.42, "signal": "QUEDA", "next_close": 176.75, "variation_pct": -2.67, "result": "ACERTOU"}, {"date": "05/mar", "close": 176.75, "delta_skew": -1.33, "signal": "ALTA", "next_close": 175.89, "variation_pct": -0.49, "result": "ERROU"}, {"date": "06/mar", "close": 175.89, "delta_skew": 0.21, "signal": "NEUTRO", "next_close": 177.26, "variation_pct": 0.78, "result": "N/A"}, {"date": "09/mar", "close": 177.26, "delta_skew": 0.23, "signal": "NEUTRO", "next_close": 179.75, "variation_pct": 1.4, "result": "N/A"}, {"date": "10/mar", "close": 179.75, "delta_skew": -0.24, "signal": "NEUTRO", "next_close": 180.21, "variation_pct": 0.26, "result": "N/A"}, {"date": "13/mar", "close": 174.55, "delta_skew": 0.02, "signal": "NEUTRO", "next_close": 176.55, "variation_pct": 1.15, "result": "N/A"}, {"date": "16/mar", "close": 176.55, "delta_skew": -0.11, "signal": "NEUTRO", "next_close": 176.83, "variation_pct": 0.16, "result": "N/A"}, {"date": "17/mar", "close": 176.83, "delta_skew": -0.11, "signal": "NEUTRO", "next_close": 175.8, "variation_pct": -0.58, "result": "N/A"}, {"date": "18/mar", "close": 175.8, "delta_skew": 0.05, "signal": "NEUTRO", "next_close": 177.15, "variation_pct": 0.77, "result": "N/A"}, {"date": "19/mar", "close": 177.15, "delta_skew": 0.35, "signal": "NEUTRO", "next_close": 128.98, "variation_pct": -27.19, "result": "N/A"}]};
+        const EXP_KEYS = ["6 fev W1", "13 fev W2", "20 fev Mensal", "27 fev W4", "6 mar W1", "13 mar W2", "20 mar Mensal", "27 mar W4", "2 abr W1", "10 abr W2", "17 abr Mensal"];
+        const PALETTE  = ["#f85149", "#58a6ff", "#3fb950", "#d29922", "#bc8cff", "#ffa657", "#79c0ff"];
+
+        let curExp = 'AGG';
+        let chartInstance = null;
+
+        function renderExpTabs() {
+            const el = document.getElementById('expTabs');
+            el.innerHTML = EXP_KEYS.map((k, i) =>
+                `<div class="exp-tab ${k === curExp ? 'on' : ''}"
+                      style="${k === curExp ? 'background:' + PALETTE[i % PALETTE.length] : ''}"
+                      data-k="${k}">${k}</div>`
+            ).join('') +
+                `<div class="exp-tab agg ${curExp === 'AGG' ? 'on' : ''}" data-k="AGG">🔗 AGREGADO</div>`;
+            el.querySelectorAll('.exp-tab').forEach(t => t.onclick = () => {
+                curExp = t.dataset.k;
+                renderExpTabs();
+                renderAll();
+            });
+        }
+
+        function fmtNum(v) {
+            if (v === null || v === undefined) return '—';
+            return typeof v === 'number' ? v.toFixed(2) : v;
+        }
+
+        function fmtClose(v) {
+            if (v === null || v === undefined) return '—';
+            return typeof v === 'number' ? v.toFixed(2) : v;
+        }
+
+        function fmtVar(v) {
+            if (v === null || v === undefined) return '—';
+            const sign = v > 0 ? '+' : '';
+            return sign + v.toFixed(2) + '%';
+        }
+
+        function signalHtml(s) {
+            if (!s || s === 'null') return '<span class="signal-neutro">—</span>';
+            if (s === 'ALTA')   return '<span class="signal-alta">↑ ALTA</span>';
+            if (s === 'QUEDA')  return '<span class="signal-queda">↓ QUEDA</span>';
+            if (s === 'NEUTRO') return '<span class="signal-neutro">→ NEUTRO</span>';
+            return '<span class="signal-neutro">' + s + '</span>';
+        }
+
+        function resultHtml(r) {
+            if (!r || r === 'PENDENTE') return '<span class="result-pend">⏳</span>';
+            if (r === 'ACERTOU')  return '<span class="result-ok">✅</span>';
+            if (r === 'ERROU')    return '<span class="result-err">❌</span>';
+            if (r === 'N/A')      return '<span class="result-na">N/A</span>';
+            return '<span class="result-na">' + r + '</span>';
+        }
+
+        function renderTable(rows) {
+            const tbody = document.getElementById('tableBody');
+            if (!rows || rows.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text2)">Sem dados para este vencimento</td></tr>';
+                return;
+            }
+            tbody.innerHTML = rows.map(r => `
+                <tr>
+                    <td>${r.date}</td>
+                    <td>${fmtClose(r.close)}</td>
+                    <td style="color: ${r.delta_skew > 1 ? 'var(--red)' : r.delta_skew < -1 ? 'var(--grn)' : 'var(--text2)'}">${fmtNum(r.delta_skew)}</td>
+                    <td>${signalHtml(r.signal)}</td>
+                    <td>${fmtClose(r.next_close)}</td>
+                    <td style="color: ${r.variation_pct > 0 ? 'var(--grn)' : r.variation_pct < 0 ? 'var(--red)' : 'var(--text2)'}">${fmtVar(r.variation_pct)}</td>
+                    <td>${resultHtml(r.result)}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderChart(rows) {
+            const labels = rows.map(r => r.date);
+            const deltas = rows.map(r => r.delta_skew);
+            const closes = rows.map(r => r.close);
+
+            if (chartInstance) { chartInstance.destroy(); }
+
+            const ctx = document.getElementById('chartPred').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'ΔSkew',
+                            data: deltas,
+                            borderColor: '#58a6ff',
+                            backgroundColor: 'rgba(88,166,255,0.1)',
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 3,
+                            pointHoverRadius: 6,
+                            yAxisID: 'yLeft',
+                        },
+                        {
+                            label: 'Fechamento BOVA11',
+                            data: closes,
+                            borderColor: '#e6edf3',
+                            backgroundColor: 'transparent',
+                            fill: false,
+                            tension: 0.3,
+                            pointRadius: 0,
+                            pointHoverRadius: 4,
+                            borderWidth: 1.5,
+                            yAxisID: 'yRight',
+                        },
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: true, position: 'top',
+                                   labels: { color: '#8b949e', boxWidth: 14 } },
+                        annotation: {}
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#8b949e', maxRotation: 45, maxTicksLimit: 16 },
+                            grid:  { color: 'rgba(88,166,255,0.05)' },
+                        },
+                        yLeft: {
+                            position: 'left',
+                            ticks: { color: '#58a6ff' },
+                            grid:  { color: 'rgba(88,166,255,0.05)' },
+                            title: { display: true, text: 'ΔSkew', color: '#58a6ff' },
+                        },
+                        yRight: {
+                            position: 'right',
+                            ticks: { color: '#8b949e' },
+                            grid:  { drawOnChartArea: false },
+                            title: { display: true, text: 'Fechamento', color: '#8b949e' },
+                        },
+                    },
+                }
+            });
+        }
+
+        function renderAll() {
+            const rows = ALL_TAB_DATA[curExp] || [];
+            renderChart(rows);
+            renderTable(rows);
+        }
+
+        // Inicializar
+        renderExpTabs();
+        renderAll();
+    </script>
+</body>
+</html>
