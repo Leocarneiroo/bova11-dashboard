@@ -240,7 +240,7 @@
     <header>
         <h1>TEX | DEX | VEX — Exposição de Gregos por Strike</h1>
         <div class="header-meta">
-            📅 19/Mar vs 20/Mar  •  Spot: 177.15 → 172.16
+            📅 19/Mar vs 20/Mar  •  Spot: 177.15 → 173.01
         </div>
     </header>
 
@@ -396,19 +396,43 @@
     </div>
 
     <script>
+        function fmtM(v) {
+            if (v === null || v === undefined) return '';
+            const abs = Math.abs(v);
+            const sign = v < 0 ? '-' : '';
+            if (abs >= 1000) return sign + (abs/1000).toFixed(1) + 'B';
+            if (abs >= 1)    return sign + abs.toFixed(1) + 'M';
+            return sign + (abs * 1000).toFixed(0) + 'k';
+        }
+
         const COMMON_OPTS = {
             responsive: true,
             maintainAspectRatio: true,
             interaction: {mode: 'index', intersect: false},
-            plugins: {legend: {display: true, position: 'top'}},
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {color: '#c9d1d9', boxWidth: 14, padding: 16}
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ` ${ctx.dataset.label}: ${fmtM(ctx.parsed.y)}`
+                    }
+                }
+            },
             scales: {
                 x: {
-                    grid: {color: 'rgba(88,166,255,0.05)'},
+                    grid: {color: 'rgba(88,166,255,0.06)'},
                     ticks: {color: '#8b949e', maxRotation: 0},
                 },
                 y: {
-                    grid: {color: 'rgba(88,166,255,0.05)'},
-                    ticks: {color: '#8b949e'},
+                    grid: {color: 'rgba(88,166,255,0.06)'},
+                    ticks: {
+                        color: '#8b949e',
+                        callback: (v) => fmtM(v)
+                    },
+                    title: {display: true, text: 'Milhões (R$)', color: '#8b949e', font: {size: 11}},
                 },
             },
         };
@@ -424,17 +448,17 @@
         let chartVEX = null;
 
         const STRIKES = ["162", "163", "164", "165", "166", "167", "168", "169", "170", "171", "172", "173", "174", "175", "176", "177", "178", "179", "180"];
-        const TEX_CALL = [-8486126000.0, -447716270000.0, -660514073000.0, -765935229000.0, -503097440600.0, -494585127000.0, -1020702035000.0, -332586186000.0, -1464740805000.0, -835443930000.0, -725142540000.0, -941630530000.0, -951100512000.0, -1544207670000.0, -1765475155000.0, -1124734607000.0, -959811953000.0, -2945378902000.0, -1516521226000.0];
-        const TEX_PUT = [-8269044000.0, -262144639000.0, -238086362000.0, -496765022000.0, -264187037000.0, -176457692000.0, -359699559000.0, -235268281000.0, -1385466803000.0, -575878397000.0, -874774591000.0, -482704050000.0, -507039718000.0, -898543420000.0, -657038592800.0, -293866815000.0, -524878544700.0, -746826730000.0, -310169135000.0];
-        const TEX_NET = [-16755170000.0, -709860909000.0, -898600435000.0, -1262700251000.0, -767284477600.0, -671042819000.0, -1380401594000.0, -567854467000.0, -2850207608000.0, -1411322327000.0, -1599917131000.0, -1424334580000.0, -1458140230000.0, -2442751090000.0, -2422513747800.0, -1418601422000.0, -1484690497700.0, -3692205632000.0, -1826690361000.0];
+        const TEX_CALL = [-8486.126, -447716.27, -660514.073, -765935.229, -503097.4406, -494585.127, -1020702.035, -332586.186, -1464740.805, -835443.93, -725142.54, -941630.53, -951100.512, -1544207.67, -1765475.155, -1124734.607, -959811.953, -2945378.902, -1516521.226];
+        const TEX_PUT = [-8269.044, -262144.639, -238086.362, -496765.022, -264187.037, -176457.692, -359699.559, -235268.281, -1385466.803, -575878.397, -874774.591, -482704.05, -507039.718, -898543.42, -657038.5928, -293866.815, -524878.5447, -746826.73, -310169.135];
+        const TEX_NET = [-16755.17, -709860.909, -898600.435, -1262700.251, -767284.4776, -671042.819, -1380401.594, -567854.467, -2850207.608, -1411322.327, -1599917.131, -1424334.58, -1458140.23, -2442751.09, -2422513.7478, -1418601.422, -1484690.4977, -3692205.632, -1826690.361];
 
-        const DEX_CALL = [5355900.0, 262998500.0, 373998000.0, 440085060.0, 300088874.0, 452803360.0, 476340600.0, 173181390.0, 639155220.0, 329931940.0, 243845620.0, 300576860.0, 290654000.0, 440165810.0, 493875590.0, 288952740.0, 238163870.0, 644103480.0, 282079700.0];
-        const DEX_PUT = [-1680700.0, -75033030.0, -70364450.0, -154580990.0, -82799490.0, -61435390.0, -141371350.0, -101992160.0, -670922730.0, -305527870.0, -723421880.0, -1406279410.0, -640974800.0, -1107803390.0, -779602930.0, -580131360.0, -1011123124.0, -1583274790.0, -1161928100.0];
-        const DEX_NET = [3675200.0, 187965470.0, 303633550.0, 285504070.0, 217289384.0, 391367970.0, 334969250.0, 71189230.0, -31767510.0, 24404070.0, -479576260.0, -1105702550.0, -350320800.0, -667637580.0, -285727340.0, -291178620.0, -772959254.0, -939171310.0, -879848400.0];
+        const DEX_CALL = [5.3559, 262.9985, 373.998, 440.0851, 300.0889, 452.8034, 476.3406, 173.1814, 639.1552, 329.9319, 243.8456, 300.5769, 290.654, 440.1658, 493.8756, 288.9527, 238.1639, 644.1035, 282.0797];
+        const DEX_PUT = [-1.6807, -75.033, -70.3645, -154.581, -82.7995, -61.4354, -141.3714, -101.9922, -670.9227, -305.5279, -723.4219, -1406.2794, -640.9748, -1107.8034, -779.6029, -580.1314, -1011.1231, -1583.2748, -1161.9281];
+        const DEX_NET = [3.6752, 187.9655, 303.6336, 285.5041, 217.2894, 391.368, 334.9692, 71.1892, -31.7675, 24.4041, -479.5763, -1105.7025, -350.3208, -667.6376, -285.7273, -291.1786, -772.9593, -939.1713, -879.8484];
 
-        const VEX_CALL = [429906191000.0, 33642273064000.0, 52276114775000.0, 64320336491000.0, 43957432147000.0, 45489227304000.0, 98122873644000.0, 33349101631000.0, 148913719313000.0, 86041499520000.0, 76020259080000.0, 103085222684000.0, 106360774807000.0, 174113400058000.0, 207928377368000.0, 130638078162000.0, 113661566141000.0, 315490127556000.0, 145949088091000.0];
-        const VEX_PUT = [1214154487000.0, 53957165900000.0, 49097143275000.0, 100205403758000.0, 51602071928000.0, 36195535421000.0, 79619507011000.0, 52575329574000.0, 331872752713000.0, 143500724371000.0, 226805925749000.0, 130349201988000.0, 143689163738000.0, 273276097826000.0, 216424551058700.0, 106390482500000.0, 221132546718300.0, 301883759732000.0, 144489133827000.0];
-        const VEX_NET = [1644060678000.0, 87599438964000.0, 101373258050000.0, 164525740249000.0, 95559504075000.0, 81684762725000.0, 177742380655000.0, 85924431205000.0, 480786472026000.0, 229542223891000.0, 302826184829000.0, 233434424672000.0, 250049938545000.0, 447389497884000.0, 424352928426700.0, 237028560662000.0, 334794112859300.0, 617373887288000.0, 290438221918000.0];
+        const VEX_CALL = [429906.191, 33642273.064, 52276114.775, 64320336.491, 43957432.147, 45489227.304, 98122873.644, 33349101.631, 148913719.313, 86041499.52, 76020259.08, 103085222.684, 106360774.807, 174113400.058, 207928377.368, 130638078.162, 113661566.141, 315490127.556, 145949088.091];
+        const VEX_PUT = [1214154.487, 53957165.9, 49097143.275, 100205403.758, 51602071.928, 36195535.421, 79619507.011, 52575329.574, 331872752.713, 143500724.371, 226805925.749, 130349201.988, 143689163.738, 273276097.826, 216424551.0587, 106390482.5, 221132546.7183, 301883759.732, 144489133.827];
+        const VEX_NET = [1644060.678, 87599438.964, 101373258.05, 164525740.249, 95559504.075, 81684762.725, 177742380.655, 85924431.205, 480786472.026, 229542223.891, 302826184.829, 233434424.672, 250049938.545, 447389497.884, 424352928.4267, 237028560.662, 334794112.8593, 617373887.288, 290438221.918];
 
         function renderExpTabs() {
             const el = document.getElementById('expTabs');
@@ -459,15 +483,15 @@
         function updateCharts() {
             const data = getDataForExp(curExp);
             const strikes = data.map(r => String(Math.round(r.strike)));
-            const texCall = data.map(r => r.tex_call);
-            const texPut = data.map(r => r.tex_put);
-            const texNet = data.map(r => r.tex_net);
-            const dexCall = data.map(r => r.dex_call);
-            const dexPut = data.map(r => r.dex_put);
-            const dexNet = data.map(r => r.dex_net);
-            const vexCall = data.map(r => r.vex_call);
-            const vexPut = data.map(r => r.vex_put);
-            const vexNet = data.map(r => r.vex_net);
+            const texCall = data.map(r => r.tex_call / 1e6);
+            const texPut = data.map(r => r.tex_put / 1e6);
+            const texNet = data.map(r => r.tex_net / 1e6);
+            const dexCall = data.map(r => r.dex_call / 1e6);
+            const dexPut = data.map(r => r.dex_put / 1e6);
+            const dexNet = data.map(r => r.dex_net / 1e6);
+            const vexCall = data.map(r => r.vex_call / 1e6);
+            const vexPut = data.map(r => r.vex_put / 1e6);
+            const vexNet = data.map(r => r.vex_net / 1e6);
 
             if (chartTEX) {
                 chartTEX.data.labels = strikes;
@@ -540,40 +564,51 @@
             cards[8].textContent = 'K' + minVexStrike.toFixed(0);
         }
 
+        function makeBarDatasets(callData, putData, netData, stackId) {
+            return [
+                {
+                    type: 'bar',
+                    label: 'Call',
+                    data: callData,
+                    backgroundColor: 'rgba(63, 185, 80, 0.82)',
+                    borderColor: 'rgba(63, 185, 80, 1)',
+                    borderWidth: 1,
+                    stack: stackId,
+                    borderRadius: 2,
+                },
+                {
+                    type: 'bar',
+                    label: 'Put',
+                    data: putData,
+                    backgroundColor: 'rgba(248, 81, 73, 0.82)',
+                    borderColor: 'rgba(248, 81, 73, 1)',
+                    borderWidth: 1,
+                    stack: stackId,
+                    borderRadius: 2,
+                },
+                {
+                    type: 'line',
+                    label: 'Net',
+                    data: netData,
+                    borderColor: '#f0c040',
+                    backgroundColor: 'rgba(240, 192, 64, 0.12)',
+                    borderWidth: 2.5,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#f0c040',
+                    pointBorderColor: '#0d1117',
+                    pointBorderWidth: 1,
+                    tension: 0.3,
+                    fill: false,
+                    yAxisID: 'y',
+                },
+            ];
+        }
+
         // TEX Chart
         const ctxTEX = document.getElementById('chartTEX').getContext('2d');
         chartTEX = new Chart(ctxTEX, {
             type: 'bar',
-            data: {
-                labels: STRIKES,
-                datasets: [
-                    {
-                        type: 'bar',
-                        label: 'Call TEX',
-                        data: TEX_CALL,
-                        backgroundColor: 'rgba(63, 185, 80, 0.65)',
-                        stack: 'stack0',
-                        borderRadius: 0,
-                    },
-                    {
-                        type: 'bar',
-                        label: 'Put TEX',
-                        data: TEX_PUT,
-                        backgroundColor: 'rgba(248, 81, 73, 0.65)',
-                        stack: 'stack0',
-                        borderRadius: 0,
-                    },
-                    {
-                        type: 'line',
-                        label: 'Net TEX',
-                        data: TEX_NET,
-                        borderColor: '#58a6ff',
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        yAxisID: 'y',
-                    },
-                ]
-            },
+            data: { labels: STRIKES, datasets: makeBarDatasets(TEX_CALL, TEX_PUT, TEX_NET, 'stack0') },
             options: COMMON_OPTS
         });
 
@@ -581,36 +616,7 @@
         const ctxDEX = document.getElementById('chartDEX').getContext('2d');
         chartDEX = new Chart(ctxDEX, {
             type: 'bar',
-            data: {
-                labels: STRIKES,
-                datasets: [
-                    {
-                        type: 'bar',
-                        label: 'Call DEX',
-                        data: DEX_CALL,
-                        backgroundColor: 'rgba(63, 185, 80, 0.65)',
-                        stack: 'stack1',
-                        borderRadius: 0,
-                    },
-                    {
-                        type: 'bar',
-                        label: 'Put DEX',
-                        data: DEX_PUT,
-                        backgroundColor: 'rgba(248, 81, 73, 0.65)',
-                        stack: 'stack1',
-                        borderRadius: 0,
-                    },
-                    {
-                        type: 'line',
-                        label: 'Net DEX',
-                        data: DEX_NET,
-                        borderColor: '#58a6ff',
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        yAxisID: 'y',
-                    },
-                ]
-            },
+            data: { labels: STRIKES, datasets: makeBarDatasets(DEX_CALL, DEX_PUT, DEX_NET, 'stack1') },
             options: COMMON_OPTS
         });
 
@@ -618,36 +624,7 @@
         const ctxVEX = document.getElementById('chartVEX').getContext('2d');
         chartVEX = new Chart(ctxVEX, {
             type: 'bar',
-            data: {
-                labels: STRIKES,
-                datasets: [
-                    {
-                        type: 'bar',
-                        label: 'Call VEX',
-                        data: VEX_CALL,
-                        backgroundColor: 'rgba(63, 185, 80, 0.65)',
-                        stack: 'stack2',
-                        borderRadius: 0,
-                    },
-                    {
-                        type: 'bar',
-                        label: 'Put VEX',
-                        data: VEX_PUT,
-                        backgroundColor: 'rgba(248, 81, 73, 0.65)',
-                        stack: 'stack2',
-                        borderRadius: 0,
-                    },
-                    {
-                        type: 'line',
-                        label: 'Net VEX',
-                        data: VEX_NET,
-                        borderColor: '#58a6ff',
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        yAxisID: 'y',
-                    },
-                ]
-            },
+            data: { labels: STRIKES, datasets: makeBarDatasets(VEX_CALL, VEX_PUT, VEX_NET, 'stack2') },
             options: COMMON_OPTS
         });
 
