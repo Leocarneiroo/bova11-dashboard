@@ -18,9 +18,29 @@
             flex-direction: column;
             padding: 20px 0;
             flex-shrink: 0;
-            transition: transform 0.3s ease;
+            overflow: hidden;
+            transition: width 0.3s ease, transform 0.3s ease;
             z-index: 200;
         }
+        .sidebar.collapsed { width: 48px; padding: 12px 0; align-items: center; }
+        .sidebar.collapsed .brand,
+        .sidebar.collapsed .menu { display: none; }
+        .collapse-btn {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 5px 9px;
+            cursor: pointer;
+            color: #8b949e;
+            font-size: 0.75rem;
+            line-height: 1;
+            align-self: flex-end;
+            margin: 0 12px 14px 0;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .sidebar.collapsed .collapse-btn { align-self: center; margin: 0; }
+        .collapse-btn:hover { color: var(--text); border-color: var(--blu); }
         .brand { padding: 0 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
         .brand h1 { font-size: 1.2rem; color: #fff; margin-bottom: 4px; }
         .brand span { font-size: 0.85rem; color: #8b949e; }
@@ -79,12 +99,14 @@
             body { flex-direction: column; }
 
             .topbar { display: flex; }
+            .collapse-btn { display: none; }
 
             .sidebar {
                 position: fixed;
                 top: 0; left: 0; bottom: 0;
                 transform: translateX(-100%);
                 padding-top: 16px;
+                width: var(--sidebar-w) !important;
             }
             .sidebar.open { transform: translateX(0); }
 
@@ -103,6 +125,7 @@
     <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 
     <div class="sidebar" id="sidebar">
+        <button class="collapse-btn" id="collapse-btn" onclick="toggleCollapse()" title="Recolher menu">◀</button>
         <div class="brand">
             <h1>BOVA11 Analytics</h1>
             <span>Modelos Quantitativos</span>
@@ -153,6 +176,27 @@
             document.getElementById('sidebar').classList.remove('open');
             document.getElementById('overlay').classList.remove('open');
         }
+
+        function toggleCollapse() {
+            const sidebar = document.getElementById('sidebar');
+            const btn = document.getElementById('collapse-btn');
+            const collapsed = sidebar.classList.toggle('collapsed');
+            btn.textContent = collapsed ? '▶' : '◀';
+            btn.title = collapsed ? 'Expandir menu' : 'Recolher menu';
+            try { localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0'); } catch(e) {}
+        }
+
+        // Restore collapse state on load
+        (function() {
+            try {
+                if (localStorage.getItem('sidebarCollapsed') === '1') {
+                    document.getElementById('sidebar').classList.add('collapsed');
+                    const btn = document.getElementById('collapse-btn');
+                    btn.textContent = '▶';
+                    btn.title = 'Expandir menu';
+                }
+            } catch(e) {}
+        })();
 
         function checkIframe() {
             const iframe = document.getElementById('main-frame');
