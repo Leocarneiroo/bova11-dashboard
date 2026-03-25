@@ -15,6 +15,15 @@
   --green:#148A63;--lime:#5A8518;--amber:#B8720A;--red:#B33530;--blue:#2E6BBF;--purple:#8C5CC4;
   --font:'Instrument Sans',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
 }
+[data-theme="dark"] {
+  --bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--card:#21262d;
+  --border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.16);
+  --t1:#c9d1d9;--t2:#8b949e;--t3:#636c76;
+  --green:#3fb950;--lime:#7ee787;--amber:#d29922;--red:#f85149;--blue:#58a6ff;--purple:#bc8cff;
+}
+#theme-toggle{position:fixed;top:16px;right:16px;z-index:999;background:var(--card);
+  border:1px solid var(--border2);border-radius:8px;padding:6px 10px;cursor:pointer;
+  font-size:16px;line-height:1;box-shadow:0 2px 8px rgba(0,0,0,0.12);transition:all 0.2s}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-smoothing:antialiased}
@@ -98,10 +107,11 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
 </style>
 </head>
 <body>
+<button id="theme-toggle" onclick="toggleTheme()">🌙</button>
 <div class="shell">
   <div class="hdr">
     <div><h1>BOVA11 <span>Mapa gravitacional</span></h1></div>
-    <div class="meta">Referência: 25/Mar/2026<br>Spot ≈ R$ 182.00<br>Gerado: 25/03/2026 16:43</div>
+    <div class="meta">Referência: 25/Mar/2026<br>Spot ≈ R$ 182.00<br>Gerado: 25/03/2026 17:08</div>
   </div>
   <div class="nav-strip">
         <a class="nav-chip" href="#" onclick="event.preventDefault();
@@ -1230,6 +1240,24 @@ Chart.defaults.color='#9C9A91';
 Chart.defaults.borderColor='rgba(0,0,0,0.06)';
 Chart.defaults.font.family="'Instrument Sans',sans-serif";
 Chart.defaults.font.size=10;
+</script>
+<script>
+(function(){
+  var t=localStorage.getItem('bova11-theme')||'light';
+  if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');document.getElementById('theme-toggle').textContent='☀️';}
+})();
+function toggleTheme(){
+  var btn=document.getElementById('theme-toggle');
+  if(document.documentElement.getAttribute('data-theme')==='dark'){
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('bova11-theme','light');
+    btn.textContent='🌙';
+  }else{
+    document.documentElement.setAttribute('data-theme','dark');
+    localStorage.setItem('bova11-theme','dark');
+    btn.textContent='☀️';
+  }
+}
 </script>
 </body>
 </html>
