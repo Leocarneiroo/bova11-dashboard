@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BOVA11 — Mapa Gravitacional</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg:#FAFAF8;--bg2:#F2F1EE;--bg3:#E8E7E3;--card:#FFFFFF;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+  --t1:#1A1A18;--t2:#6B6960;--t3:#9C9A91;
+  --green:#148A63;--lime:#5A8518;--amber:#B8720A;--red:#B33530;--blue:#2E6BBF;--purple:#8C5CC4;
+  --font:'Instrument Sans',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-smoothing:antialiased}
+.shell{max-width:1200px;margin:0 auto;padding:48px 28px 80px}
+
+.hdr{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:36px;
+      border-bottom:1px solid var(--border);padding-bottom:24px;flex-wrap:wrap;gap:16px}
+.hdr h1{font-size:26px;font-weight:700;letter-spacing:-0.03em}
+.hdr h1 span{color:var(--t3);font-weight:400;font-size:18px}
+.hdr .meta{font-size:11px;color:var(--t3);font-family:var(--mono);text-align:right;line-height:1.7}
+
+.nav-strip{display:flex;gap:6px;overflow-x:auto;margin-bottom:36px;padding-bottom:4px}
+.nav-chip{flex:0 0 auto;padding:10px 14px;border-radius:10px;background:var(--card);
+           border:1px solid var(--border);cursor:pointer;transition:all 0.2s;
+           text-decoration:none;display:block;min-width:165px;
+           box-shadow:0 1px 2px rgba(0,0,0,0.03)}
+.nav-chip:hover{border-color:var(--border2);box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.nc-top{font-size:12px;font-weight:600;color:var(--t1);margin-bottom:4px}
+.nc-dte{font-size:10px;color:var(--t3);font-family:var(--mono);font-weight:400}
+.nc-mid{display:flex;gap:8px;font-size:14px;font-weight:700;font-family:var(--mono)}
+.nc-bot{font-size:10px;color:var(--t3);font-family:var(--mono);margin-top:3px}
+
+.exp-block{background:var(--card);border:1px solid var(--border);border-radius:16px;
+            padding:28px;margin-bottom:28px;
+            box-shadow:0 1px 3px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.03);
+            animation:fadeUp 0.5s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.exp-top{display:flex;justify-content:space-between;align-items:flex-start;
+          margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.exp-top h2{font-size:20px;font-weight:600;letter-spacing:-0.02em;margin-bottom:6px}
+.tag{display:inline-block;font-size:10px;font-weight:600;font-family:var(--mono);
+     padding:3px 8px;border-radius:5px;text-transform:uppercase;letter-spacing:0.04em}
+.tw{background:rgba(46,107,191,0.1);color:var(--blue)}
+.tm{background:rgba(20,138,99,0.1);color:var(--green)}
+.tg{background:rgba(0,0,0,0.04);color:var(--t2);margin-left:4px}
+.pill{font-size:11px;font-weight:600;font-family:var(--mono);padding:5px 12px;
+       border-radius:16px;color:var(--pc);
+       background:color-mix(in srgb,var(--pc) 8%,transparent);
+       border:1px solid color-mix(in srgb,var(--pc) 20%,transparent)}
+
+.stat-section-title{font-size:10px;font-weight:600;color:var(--t3);
+                     text-transform:uppercase;letter-spacing:0.07em;margin:22px 0 8px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:8px;margin-bottom:4px}
+.st-card{background:var(--bg2);border-radius:8px;padding:10px 12px}
+.st-label{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:0.05em;
+           font-weight:600;margin-bottom:4px}
+.st-value{font-size:15px;font-weight:600;font-family:var(--mono);letter-spacing:-0.02em;line-height:1.3}
+.st-sub{font-size:10px;color:var(--t3);margin-top:3px;line-height:1.4}
+
+/* Center map */
+.center-map-section{margin-bottom:8px}
+.center-map{position:relative;height:56px;margin:12px 20px 8px}
+.cm-track{position:absolute;top:20px;left:0;right:0;height:3px;background:var(--bg3);border-radius:2px}
+.cm-mark{position:absolute;top:0;transform:translateX(-50%)}
+.cm-dot{width:10px;height:10px;border-radius:50%;margin:15px auto 0;
+         box-shadow:0 0 0 3px rgba(255,255,255,0.8)}
+.cm-label{font-size:9px;font-family:var(--mono);font-weight:600;text-align:center;
+           line-height:1.3;margin-top:6px;white-space:nowrap}
+.cm-legend{display:flex;flex-wrap:wrap;gap:12px;font-size:10px;font-family:var(--mono);
+            padding:0 20px;color:var(--t2)}
+
+.charts-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+@media(max-width:750px){.charts-2col{grid-template-columns:1fr}}
+.ch-card{background:var(--bg2);border-radius:10px;padding:14px}
+.ch-card h4{font-size:10px;color:var(--t3);text-transform:uppercase;
+             letter-spacing:0.05em;font-weight:600;margin-bottom:8px}
+.ch-wrap{position:relative;height:220px}
+.ch-wrap canvas{position:absolute;inset:0}
+
+.footer{text-align:center;padding:32px 0 0;margin-top:16px;border-top:1px solid var(--border);
+         font-size:11px;color:var(--t3);line-height:1.8}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="hdr">
+    <div><h1>BOVA11 <span>Mapa gravitacional</span></h1></div>
+    <div class="meta">Referência: 24/Mar/2026<br>Spot ≈ R$ 181.00<br>Gerado: 24/03/2026 21:15</div>
+  </div>
+  <div class="nav-strip">
+        <a class="nav-chip" href="#" onclick="event.preventDefault();
+           document.getElementById('exp0').scrollIntoView({behavior:'smooth'})">
+          <div class="nc-top">10 Abr — W2 <span class="nc-dte">0D</span></div>
+          <div class="nc-mid">
+            <span style="color:#5A8518">70%</span>
+            <span style="color:#6B6960">Neutro</span>
+          </div>
+          <div class="nc-bot">MP R$179 · μGEX R$181.4</div>
+        </a>
+        <a class="nav-chip" href="#" onclick="event.preventDefault();
+           document.getElementById('exp1').scrollIntoView({behavior:'smooth'})">
+          <div class="nc-top">15 Mai — Mensal <span class="nc-dte">0D</span></div>
+          <div class="nc-mid">
+            <span style="color:#5A8518">66%</span>
+            <span style="color:#6B6960">Neutro</span>
+          </div>
+          <div class="nc-bot">MP R$176 · μGEX R$178.7</div>
+        </a>
+        <a class="nav-chip" href="#" onclick="event.preventDefault();
+           document.getElementById('exp2').scrollIntoView({behavior:'smooth'})">
+          <div class="nc-top">17 Abr — Mensal <span class="nc-dte">0D</span></div>
+          <div class="nc-mid">
+            <span style="color:#148A63">82%</span>
+            <span style="color:#6B6960">Neutro</span>
+          </div>
+          <div class="nc-bot">MP R$180 · μGEX R$178.9</div>
+        </a>
+        <a class="nav-chip" href="#" onclick="event.preventDefault();
+           document.getElementById('exp3').scrollIntoView({behavior:'smooth'})">
+          <div class="nc-top">2 Abr — W1 <span class="nc-dte">0D</span></div>
+          <div class="nc-mid">
+            <span style="color:#B8720A">35%</span>
+            <span style="color:#6B6960">Neutro</span>
+          </div>
+          <div class="nc-bot">MP R$177 · μGEX R$181.0</div>
+        </a>
+        <a class="nav-chip" href="#" onclick="event.preventDefault();
+           document.getElementById('exp4').scrollIntoView({behavior:'smooth'})">
+          <div class="nc-top">27 Mar — W4 <span class="nc-dte">0D</span></div>
+          <div class="nc-mid">
+            <span style="color:#B33530">11%</span>
+            <span style="color:#B33530">Bearish</span>
+          </div>
+          <div class="nc-bot">MP R$187 · μGEX R$179.8</div>
+        </a></div>
+  
+    <div class="exp-block" id="exp0" style="animation-delay:0.0s">
+      <div class="exp-top">
+        <div>
+          <h2>10 Abr — W2</h2>
+          <span class="tag tw">Semanal</span>
+          <span class="tag tg">0 DTE</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <div class="pill" style="--pc:#6B6960">Neutro (+5)</div>
+          <div class="pill" style="--pc:#5A8518">Converg. 70%</div>
+          <div class="pill" style="--pc:#148A63">✓ Coerente</div>
+        </div>
+      </div>
+
+      <!-- CENTER MAP -->
+      <div class="center-map-section">
+        <div class="stat-section-title">Mapa gravitacional — centros sobrepostos</div>
+        <div class="center-map">
+          <div class="cm-track"></div>
+          
+        <div class="cm-mark" style="left:87.82117695649463%">
+          <div class="cm-dot" style="background:#6B6960"></div>
+          <div class="cm-label" style="color:#6B6960">Spot<br>R$181.0</div>
+        </div>
+        <div class="cm-mark" style="left:70.2569415651957%">
+          <div class="cm-dot" style="background:#B8720A"></div>
+          <div class="cm-label" style="color:#B8720A">MP<br>R$179.0</div>
+        </div>
+        <div class="cm-mark" style="left:74.56587422111933%">
+          <div class="cm-dot" style="background:#2E6BBF"></div>
+          <div class="cm-label" style="color:#2E6BBF">μOI<br>R$179.5</div>
+        </div>
+        <div class="cm-mark" style="left:91.21788230435054%">
+          <div class="cm-dot" style="background:#148A63"></div>
+          <div class="cm-label" style="color:#148A63">μGEX<br>R$181.4</div>
+        </div>
+        <div class="cm-mark" style="left:74.00381986616917%">
+          <div class="cm-dot" style="background:#8C5CC4"></div>
+          <div class="cm-label" style="color:#8C5CC4">μDEX<br>R$179.4</div>
+        </div>
+        <div class="cm-mark" style="left:8.782117695649463%">
+          <div class="cm-dot" style="background:#B33530"></div>
+          <div class="cm-label" style="color:#B33530">Flip<br>R$172.0</div>
+        </div>
+        </div>
+        <div class="cm-legend">
+          <span style="color:#6B6960">● Spot R$181.0</span><span style="color:#B8720A">● MP R$179.0</span><span style="color:#2E6BBF">● μOI R$179.5</span><span style="color:#148A63">● μGEX R$181.4</span><span style="color:#8C5CC4">● μDEX R$179.4</span><span style="color:#B33530">● Flip R$172.0</span>
+        </div>
+      </div>
+
+      <!-- CENTERS -->
+      <div class="stat-section-title">Centros de massa</div>
+      <div class="stats-grid">
+        <div class="st-card"><div class="st-label">Max Pain</div><div class="st-value" >R$ 179</div><div class="st-sub">Min. perda total dos compradores</div></div>
+        <div class="st-card"><div class="st-label">μ OI (centro de massa)</div><div class="st-value" style="color:#2E6BBF">R$ 179.49</div><div class="st-sub">σ = R$ 1.34</div></div>
+        <div class="st-card"><div class="st-label">μ GEX (centro de gamma)</div><div class="st-value" style="color:#148A63">R$ 181.39</div><div class="st-sub">Onde o hedge é mais denso</div></div>
+        <div class="st-card"><div class="st-label">μ DEX (centro de delta)</div><div class="st-value" style="color:#8C5CC4">R$ 179.43</div><div class="st-sub">Maior exposição direcional</div></div>
+        <div class="st-card"><div class="st-label">GEX Flip</div><div class="st-value" style="color:#B33530">R$ 172</div><div class="st-sub">Fronteira GEX neg→pos</div></div>
+        <div class="st-card"><div class="st-label">Spot</div><div class="st-value" >R$ 181</div></div>
+      </div>
+
+      <!-- CONVERGENCE -->
+      <div class="stat-section-title">Convergência entre centros</div>
+      <div class="stats-grid">
+        <div class="st-card"><div class="st-label">Score</div><div class="st-value" style="color:#5A8518">70%</div><div class="st-sub">Convergência moderada</div></div>
+        <div class="st-card"><div class="st-label">Spread máx.</div><div class="st-value" >R$ 2.4</div><div class="st-sub">MP ≈ μOI</div></div>
+        <div class="st-card"><div class="st-label">MP vs μOI</div><div class="st-value" >R$ -0.49</div><div class="st-sub">Alinhados</div></div>
+        <div class="st-card"><div class="st-label">MP vs μGEX</div><div class="st-value" >R$ -2.39</div><div class="st-sub">Desalinhados</div></div>
+        <div class="st-card"><div class="st-label">μOI vs μGEX</div><div class="st-value" >R$ -1.90</div><div class="st-sub">Desalinhados</div></div>
+      </div>
+
+      <!-- SENTIMENT -->
+      <div class="stat-section-title">Sentimento e direção</div>
+      <div class="stats-grid">
+        <div class="st-card"><div class="st-label">Sentimento</div><div class="st-value" style="color:#6B6960">Neutro</div><div class="st-sub">Skew -0.24 · PCR 0.95 · μCall R$180 · μPut R$179</div></div>
+        <div class="st-card"><div class="st-label">Direção MP</div><div class="st-value" >para baixo</div><div class="st-sub">MP abaixo do spot</div></div>
+        <div class="st-card"><div class="st-label">Coerência</div><div class="st-value" style="color:#148A63">Forças alinhadas ✓</div><div class="st-sub">Sentimento neutro — sem resistência ao max pain</div></div>
+        <div class="st-card"><div class="st-label">μ Calls</div><div class="st-value" >R$ 179.6</div><div class="st-sub">-0.8% do spot</div></div>
+        <div class="st-card"><div class="st-label">μ Puts</div><div class="st-value" >R$ 179.4</div><div class="st-sub">-0.9% do spot</div></div>
+      </div>
+
+      <!-- DISTRIBUTION -->
+      <div class="stat-section-title">Distribuição estatística</div>
+      <div class="stats-grid">
+        <div class="st-card"><div class="st-label">Skew</div><div class="st-value" >-0.237</div><div class="st-sub">Simétrica</div></div>
+        <div class="st-card"><div class="st-label">Curtose</div><div class="st-value" >19.87</div><div class="st-sub">Excesso: +16.87</div></div>
+        <div class="st-card"><div class="st-label">HHI</div><div class="st-value" >0.4469</div></div>
+        <div class="st-card"><div class="st-label">Gini</div><div class="st-value" >0.844</div></div>
+        <div class="st-card"><div class="st-label">Entropia</div><div class="st-value" >1.46 bits</div><div class="st-sub">Ratio: 35.8%</div></div>
+        <div class="st-card"><div class="st-label">R² (Normal)</div><div class="st-value" style="color:#148A63">0.9994</div><div class="st-sub">Bom ajuste</div></div>
+        <div class="st-card"><div class="st-label">OI ±1σ do MP</div><div class="st-value" >94.8%</div><div class="st-sub">Normal: 68.3%</div></div>
+        <div class="st-card"><div class="st-label">OI ±2σ do MP</div><div class="st-value" >95.4%</div><div class="st-sub">Normal: 95.4%</div></div>
+      </div>
+
+      <!-- CHARTS -->
+      <div class="charts-2col">
+        <div class="ch-card"><h4>OI + ajuste normal + centros</h4>
+          <div class="ch-wrap"><canvas id="oi_0"></canvas></div></div>
+        <div class="ch-card"><h4>GEX por strike</h4>
+          <div class="ch-wrap"><canvas id="gex_0"></canvas></div></div>
+      </div>
+      <div class="charts-2col">
+        <div class="ch-card"><h4>DEX por strike</h4>
+          <div class="ch-wrap"><canvas id="dex_0"></canvas></div></div>
+        <div class="ch-card"><h4>Curva de max pain</h4>
+          <div class="ch-wrap"><canvas id="mp_0"></canvas></div></div>
+      </div>
+
+      <script>
+      (function(){
+        const D={"strikes": [171.0, 172.0, 173.0, 174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0], "call_oi": [21400.0, 174150.0, 58800.0, 59190.0, 75330.0, 13230.0, 90700.0, 190020.0, 12500000.0, 11090000.0, 178800.0, 49260.0, 182920.0, 250360.0, 481120.0, 207330.0, 67060.0], "put_oi": [99810.0, 51330.0, 49260.0, 84750.0, 237980.0, 503.0, 43260.0, 30930.0, 12560000.0, 11050000.0, 14430.0, 25850.0, 23400.0, 9450.0, 907.0, 9570.0, 53200.0], "total_oi": [121210.0, 225480.0, 108060.0, 143940.0, 313310.0, 13733.0, 133960.0, 220950.0, 25060000.0, 22140000.0, 193230.0, 75110.0, 206320.0, 259810.0, 482027.0, 216900.0, 120260.0], "fit": [1.6676746213130695e-67, 5.59355996532564e-51, 1.5879814841238544e-36, 3.815774730831266e-24, 7.760687186705105e-14, 1.335973324936441e-05, 19.46594771214597, 240067.558454348, 25059451.22452276, 22140620.81467725, 165572.49362986223, 10.480131751781586, 5.614685732066635e-06, 2.5460347121837863e-14, 9.771997464097346e-25, 3.17455260560517e-37, 8.728947233401512e-52], "residuals": [121210.0, 225480.0, 108060.0, 143940.0, 313310.0, 13732.999986640267, 133940.53405228784, -19117.558454348007, 548.7754772417247, -620.8146772496402, 27657.506370137766, 75099.51986824822, 206319.99999438532, 259810.0, 482027.0, 216900.0, 120260.0], "gex": [{"strike": 171.0, "call_gex": 171064.83760000003, "put_gex": -797849.60004, "net_gex": -626784.76244}, {"strike": 172.0, "call_gex": 1574670.5694000002, "put_gex": -464127.70788000006, "net_gex": 1110542.86152}, {"strike": 173.0, "call_gex": 591388.4676000001, "put_gex": -495438.7060200001, "net_gex": 95949.76157999999}, {"strike": 174.0, "call_gex": 653484.64983, "put_gex": -935678.7307500001, "net_gex": -282194.0809200001}, {"strike": 175.0, "call_gex": 900778.43745, "put_gex": -2845708.9146999996, "net_gex": -1944930.4772499995}, {"strike": 176.0, "call_gex": 169036.93170000002, "put_gex": -6426.72537, "net_gex": 162610.20633000002}, {"strike": 177.0, "call_gex": 1221254.7297, "put_gex": -582485.99346, "net_gex": 638768.73624}, {"strike": 178.0, "call_gex": 2664404.95416, "put_gex": -433691.42844, "net_gex": 2230713.5257200003}, {"strike": 179.0, "call_gex": 180185500.0, "put_gex": -181050390.4, "net_gex": -864890.400000006}, {"strike": 180.0, "call_gex": 162040492.54000002, "put_gex": -161456036.3, "net_gex": 584456.2400000095}, {"strike": 181.0, "call_gex": 2618377.0596, "put_gex": -211315.32981, "net_gex": 2407061.72979}, {"strike": 182.0, "call_gex": 713302.6321200002, "put_gex": -374317.35770000005, "net_gex": 338985.27442000015}, {"strike": 183.0, "call_gex": 2588821.3958400004, "put_gex": -331174.39680000005, "net_gex": 2257646.99904}, {"strike": 184.0, "call_gex": 3428454.37528, "put_gex": -129409.2261, "net_gex": 3299045.1491799997}, {"strike": 185.0, "call_gex": 6289026.95568, "put_gex": -11855.976573, "net_gex": 6277170.979107}, {"strike": 186.0, "call_gex": 2553919.13688, "put_gex": -117884.56152, "net_gex": 2436034.57536}, {"strike": 187.0, "call_gex": 771130.38366, "put_gex": -611752.7052, "net_gex": 159377.67846000008}], "dex": [{"strike": 171.0, "call_dex": 3331124.0, "put_dex": -2529185.4000000004, "net_dex": 801938.5999999996}, {"strike": 172.0, "call_dex": 26477766.0, "put_dex": -1486516.7999999998, "net_dex": 24991249.2}, {"strike": 173.0, "call_dex": 8620668.0, "put_dex": -1694051.4, "net_dex": 6926616.6}, {"strike": 174.0, "call_dex": 8249310.300000001, "put_dex": -3528142.5, "net_dex": 4721167.800000001}, {"strike": 175.0, "call_dex": 10089700.2, "put_dex": -11199338.8, "net_dex": -1109638.6000000015}, {"strike": 176.0, "call_dex": 1676241.0, "put_dex": -27312.9, "net_dex": 1648928.1}, {"strike": 177.0, "call_dex": 10835022.0, "put_dex": -2662220.4000000004, "net_dex": 8172801.6}, {"strike": 178.0, "call_dex": 21324044.4, "put_dex": -2127365.4, "net_dex": 19196679.0}, {"strike": 179.0, "call_dex": 1289624999.9999998, "put_dex": -977544800.0, "net_dex": 312080199.99999976}, {"strike": 180.0, "call_dex": 1063863700.0, "put_dex": -940023500.0, "net_dex": 123840200.0}, {"strike": 181.0, "call_dex": 15534144.0, "put_dex": -1358151.6, "net_dex": 14175992.4}, {"strike": 182.0, "call_dex": 3923066.4000000004, "put_dex": -2620156.0000000005, "net_dex": 1302910.4}, {"strike": 183.0, "call_dex": 13243408.0, "put_dex": -2541240.0, "net_dex": 10702168.0}, {"strike": 184.0, "call_dex": 16313457.599999998, "put_dex": -1094688.0, "net_dex": 15218769.599999998}, {"strike": 185.0, "call_dex": 27866470.4, "put_dex": -111633.56, "net_dex": 27754836.84}, {"strike": 186.0, "call_dex": 10507484.400000002, "put_dex": -1247162.4, "net_dex": 9260322.000000002}, {"strike": 187.0, "call_dex": 2913086.4, "put_dex": -7318192.0, "net_dex": -4405105.6}], "mp_curve": [{"strike": 171.0, "call_loss": 0.0, "put_loss": 203604353.0, "total_loss": 203604353.0}, {"strike": 172.0, "call_loss": 21400.0, "put_loss": 179359533.0, "total_loss": 179380933.0}, {"strike": 173.0, "call_loss": 216950.0, "put_loss": 155166043.0, "total_loss": 155382993.0}, {"strike": 174.0, "call_loss": 471300.0, "put_loss": 131021813.0, "total_loss": 131493113.0}, {"strike": 175.0, "call_loss": 784840.0, "put_loss": 106962333.0, "total_loss": 107747173.0}, {"strike": 176.0, "call_loss": 1173710.0, "put_loss": 83140833.0, "total_loss": 84314543.0}, {"strike": 177.0, "call_loss": 1575810.0, "put_loss": 59319836.0, "total_loss": 60895646.0}, {"strike": 178.0, "call_loss": 2068610.0, "put_loss": 35542099.0, "total_loss": 37610709.0}, {"strike": 179.0, "call_loss": 2751430.0, "put_loss": 11795292.0, "total_loss": 14546722.0}, {"strike": 180.0, "call_loss": 15934250.0, "put_loss": 608485.0, "total_loss": 16542735.0}, {"strike": 181.0, "call_loss": 40207070.0, "put_loss": 471678.0, "total_loss": 40678748.0}, {"strike": 182.0, "call_loss": 64658690.0, "put_loss": 349301.0, "total_loss": 65007991.0}, {"strike": 183.0, "call_loss": 89159570.0, "put_loss": 252774.0, "total_loss": 89412344.0}, {"strike": 184.0, "call_loss": 113843370.0, "put_loss": 179647.0, "total_loss": 114023017.0}, {"strike": 185.0, "call_loss": 138777530.0, "put_loss": 115970.0, "total_loss": 138893500.0}, {"strike": 186.0, "call_loss": 164192810.0, "put_loss": 53200.0, "total_loss": 164246010.0}, {"strike": 187.0, "call_loss": 189815420.0, "put_loss": 0.0, "total_loss": 189815420.0}], "mp": 179.0, "spot": 181.0, "mu_oi": 179.49064847514606, "mu_gex": 181.38677520224292, "mu_dex": 179.42664860923347, "mu_call": 179.6112161035934, "mu_put": 179.36341948922617, "gex_flip": 172.0};
+        function vline(ctx,xs,ys,val,arr,color,lbl){
+          const i=arr.reduce((a,v,j)=>Math.abs(v-val)<Math.abs(arr[a]-val)?j:a,0);
+          const x=xs.getPixelForValue(i);
+          ctx.save();ctx.strokeStyle=color;ctx.lineWidth=1;ctx.setLineDash([3,2]);
+          ctx.beginPath();ctx.moveTo(x,ys.top);ctx.lineTo(x,ys.bottom);ctx.stroke();
+          ctx.fillStyle=color;ctx.font="600 8px var(--mono)";ctx.textAlign='center';
+          ctx.fillText(lbl,x,ys.top-4);ctx.restore();
+        }
+        function yfmt(v){
+          const a=Math.abs(v);
+          if(a>=1e6)return(v/1e6).toFixed(1)+'M';
+          if(a>=1e3)return(v/1e3).toFixed(0)+'k';
+          return Math.round(v);
+        }
+        const tOpt={font:{size:9,family:'var(--mono)'}};
+        const gOpt={color:'rgba(0,0,0,0.05)'};
+
+        // OI + Normal + Centers
+        new Chart(document.getElementById('oi_0'),{
+          type:'bar',
+          data:{labels:D.strikes,datasets:[
+            {label:'OI Total',data:D.total_oi,backgroundColor:'rgba(90,133,24,0.5)',
+              borderColor:'rgba(90,133,24,0.8)',borderWidth:1,borderRadius:2,barPercentage:0.8,order:2},
+            {label:'Normal Fit',data:D.fit,type:'line',borderColor:'#B8720A',
+              borderWidth:2,pointRadius:0,tension:0.4,fill:false,order:1}
+          ]},
+          options:{responsive:true,maintainAspectRatio:false,
+            interaction:{mode:'index',intersect:false},
+            plugins:{legend:{position:'top',labels:{boxWidth:8,padding:10,font:{size:9}}}},
+            scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
+          },
+          plugins:[{afterDraw(c){
+            const xs=c.scales.x,ys=c.scales.y,ctx=c.ctx;
+            vline(ctx,xs,ys,D.mp,D.strikes,'#B8720A','MP');
+            vline(ctx,xs,ys,D.mu_oi,D.strikes,'#2E6BBF','μOI');
+            vline(ctx,xs,ys,D.mu_gex,D.strikes,'#148A63','μGEX');
+            vline(ctx,xs,ys,D.mu_dex,D.strikes,'#8C5CC4','μDEX');
+            vline(ctx,xs,ys,D.spot,D.strikes,'#6B6960','SPOT');
+          }}]
+        });
+
+        // GEX
+        new Chart(document.getElementById('gex_0'),{
+          type:'bar',
+          data:{labels:D.gex.map(d=>d.strike),datasets:[
+            {label:'Net GEX',data:D.gex.map(d=>d.net_gex),
+              backgroundColor:D.gex.map(d=>d.net_gex>=0?'rgba(20,138,99,0.6)':'rgba(179,53,48,0.55)'),
+              borderRadius:2,barPercentage:0.85}
+          ]},
+          options:{responsive:true,maintainAspectRatio:false,
+            plugins:{legend:{display:false}},
+            scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
+          },
+          plugins:[{afterDraw(c){
+            const xs=c.scales.x,ys=c.scales.y,ctx=c.ctx;
+            vline(ctx,xs,ys,D.mu_gex,D.gex.map(d=>d.strike),'#148A63','μGEX');
+            if(D.gex_flip) vline(ctx,xs,ys,D.gex_flip,D.gex.map(d=>d.strike),'#B33530','FLIP');
+          }}]
+        });
+
+        // DEX
+        new Chart(document.getElementById('dex_0'),{
+          type:'bar',
+          data:{labels:D.dex.map(d=>d.strike),datasets:[
+            {label:'Net DEX',data:D.dex.map(d=>d.net_dex),
+              backgroundColor:D.dex.map(d=>d.net_dex>=0?'rgba(20,138,99,0.6)':'rgba(179,53,48,0.55)'),
+              borderRadius:2,barPercentage:0.85}
+          ]},
+          options:{responsive:true,maintainAspectRatio:false,
+            plugins:{legend:{display:false}},
+            scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
+          },
+          plugins:[{afterDraw(c){
+            const xs=c.scales.x,ys=c.scales.y,ctx=c.ctx;
+            vline(ctx,xs,ys,D.mu_dex,D.dex.map(d=>d.strike),'#8C5CC4','μDEX');
+          }}]
+        });
+
+        // Max Pain Curve
+        new Chart(document.getElementById('mp_0'),{
+          type:'line',
+          data:{labels:D.mp_curve.map(d=>d.strike),datasets:[
+            {label:'Perda total',data:D.mp_curve.map(d=>d.total_loss),borderColor:'#B8720A',
+              backgroundColor:'rgba(184,114,10,0.1)',borderWidth:1.8,fill:true,tension:0.3,pointRadius:0},
+            {label:'Call loss',data:D.mp_curve.map(d=>d.call_loss),borderColor:'#148A63',
+              borderWidth:1,borderDash:[3,2],fill:false,tension:0.3,pointRadius:0},
+            {label:'Put loss',data:D.mp_curve.map(d=>d.put_loss),borderColor:'#B33530',
+              borderWidth:1,borderDash:[3,2],fill:false,tension:0.3,pointRadius:0}
+          ]},
+          options:{responsive:true,maintainAspectRatio:false,
+            interaction:{mode:'index',intersect:false},
+            plugins:{legend:{position:'top',labels:{boxWidth:8,padding:10,font:{size:9}}}},
+            scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:v=>(v/1e6).toFixed(1)+'M',...tOpt},grid:gOpt}}
+          }
+        });
+      })();
+      </script>
+    </div>
+
+    <div class="exp-block" id="exp1" style="animation-delay:0.06s">
+      <div class="exp-top">
+        <div>
+          <h2>15 Mai — Mensal</h2>
+          <span class="tag tm">Mensal</span>
+          <span class="tag tg">0 DTE</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <div class="pill" style="--pc:#6B6960">Neutro (-13)</div>
+          <div class="pill" style="--pc:#5A8518">Converg. 66%</div>
+          <div class="pill" style="--pc:#148A63">✓ Coerente</div>
+        </div>
+      </div>
+
+      <!-- CENTER MAP -->
+      <div class="center-map-section">
+        <div class="stat-section-title">Mapa gravitacional — centros sobrepostos</div>
+        <div class="center-map">
+          <div class="cm-track"></div>
+          
+        <div class="cm-mark" style="left:90.0%">
+          <div class="cm-dot" style="background:#6B6960"></div>
+          <div class="cm-label" style="color:#6B6960">Spot<br>R$184.0</div>
+        </div>
+        <div class="cm-mark" style="left:10.0%">
+          <div class="cm-dot" style="background:#B8720A"></div>
+          <div class="cm-label" style="color:#B8720A">MP<br>R$176.0</div>
+        </div>
+        <div class="cm-mark" style="left:22.353295055816602%">
+          <div class="cm-dot" style="background:#2E6BBF"></div>
+          <div class="cm-label" style="color:#2E6BBF">μOI<br>R$177.2</div>
+        </div>
+        <div class="cm-mark" style="left:37.33201495221664%">
+          <div class="cm-dot" style="background:#148A63"></div>
+          <div class="cm-label" style="color:#148A63">μGEX<br>R$178.7</div>
+        </div>
+        <div class="cm-mark" style="left:13.735388356241742%">
+          <div class="cm-dot" style="background:#8C5CC4"></div>
+          <div class="cm-label" style="color:#8C5CC4">μDEX<br>R$176.4</div>
+        </div>
+        <div class="cm-mark" style="left:20.0%">
+          <div class="cm-dot" style="background:#B33530"></div>
+          <div class="cm-label" style="color:#B33530">Flip<br>R$177.0</div>
+        </div>
+        </div>
+        <div class="cm-legend">
+          <span style="color:#6B6960">● Spot R$184.0</span><span style="color:#B8720A">● MP R$176.0</span><span style="color:#2E6BBF">● μOI R$177.2</span><span style="color:#148A63">● μGEX R$178.7</span><span style="color:#8C5CC4">● μDEX R$176.4</span><span style="color:#B33530">● Flip R$177.0</span>
+        </div>
+      </div>
+
+      <!-- CENTERS -->
+      <div class="stat-section-title">Centros de massa</div>
+      <div class="stats-grid">
+        <div class="st-card"><div class="st-label">Max Pain</div><div class="st-value" >R$ 176</div><div class="st-sub">Min. perda total dos compradores</div></div>
+        <div class="st-card"><div class="st-label">μ OI (centro de massa)</div><div class="st-value" style="color:#2E6BBF">R$ 177.24</div><div class="st-sub">σ = R$ 4.91</div></div>
+        <div class="st-card"><div class="st-label">μ GEX (centro de gamma)</div><div class="st-value" style="color:#148A63">R$ 178.73</div><div class="st-sub">Onde o hedge é mais denso</div></div>
+        <div class="st-card"><div class="st-label">μ DEX (centro de delta)</div><div class="st-value" style="color:#8C5CC4">R$ 176.37</div><div class="st-sub">Maior exposição direcional</div></div>
+        <div class="st-card"><div class="st-label">GEX Flip</div><div class="st-value" style="color:#B33530">R$ 177</div><div class="st-sub">Fronteira GEX neg→pos</div></div>
+        <div class="st-card"><div class="st-label">Spot</div><div class="st-value" >R$ 184</div></div>
+      </div>
+
+      <!-- CONVERGENCE -->
+      <div class="stat-section-title">Convergência entre centros</div>
+      <div class="stats-grid">
+        <div class="st-card"><div class="st-label">Score</div><div class="st-value" style="color:#5A8518">66%</div><div class="st-sub">Convergência moderada</div></div>
+        <div class="st-card"><div class="st-label">Spread máx.</div><div class="st-value" >R$ 2.7</div><div class="st-sub">MP ≈ μOI · μOI ≈ μGEX</div></div>
+        <div class="st-card"><div class="st-label">MP vs μOI</div><div class="st-value" >R$ -1.24</div><div class="st-sub">Alinhados</div></div>
+        <div class="st-card"><div class="st-label">MP vs μGEX</div><div class="st-value" >R$ -2.73</div><div class="st-sub">Desalinhados</div></div>
+        <div class="st-card"><div class="st-label">μOI vs μGEX</div><div class="st-value" >R$ -1.50</div><div class="st-sub">Alinhados</div></div>
+      </div>
+
+      <!-- SENTIMENT -->
+      <div class="stat-section-title">Sentimento e direção</div>
+      <div class="stats-grid">
+        <div class="st-card"><div class="st-label">Sentimento</div><div class="st-value" style="color:#6B6960">Neutro</div><div class="st-sub">Skew +0.64 · PCR 0.95 · μCall R$178 · μPut R$177</div></div>
+        <div class="st-card"><div class="st-label">Direção MP</div><div class="st-value" >para baixo</div><div class="st-sub">MP abaixo do spot</div></div>
+        <div class="st-card"><div class="st-label">Coerência</div><div class="st-value" style="color:#148A63">Forças alinhadas ✓</div><div class="st-sub">Sentimento neutro — sem resistência ao max pain</div></div>
+        <div class="st-card"><div class="st-label">μ Calls</div><div class="st-value" >R$ 177.8</div><div class="st-sub">-3.4% do spot</div></div>
+        <div class="st-card"><div class="st-label">μ Puts</div><div class="st-value" >R$ 176.7</div><div class="st-sub">-4.0% do spot</div></div>
+      </div>
+
+      <!-- DISTRIBUTION -->
+      <div class="stat-section-title">Distribuição estatística</div>
+      <div class="stats-grid">
+        <div class="st-card"><div class="st-label">Skew</div><div class="st-value" >+0.638</div><div class="st-sub">Cauda direita</div></div>
+        <div class="st-card"><div class="st-label">Curtose</div><div class="st-value" >2.18</div><div class="st-sub">Excesso: -0.82</div></div>
+        <div class="st-card"><div class="st-label">HHI</div><div class="st-value" >0.0890</div></div>
+        <div class="st-card"><div class="st-label">Gini</div><div class="st-value" >0.369</div></div>
+        <div class="st-card"><div class="st-label">Entropia</div><div class="st-value" >3.76 bits</div><div class="st-sub">Ratio: 92.1%</div></div>
+        <div class="st-card"><div class="st-label">R² (Normal)</div><div class="st-value" style="color:#B33530">0.0000</div><div class="st-sub">Ajuste fraco</div></div>
+        <div class="st-card"><div class="st-label">OI ±1σ do MP</div><div class="st-value" >68.8%</div><div class="st-sub">Normal: 68.3%</div></div>
+        <div class="st-card"><div class="st-label">OI ±2σ do MP</div><div class="st-value" >91.1%</div><div class="st-sub">Normal: 95.4%</div></div>
+      </div>
+
+      <!-- CHARTS -->
+      <div class="charts-2col">
+        <div class="ch-card"><h4>OI + ajuste normal + centros</h4>
+          <div class="ch-wrap"><canvas id="oi_1"></canvas></div></div>
+        <div class="ch-card"><h4>GEX por strike</h4>
+          <div class="ch-wrap"><canvas id="gex_1"></canvas></div></div>
+      </div>
+      <div class="charts-2col">
+        <div class="ch-card"><h4>DEX por strike</h4>
+          <div class="ch-wrap"><canvas id="dex_1"></canvas></div></div>
+        <div class="ch-card"><h4>Curva de max pain</h4>
+          <div class="ch-wrap"><canvas id="mp_1"></canvas></div></div>
+      </div>
+
+      <script>
+      (function(){
+        const D={"strikes": [171.0, 172.0, 173.0, 174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0], "call_oi": [509310.0, 304070.0, 1160000.0, 831680.0, 239710.0, 177190.0, 357170.0, 95340.0, 375270.0, 1020000.0, 402250.0, 118140.0, 161680.0, 183260.0, 392760.0, 134040.0, 505890.0], "put_oi": [555440.0, 378920.0, 1210000.0, 1030000.0, 314810.0, 665190.0, 239410.0, 458260.0, 172820.0, 326420.0, 73690.0, 91820.0, 47340.0, 86240.0, 412390.0, 136750.0, 429930.0], "total_oi": [1064750.0, 682990.0, 2370000.0, 1861680.0, 554520.0, 842380.0, 596580.0, 553600.0, 548090.0, 1346420.0, 475940.0, 209960.0, 209020.0, 269500.0, 805150.0, 270790.0, 935820.0], "fit": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "residuals": [1064750.0, 682990.0, 2370000.0, 1861680.0, 554520.0, 842380.0, 596580.0, 553600.0, 548090.0, 1346420.0, 475940.0, 209960.0, 209020.0, 269500.0, 805150.0, 270790.0, 935820.0], "gex": [{"strike": 171.0, "call_gex": 3189991.8815999995, "put_gex": -3478920.6783999996, "net_gex": -288928.7968000001}, {"strike": 172.0, "call_gex": 2017740.40832, "put_gex": -2514428.24192, "net_gex": -496687.8336}, {"strike": 173.0, "call_gex": 8090229.76, "put_gex": -8438946.56, "net_gex": -348716.80000000075}, {"strike": 174.0, "call_gex": 6053831.987199999, "put_gex": -7497411.2, "net_gex": -1443579.2128000008}, {"strike": 175.0, "call_gex": 1817899.27424, "put_gex": -2387438.44864, "net_gex": -569539.1744000001}, {"strike": 176.0, "call_gex": 1391755.1564800001, "put_gex": -5224796.05248, "net_gex": -3833040.8959999997}, {"strike": 177.0, "call_gex": 2890071.0572800003, "put_gex": -1937206.12544, "net_gex": 952864.9318400002}, {"strike": 178.0, "call_gex": 790818.6048, "put_gex": -3801138.3872, "net_gex": -3010319.7824000004}, {"strike": 179.0, "call_gex": 3188990.42112, "put_gex": -1468599.47392, "net_gex": 1720390.9472}, {"strike": 180.0, "call_gex": 8805945.6, "put_gex": -2818075.2575999997, "net_gex": 5987870.3423999995}, {"strike": 181.0, "call_gex": 3513592.608, "put_gex": -643670.94912, "net_gex": 2869921.65888}, {"strike": 182.0, "call_gex": 1043934.1862400001, "put_gex": -811359.71712, "net_gex": 232574.46912000002}, {"strike": 183.0, "call_gex": 1434145.5769600002, "put_gex": -419918.67648, "net_gex": 1014226.9004800002}, {"strike": 184.0, "call_gex": 1625566.04672, "put_gex": -764972.2572800001, "net_gex": 860593.7894399998}, {"strike": 185.0, "call_gex": 3470590.74816, "put_gex": -3644049.5942400005, "net_gex": -173458.8460800005}, {"strike": 186.0, "call_gex": 1175357.08416, "put_gex": -1199120.2719999999, "net_gex": -23763.187839999795}, {"strike": 187.0, "call_gex": 4384617.43104, "put_gex": -3726261.78048, "net_gex": 658355.65056}], "dex": [{"strike": 171.0, "call_dex": 74970432.0, "put_dex": -20440192.0, "net_dex": 54530240.0}, {"strike": 172.0, "call_dex": 43640126.4, "put_dex": -15338681.6, "net_dex": 28301444.799999997}, {"strike": 173.0, "call_dex": 162214400.0, "put_dex": -53433600.0, "net_dex": 108780800.0}, {"strike": 174.0, "call_dex": 111711257.60000001, "put_dex": -51170400.0, "net_dex": 60540857.60000001}, {"strike": 175.0, "call_dex": 31315714.400000002, "put_dex": -16798261.599999998, "net_dex": 14517452.800000004}, {"strike": 176.0, "call_dex": 22496042.4, "put_dex": -37942437.6, "net_dex": -15446395.200000003}, {"strike": 177.0, "call_dex": 43374724.800000004, "put_dex": -14977489.600000001, "net_dex": 28397235.200000003}, {"strike": 178.0, "call_dex": 11227238.4, "put_dex": -30355142.400000002, "net_dex": -19127904.0}, {"strike": 179.0, "call_dex": 42810801.6, "put_dex": -12083574.4, "net_dex": 30727227.200000003}, {"strike": 180.0, "call_dex": 110731200.0, "put_dex": -24625124.799999997, "net_dex": 86106075.2}, {"strike": 181.0, "call_dex": 41447840.00000001, "put_dex": -5965942.399999999, "net_dex": 35481897.60000001}, {"strike": 182.0, "call_dex": 11738390.4, "put_dex": -7771644.800000001, "net_dex": 3966745.5999999996}, {"strike": 183.0, "call_dex": 15172051.200000001, "put_dex": -4268174.399999999, "net_dex": 10903876.8}, {"strike": 184.0, "call_dex": 16522721.6, "put_dex": -8092761.600000001, "net_dex": 8429960.0}, {"strike": 185.0, "call_dex": 33243206.400000002, "put_dex": -40975070.4, "net_dex": -7731863.999999996}, {"strike": 186.0, "call_dex": 10851878.4, "put_dex": -14090720.000000002, "net_dex": -3238841.6000000015}, {"strike": 187.0, "call_dex": 38164341.6, "put_dex": -46673200.8, "net_dex": -8508859.199999996}], "mp_curve": [{"strike": 171.0, "call_loss": 0.0, "put_loss": 37578440.0, "total_loss": 37578440.0}, {"strike": 172.0, "call_loss": 509310.0, "put_loss": 31504450.0, "total_loss": 32013760.0}, {"strike": 173.0, "call_loss": 1322690.0, "put_loss": 25809380.0, "total_loss": 27132070.0}, {"strike": 174.0, "call_loss": 3296070.0, "put_loss": 21324310.0, "total_loss": 24620380.0}, {"strike": 175.0, "call_loss": 6101130.0, "put_loss": 17869240.0, "total_loss": 23970370.0}, {"strike": 176.0, "call_loss": 9145900.0, "put_loss": 14728980.0, "total_loss": 23874880.0}, {"strike": 177.0, "call_loss": 12367860.0, "put_loss": 12253910.0, "total_loss": 24621770.0}, {"strike": 178.0, "call_loss": 15946990.0, "put_loss": 10018250.0, "total_loss": 25965240.0}, {"strike": 179.0, "call_loss": 19621460.0, "put_loss": 8240850.0, "total_loss": 27862310.0}, {"strike": 180.0, "call_loss": 23671200.0, "put_loss": 6636270.0, "total_loss": 30307470.0}, {"strike": 181.0, "call_loss": 28740940.0, "put_loss": 5358110.0, "total_loss": 34099050.0}, {"strike": 182.0, "call_loss": 34212930.0, "put_loss": 4153640.0, "total_loss": 38366570.0}, {"strike": 183.0, "call_loss": 39803060.0, "put_loss": 3040990.0, "total_loss": 42844050.0}, {"strike": 184.0, "call_loss": 45554870.0, "put_loss": 1975680.0, "total_loss": 47530550.0}, {"strike": 185.0, "call_loss": 51489940.0, "put_loss": 996610.0, "total_loss": 52486550.0}, {"strike": 186.0, "call_loss": 57817770.0, "put_loss": 429930.0, "total_loss": 58247700.0}, {"strike": 187.0, "call_loss": 64279640.0, "put_loss": 0.0, "total_loss": 64279640.0}], "mp": 176.0, "spot": 184.0, "mu_oi": 177.23532950558166, "mu_gex": 178.73320149522166, "mu_dex": 176.37353883562417, "mu_call": 177.77470521372723, "mu_put": 176.66842699900292, "gex_flip": 177.0};
+        function vline(ctx,xs,ys,val,arr,color,lbl){
+          const i=arr.reduce((a,v,j)=>Math.abs(v-val)<Math.abs(arr[a]-val)?j:a,0);
+          const x=xs.getPixelForValue(i);
+          ctx.save();ctx.strokeStyle=color;ctx.lineWidth=1;ctx.setLineDash([3,2]);
+          ctx.beginPath();ctx.moveTo(x,ys.top);ctx.lineTo(x,ys.bottom);ctx.stroke();
+          ctx.fillStyle=color;ctx.font="600 8px var(--mono)";ctx.textAlign='center';
+          ctx.fillText(lbl,x,ys.top-4);ctx.restore();
+        }
+        function yfmt(v){
+          const a=Math.abs(v);
+          if(a>=1e6)return(v/1e6).toFixed(1)+'M';
+          if(a>=1e3)return(v/1e3).toFixed(0)+'k';
+          return Math.round(v);
+        }
+        const tOpt={font:{size:9,family:'var(--mono)'}};
+        const gOpt={color:'rgba(0,0,0,0.05)'};
+
+        // OI + Normal + Centers
+        new Chart(document.getElementById('oi_1'),{
+          type:'bar',
+          data:{labels:D.strikes,datasets:[
+            {label:'OI Total',data:D.total_oi,backgroundColor:'rgba(90,133,24,0.5)',
+              borderColor:'rgba(90,133,24,0.8)',borderWidth:1,borderRadius:2,barPercentage:0.8,order:2},
+            {label:'Normal Fit',data:D.fit,type:'line',borderColor:'#B8720A',
+              borderWidth:2,pointRadius:0,tension:0.4,fill:false,order:1}
+          ]},
+          options:{responsive:true,maintainAspectRatio:false,
+            interaction:{mode:'index',intersect:false},
+            plugins:{legend:{position:'top',labels:{boxWidth:8,padding:10,font:{size:9}}}},
+            scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
+          },
+          plugins:[{afterDraw(c){
+            const xs=c.scales.x,ys=c.scales.y,ctx=c.ctx;
+            vline(ctx,xs,ys,D.mp,D.strikes,'#B8720A','MP');
+            vline(ctx,xs,ys,D.mu_oi,D.strikes,'#2E6BBF','μOI');
+            vline(ctx,xs,ys,D.mu_gex,D.strikes,'#148A63','μGEX');
+            vline(ctx,xs,ys,D.mu_dex,D.strikes,'#8C5CC4','μDEX');
+            vline(ctx,xs,ys,D.spot,D.strikes,'#6B6960','SPOT');
+          }}]
+        });
+
+        // GEX
+        new Chart(document.getElementById('gex_1'),{
+          type:'bar',
+          data:{labels:D.gex.map(d=>d.strike),datasets:[
+            {label:'Net GEX',data:D.gex.map(d=>d.net_gex),
+              backgroundColor:D.gex.map(d=>d.net_gex>=0?'rgba(20,138,99,0.6)':'rgba(179,53,48,0.55)'),
+              borderRadius:2,barPercentage:0.85}
+          ]},
+          options:{responsive:true,maintainAspectRatio:false,
+            plugins:{legend:{display:false}},
+            scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
+          },
+          plugins:[{afterDraw(c){
+            const xs=c.scales.x,ys=c.scales.y,ctx=c.ctx;
+            vline(ctx,xs,ys,D.mu_gex,D.gex.map(d=>d.strike),'#148A63','μGEX');
+            if(D.gex_flip) vline(ctx,xs,ys,D.gex_flip,D.gex.map(d=>d.strike),'#B33530','FLIP');
+          }}]
+        });
+
+        // DEX
+        new Chart(document.getElementById('dex_1'),{
+          type:'bar',
+          data:{labels:D.dex.map(d=>d.strike),datasets:[
+            {label:'Net DEX',data:D.dex.map(d=>d.net_dex),
+              backgroundColor:D.dex.map(d=>d.net_dex>=0?'rgba(20,138,99,0.6)':'rgba(179,53,48,0.55)'),
+              borderRadius:2,barPercentage:0.85}
+          ]},
+          options:{responsive:true,maintainAspectRatio:false,
+            plugins:{legend:{display:false}},
+            scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
+          },
+          plugins:[{afterDraw(c){
+            const xs=c.scales.x,ys=c.scales.y,ctx=c.ctx;
+            vline(ctx,xs,ys,D.mu_dex,D.dex.map(d=>d.strike),'#8C5CC4','μDEX');
+          }}]
+        });
+
+        // Max Pain Curve
+        new Chart(document.getElementById('mp_1'),{
+          type:'line',
+          data:{labels:D.mp_curve.map(d=>d.strike),datasets:[
+            {label:'Perda total',data:D.mp_curve.map(d=>d.total_loss),borderColor:'#B8720A',
+              backgroundColor:'rgba(184,114,10,0.1)',borderWidth:1.8,fill:true,tension:0.3,pointRadius:0},
+            {label:'Call loss',data:D.mp_curve.map(d=>d.call_loss),borderColor:'#148A63',
+              borderWidth:1,borderDash:[3,2],fill:false,tension:0.3,pointRadius:0},
+            {label:'Put loss',data:D.mp_curve.map(d=>d.put_loss),borderColor:'#B33530',
+              borderWidth:1,borderDash:[3,2],fill:false,tension:0.3,pointRadius:0}
+          ]},
+          options:{responsive:true,maintainAspectRatio:false,
+            interaction:{mode:'index',intersect:false},
+            plugins:{legend:{position:'top',labels:{boxWidth:8,padding:10,font:{size:9}}}},
+            scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:v=>(v/1e6).toFixed(1)+'M',...tOpt},grid:gOpt}}
+          }
+        });
+      })();
+      </script>
+    </div>
+
+    <div class="exp-block" id="exp2" style="animation-delay:0.12s">
+      <div class="exp-top">
+        <div>
+          <h2>17 Abr — Mensal</h2>
+          <span class="tag tm">Mensal</span>
+          <span class="tag tg">0 DTE</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <div class="pill" style="--pc:#6B6960">Neutro (-1)</div>
+          <div class="pill" style="--pc:#148A63">Converg. 82%</div>
+          <div class="pill" style="--pc:#148A63">✓ Coerente</div>
+        </div>
+      </div>
+
+      <!-- CENTER MAP -->
+      <div class="center-map-section">
+        <div class="stat-section-title">Mapa gravitacional — centros sobrepostos</div>
+        <div class="center-map">
+          <div class="cm-track"></div>
+          
+        <div class="cm-mark" style="left:83.33333333333334%">
+          <div class="cm-dot" style="background:#6B6960"></div>
+          <div class="cm-label" style="color:#6B6960">Spot<br>R$181.0</div>
+        </div>
+        <div class="cm-mark" style="left:66.66666666666666%">
+          <div class="cm-dot" style="background:#B8720A"></div>
+          <div class="cm-label" style="color:#B8720A">MP<br>R$180.0</div>
+        </div>
+        <div class="cm-mark" style="left:70.9640835740482%">
+          <div class="cm-dot" style="background:#2E6BBF"></div>
+          <div class="cm-label" style="color:#2E6BBF">μOI<br>R$180.3</div>
+        </div>
+        <div class="cm-mark" style="left:47.59571568361498%">
+          <div class="cm-dot" style="background:#148A63"></div>
+          <div class="cm-label" style="color:#148A63">μGEX<br>R$178.9</div>
+        </div>
+        <div class="cm-mark" style="left:70.84683720492629%">
+          <div class="cm-dot" style="background:#8C5CC4"></div>
+          <div class="cm-label" style="color:#8C5CC4">μDEX<br>R$180.3</div>
+        </div>
+        <div class="cm-mark" style="left:16.666666666666664%">
+          <div class="cm-dot" style="background:#B33530"></div>
+          <div class="cm-label" style="color:#B33530">Flip<br>R$177.0</div>
+        </div>
+        </div>
+        <div class="cm-legend">
+          <span style="color:#6B6960">● Spot R$181.0</span><span style="color:#B8720A">● MP R$180.0</span><span style="color:#2E6BBF">● μOI R$180.3</span><span style="color:#148A63">● μGEX R$178.9</span><span style="color:#8C5CC4">● μDEX R$180.3</span><span style="color:#B33530">● Flip R$177.0</span>
+        </div>
+      </div>
+
+      <!-- CENTERS -->
+      <div class="stat-section-title">Centros de massa</div>
+      <div class="stats-grid">
+        <div class="st-card"><div class="st-label">Max Pain</div><div class="st-value" >R$ 180</div><div class="st-sub">Min. perda total dos compradores</div></div>
+        <div class="st-card"><div class="st-label">μ OI (centro de massa)</div><div class="st-value" style="color:#2E6BBF">R$ 180.26</div><div class="st-sub">σ = R$ 4.27</div></div>
+        <div class="st-card"><div class="st-label">μ GEX (centro de gamma)</div><div class="st-value" style="color:#148A63">R$ 178.86</div><div class="st-sub">Onde o hedge é mais denso</div></div>
+        <div class="st-card"><div class="st-label">μ DEX (centro de delta)</div><div class="st-value" style="color:#8C5CC4">R$ 180.25</div><div class="st-sub">Maior exposição direcional</div></div>
+        <div class="st-card"><div class="st-label">GEX Flip</div><div class="st-value" style="color:#B33530">R$ 177</div><div class="st-sub">Fronteira GEX neg→pos</div></div>
+        <div class="st-card"><div class="st-label">Spot</div><div class="st-value" >R$ 181</div></div>
+      </div>
+
+      <!-- CONVERGENCE -->
+      <div class="stat-section-title">Convergência entre centros</div>
+      <div class="stats-grid">
+        <div class="st-card"><div class="st-label">Score</div><div class="st-value" style="color:#148A63">82%</div><div class="st-sub">Forte convergência</div></div>
+        <div class="st-card"><div class="st-label">Spread máx.</div><div class="st-value" >R$ 1.4</div><div class="st-sub">MP ≈ μOI · MP ≈ μGEX · μOI ≈ μGEX</div></div>
+        <div class="st-card"><div class="st-label">MP vs μOI</div><div class="st-value" >R$ -0.26</div><div class="st-sub">Alinhados</div></div>
+        <div class="st-card"><div class="st-label">MP vs μGEX</div><div class="st-value" >R$ +1.14</div><div class="st-sub">Alinhados</div></div>
+        <div class="st-card"><div class="st-label">μOI vs μGEX</div><div class="st-value" >R$ +1.40</div><div class="st-sub">Alinhados</div></div>
+      </div>
+
+      <!-- SENTIMENT -->
+      <div class="stat-section-title">Sentimento e direção</div>
+      <div class="stats-grid">
+        <div class="st-card"><div class="st-label">Sentimento</div><div class="st-value" style="color:#6B6960">Neutro</div><div class="st-sub">Skew -0.43 · PCR 1.09 · μCall R$181 · μPut R$180</div></div>
+        <div class="st-card"><div class="st-label">Direção MP</div><div class="st-value" >para baixo</div><div class="st-sub">MP abaixo do spot</div></div>
+        <div class="st-card"><div class="st-label">Coerência</div><div class="st-value" style="color:#148A63">Forças alinhadas ✓</div><div class="st-sub">Sentimento neutro — sem resistência ao max pain</div></div>
+        <div class="st-card"><div class="st-label">μ Calls</div><div class="st-value" >R$ 180.7</div><div class="st-sub">-0.2% do spot</div></div>
+        <div class="st-card"><div class="st-label">μ Puts</div><div class="st-value" >R$ 179.8</div><div class="st-sub">-0.6% do spot</div></div>
+      </div>
+
+      <!-- DISTRIBUTION -->
+      <div class="stat-section-title">Distribuição estatística</div>
+      <div class="stats-grid">
+        <div class="st-card"><div class="st-label">Skew</div><div class="st-value" >-0.434</div><div class="st-sub">Cauda esquerda</div></div>
+        <div class="st-card"><div class="st-label">Curtose</div><div class="st-value" >2.35</div><div class="st-sub">Excesso: -0.65</div></div>
+        <div class="st-card"><div class="st-label">HHI</div><div class="st-value" >0.1032</div></div>
+        <div class="st-card"><div class="st-label">Gini</div><div class="st-value" >0.374</div></div>
+        <div class="st-card"><div class="st-label">Entropia</div><div class="st-value" >3.70 bits</div><div class="st-sub">Ratio: 90.5%</div></div>
+        <div class="st-card"><div class="st-label">R² (Normal)</div><div class="st-value" style="color:#B33530">0.1681</div><div class="st-sub">Ajuste fraco</div></div>
+        <div class="st-card"><div class="st-label">OI ±1σ do MP</div><div class="st-value" >59.2%</div><div class="st-sub">Normal: 68.3%</div></div>
+        <div class="st-card"><div class="st-label">OI ±2σ do MP</div><div class="st-value" >97.1%</div><div class="st-sub">Normal: 95.4%</div></div>
+      </div>
+
+      <!-- CHARTS -->
+      <div class="charts-2col">
+        <div class="ch-card"><h4>OI + ajuste normal + centros</h4>
+          <div class="ch-wrap"><canvas id="oi_2"></canvas></div></div>
+        <div class="ch-card"><h4>GEX por strike</h4>
+          <div class="ch-wrap"><canvas id="gex_2"></canvas></div></div>
+      </div>
+      <div class="charts-2col">
+        <div class="ch-card"><h4>DEX por strike</h4>
+          <div class="ch-wrap"><canvas id="dex_2"></canvas></div></div>
+        <div class="ch-card"><h4>Curva de max pain</h4>
+          <div class="ch-wrap"><canvas id="mp_2"></canvas></div></div>
+      </div>
+
+      <script>
+      (function(){
+        const D={"strikes": [171.0, 172.0, 173.0, 174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0], "call_oi": [932390.0, 858560.0, 1110000.0, 1040000.0, 1670000.0, 2200000.0, 1200000.0, 1360000.0, 1690000.0, 11780000.0, 3230000.0, 3050000.0, 1490000.0, 2890000.0, 6410000.0, 2930000.0, 1740000.0], "put_oi": [1810000.0, 2860000.0, 1540000.0, 1560000.0, 2890000.0, 2340000.0, 1180000.0, 2450000.0, 1420000.0, 10140000.0, 3150000.0, 3910000.0, 889990.0, 2000000.0, 7150000.0, 3250000.0, 1130000.0], "total_oi": [2742390.0, 3718560.0, 2650000.0, 2600000.0, 4560000.0, 4540000.0, 2380000.0, 3810000.0, 3110000.0, 21920000.0, 6380000.0, 6960000.0, 2379990.0, 4890000.0, 13560000.0, 6180000.0, 2870000.0], "fit": [1298901.384303736, 1801958.565290521, 2420545.1786773684, 3148338.043431973, 3965055.706303187, 4835228.482319635, 5709321.248557577, 6527572.910320351, 7226346.038776383, 7746143.688808608, 8039927.175931522, 8080131.950622538, 7862932.775206171, 7408843.891187121, 6759523.7317595575, 5971473.673217707, 5107950.952929974], "residuals": [1443488.615696264, 1916601.434709479, 229454.82132263156, -548338.0434319731, 594944.2936968128, -295228.48231963534, -3329321.248557577, -2717572.910320351, -4116346.038776383, 14173856.311191391, -1659927.1759315217, -1120131.950622538, -5482942.775206171, -2518843.891187121, 6800476.2682404425, 208526.3267822927, -2237950.9529299736], "gex": [{"strike": 171.0, "call_gex": 6995040.59291, "put_gex": -13579106.89, "net_gex": -6584066.2970900005}, {"strike": 172.0, "call_gex": 7088075.608320001, "put_gex": -23611507.92, "net_gex": -16523432.31168}, {"strike": 173.0, "call_gex": 9963930.540000001, "put_gex": -13823831.56, "net_gex": -3859901.0199999996}, {"strike": 174.0, "call_gex": 10017003.360000001, "put_gex": -15025505.040000001, "net_gex": -5008501.68}, {"strike": 175.0, "call_gex": 17124502.310000002, "put_gex": -29634617.77, "net_gex": -12510115.459999997}, {"strike": 176.0, "call_gex": 23784486.0, "put_gex": -25298044.2, "net_gex": -1513558.1999999993}, {"strike": 177.0, "call_gex": 13563054.0, "put_gex": -13337003.1, "net_gex": 226050.90000000037}, {"strike": 178.0, "call_gex": 15906120.72, "put_gex": -28654408.650000002, "net_gex": -12748287.930000002}, {"strike": 179.0, "call_gex": 20263988.94, "put_gex": -17026546.92, "net_gex": 3237442.0199999996}, {"strike": 180.0, "call_gex": 143949868.34, "put_gex": -123909309.42, "net_gex": 20040558.92}, {"strike": 181.0, "call_gex": 39681761.25, "put_gex": -38698931.25, "net_gex": 982830.0}, {"strike": 182.0, "call_gex": 37470393.75, "put_gex": -48035816.25, "net_gex": -10565422.5}, {"strike": 183.0, "call_gex": 18109953.19, "put_gex": -10817233.04669, "net_gex": 7292720.143310001}, {"strike": 184.0, "call_gex": 34557940.85, "put_gex": -23915530.0, "net_gex": 10642410.850000001}, {"strike": 185.0, "call_gex": 74549293.55, "put_gex": -83155608.25, "net_gex": -8606314.700000003}, {"strike": 186.0, "call_gex": 32924477.389999997, "put_gex": -36520324.75, "net_gex": -3595847.360000003}, {"strike": 187.0, "call_gex": 18754362.060000002, "put_gex": -12179556.97, "net_gex": 6574805.090000002}], "dex": [{"strike": 171.0, "call_dex": 141760575.6, "put_dex": -52417600.0, "net_dex": 89342975.6}, {"strike": 172.0, "call_dex": 125873481.60000002, "put_dex": -98355400.0, "net_dex": 27518081.600000024}, {"strike": 173.0, "call_dex": 158718900.0, "put_dex": -58535400.0, "net_dex": 100183500.0}, {"strike": 174.0, "call_dex": 143062400.0, "put_dex": -67766400.0, "net_dex": 75296000.0}, {"strike": 175.0, "call_dex": 220657100.0, "put_dex": -141234300.0, "net_dex": 79422800.0}, {"strike": 176.0, "call_dex": 274757999.99999994, "put_dex": -131297400.0, "net_dex": 143460599.99999994}, {"strike": 177.0, "call_dex": 143352000.0, "put_dex": -72617200.0, "net_dex": 70734800.0}, {"strike": 178.0, "call_dex": 152619200.0, "put_dex": -168511000.0, "net_dex": -15891800.0}, {"strike": 179.0, "call_dex": 180475100.0, "put_dex": -105378200.0, "net_dex": 75096900.0}, {"strike": 180.0, "call_dex": 1172699000.0000002, "put_dex": -825903000.0, "net_dex": 346796000.00000024}, {"strike": 181.0, "call_dex": 298161300.0, "put_dex": -279373500.0, "net_dex": 18787800.0}, {"strike": 182.0, "call_dex": 264984000.0, "put_dex": -368009200.0, "net_dex": -103025200.0}, {"strike": 183.0, "call_dex": 118663600.0, "put_dex": -90209386.4, "net_dex": 28454213.599999994}, {"strike": 184.0, "call_dex": 209236000.0, "put_dex": -217200000.0, "net_dex": -7964000.0}, {"strike": 185.0, "call_dex": 429277700.0, "put_dex": -815314500.0, "net_dex": -386036800.0}, {"strike": 186.0, "call_dex": 175008900.0, "put_dex": -394127500.0, "net_dex": -219118600.0}, {"strike": 187.0, "call_dex": 94482000.0, "put_dex": -143171000.0, "net_dex": -48689000.0}], "mp_curve": [{"strike": 171.0, "call_loss": 0.0, "put_loss": 438849880.0, "total_loss": 438849880.0}, {"strike": 172.0, "call_loss": 932390.0, "put_loss": 390989890.0, "total_loss": 391922280.0}, {"strike": 173.0, "call_loss": 2723340.0, "put_loss": 345989900.0, "total_loss": 348713240.0}, {"strike": 174.0, "call_loss": 5624290.0, "put_loss": 302529910.0, "total_loss": 308154200.0}, {"strike": 175.0, "call_loss": 9565240.0, "put_loss": 260629920.0, "total_loss": 270195160.0}, {"strike": 176.0, "call_loss": 15176190.0, "put_loss": 221619930.0, "total_loss": 236796120.0}, {"strike": 177.0, "call_loss": 22987140.0, "put_loss": 184949940.0, "total_loss": 207937080.0}, {"strike": 178.0, "call_loss": 31998090.0, "put_loss": 149459950.0, "total_loss": 181458040.0}, {"strike": 179.0, "call_loss": 42369040.0, "put_loss": 116419960.0, "total_loss": 158789000.0}, {"strike": 180.0, "call_loss": 54429990.0, "put_loss": 84799970.0, "total_loss": 139229960.0}, {"strike": 181.0, "call_loss": 78270940.0, "put_loss": 63319980.0, "total_loss": 141590920.0}, {"strike": 182.0, "call_loss": 105341890.0, "put_loss": 44989990.0, "total_loss": 150331880.0}, {"strike": 183.0, "call_loss": 135462840.0, "put_loss": 30570000.0, "total_loss": 166032840.0}, {"strike": 184.0, "call_loss": 167073790.0, "put_loss": 17040000.0, "total_loss": 184113790.0}, {"strike": 185.0, "call_loss": 201574740.0, "put_loss": 5510000.0, "total_loss": 207084740.0}, {"strike": 186.0, "call_loss": 242485690.0, "put_loss": 1130000.0, "total_loss": 243615690.0}, {"strike": 187.0, "call_loss": 286326640.0, "put_loss": 0.0, "total_loss": 286326640.0}], "mp": 180.0, "spot": 181.0, "mu_oi": 180.2578450144429, "mu_gex": 178.8557429410169, "mu_dex": 180.25081023229558, "mu_call": 180.71828274750746, "mu_put": 179.8353124290945, "gex_flip": 177.0};
+        function vline(ctx,xs,ys,val,arr,color,lbl){
+          const i=arr.reduce((a,v,j)=>Math.abs(v-val)<Math.abs(arr[a]-val)?j:a,0);
+          const x=xs.getPixelForValue(i);
+          ctx.save();ctx.strokeStyle=color;ctx.lineWidth=1;ctx.setLineDash([3,2]);
+          ctx.beginPath();ctx.moveTo(x,ys.top);ctx.lineTo(x,ys.bottom);ctx.stroke();
+          ctx.fillStyle=color;ctx.font="600 8px var(--mono)";ctx.textAlign='center';
+          ctx.fillText(lbl,x,ys.top-4);ctx.restore();
+        }
+        function yfmt(v){
+          const a=Math.abs(v);
+          if(a>=1e6)return(v/1e6).toFixed(1)+'M';
+          if(a>=1e3)return(v/1e3).toFixed(0)+'k';
+          return Math.round(v);
+        }
+        const tOpt={font:{size:9,family:'var(--mono)'}};
+        const gOpt={color:'rgba(0,0,0,0.05)'};
+
+        // OI + Normal + Centers
+        new Chart(document.getElementById('oi_2'),{
+          type:'bar',
+          data:{labels:D.strikes,datasets:[
+            {label:'OI Total',data:D.total_oi,backgroundColor:'rgba(90,133,24,0.5)',
+              borderColor:'rgba(90,133,24,0.8)',borderWidth:1,borderRadius:2,barPercentage:0.8,order:2},
+            {label:'Normal Fit',data:D.fit,type:'line',borderColor:'#B8720A',
+              borderWidth:2,pointRadius:0,tension:0.4,fill:false,order:1}
+          ]},
+          options:{responsive:true,maintainAspectRatio:false,
+            interaction:{mode:'index',intersect:false},
+            plugins:{legend:{position:'top',labels:{boxWidth:8,padding:10,font:{size:9}}}},
+            scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
+          },
+          plugins:[{afterDraw(c){
+            const xs=c.scales.x,ys=c.scales.y,ctx=c.ctx;
+            vline(ctx,xs,ys,D.mp,D.strikes,'#B8720A','MP');
+            vline(ctx,xs,ys,D.mu_oi,D.strikes,'#2E6BBF','μOI');
+            vline(ctx,xs,ys,D.mu_gex,D.strikes,'#148A63','μGEX');
+            vline(ctx,xs,ys,D.mu_dex,D.strikes,'#8C5CC4','μDEX');
+            vline(ctx,xs,ys,D.spot,D.strikes,'#6B6960','SPOT');
+          }}]
+        });
+
+        // GEX
+        new Chart(document.getElementById('gex_2'),{
+          type:'bar',
+          data:{labels:D.gex.map(d=>d.strike),datasets:[
+            {label:'Net GEX',data:D.gex.map(d=>d.net_gex),
+              backgroundColor:D.gex.map(d=>d.net_gex>=0?'rgba(20,138,99,0.6)':'rgba(179,53,48,0.55)'),
+              borderRadius:2,barPercentage:0.85}
+          ]},
+          options:{responsive:true,maintainAspectRatio:false,
+            plugins:{legend:{display:false}},
+            scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
+          },
+          plugins:[{afterDraw(c){
+            const xs=c.scales.x,ys=c.scales.y,ctx=c.ctx;
+            vline(ctx,xs,ys,D.mu_gex,D.gex.map(d=>d.strike),'#148A63','μGEX');
+            if(D.gex_flip) vline(ctx,xs,ys,D.gex_flip,D.gex.map(d=>d.strike),'#B33530','FLIP');
+          }}]
+        });
+
+        // DEX
+        new Chart(document.getElementById('dex_2'),{
+          type:'bar',
+          data:{labels:D.dex.map(d=>d.strike),datasets:[
+            {label:'Net DEX',data:D.dex.map(d=>d.net_dex),
+              backgroundColor:D.dex.map(d=>d.net_dex>=0?'rgba(20,138,99,0.6)':'rgba(179,53,48,0.55)'),
+              borderRadius:2,barPercentage:0.85}
+          ]},
+          options:{responsive:true,maintainAspectRatio:false,
+            plugins:{legend:{display:false}},
+            scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
+          },
+          plugins:[{afterDraw(c){
+            const xs=c.scales.x,ys=c.scales.y,ctx=c.ctx;
+            vline(ctx,xs,ys,D.mu_dex,D.dex.map(d=>d.strike),'#8C5CC4','μDEX');
+          }}]
+        });
+
+        // Max Pain Curve
+        new Chart(document.getElementById('mp_2'),{
+          type:'line',
+          data:{labels:D.mp_curve.map(d=>d.strike),datasets:[
+            {label:'Perda total',data:D.mp_curve.map(d=>d.total_loss),borderColor:'#B8720A',
+              backgroundColor:'rgba(184,114,10,0.1)',borderWidth:1.8,fill:true,tension:0.3,pointRadius:0},
+            {label:'Call loss',data:D.mp_curve.map(d=>d.call_loss),borderColor:'#148A63',
+              borderWidth:1,borderDash:[3,2],fill:false,tension:0.3,pointRadius:0},
+            {label:'Put loss',data:D.mp_curve.map(d=>d.put_loss),borderColor:'#B33530',
+              borderWidth:1,borderDash:[3,2],fill:false,tension:0.3,pointRadius:0}
+          ]},
+          options:{responsive:true,maintainAspectRatio:false,
+            interaction:{mode:'index',intersect:false},
+            plugins:{legend:{position:'top',labels:{boxWidth:8,padding:10,font:{size:9}}}},
+            scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:v=>(v/1e6).toFixed(1)+'M',...tOpt},grid:gOpt}}
+          }
+        });
+      })();
+      </script>
+    </div>
+
+    <div class="exp-block" id="exp3" style="animation-delay:0.18s">
+      <div class="exp-top">
+        <div>
+          <h2>2 Abr — W1</h2>
+          <span class="tag tw">Semanal</span>
+          <span class="tag tg">0 DTE</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <div class="pill" style="--pc:#6B6960">Neutro (-4)</div>
+          <div class="pill" style="--pc:#B8720A">Converg. 35%</div>
+          <div class="pill" style="--pc:#148A63">✓ Coerente</div>
+        </div>
+      </div>
+
+      <!-- CENTER MAP -->
+      <div class="center-map-section">
+        <div class="stat-section-title">Mapa gravitacional — centros sobrepostos</div>
+        <div class="center-map">
+          <div class="cm-track"></div>
+          
+        <div class="cm-mark" style="left:79.8735204309132%">
+          <div class="cm-dot" style="background:#6B6960"></div>
+          <div class="cm-label" style="color:#6B6960">Spot<br>R$180.0</div>
+        </div>
+        <div class="cm-mark" style="left:49.920950269320755%">
+          <div class="cm-dot" style="background:#B8720A"></div>
+          <div class="cm-label" style="color:#B8720A">MP<br>R$177.0</div>
+        </div>
+        <div class="cm-mark" style="left:63.79129465645329%">
+          <div class="cm-dot" style="background:#2E6BBF"></div>
+          <div class="cm-label" style="color:#2E6BBF">μOI<br>R$178.4</div>
+        </div>
+        <div class="cm-mark" style="left:90.01580994613585%">
+          <div class="cm-dot" style="background:#148A63"></div>
+          <div class="cm-label" style="color:#148A63">μGEX<br>R$181.0</div>
+        </div>
+        <div class="cm-mark" style="left:37.88307399917794%">
+          <div class="cm-dot" style="background:#8C5CC4"></div>
+          <div class="cm-label" style="color:#8C5CC4">μDEX<br>R$175.8</div>
+        </div>
+        <div class="cm-mark" style="left:9.98419005386415%">
+          <div class="cm-dot" style="background:#B33530"></div>
+          <div class="cm-label" style="color:#B33530">Flip<br>R$173.0</div>
+        </div>
+        </div>
+        <div class="cm-legend">
+          <span style="color:#6B6960">● Spot R$180.0</span><span style="color:#B8720A">● MP R$177.0</span><span style="color:#2E6BBF">● μOI R$178.4</span><span style="color:#148A63">● μGEX R$181.0</span><span style="color:#8C5CC4">● μDEX R$175.8</span><span style="color:#B33530">● Flip R$173.0</span>
+        </div>
+      </div>
+
+      <!-- CENTERS -->
+      <div class="stat-section-title">Centros de massa</div>
+      <div class="stats-grid">
+        <div class="st-card"><div class="st-label">Max Pain</div><div class="st-value" >R$ 177</div><div class="st-sub">Min. perda total dos compradores</div></div>
+        <div class="st-card"><div class="st-label">μ OI (centro de massa)</div><div class="st-value" style="color:#2E6BBF">R$ 178.39</div><div class="st-sub">σ = R$ 4.52</div></div>
+        <div class="st-card"><div class="st-label">μ GEX (centro de gamma)</div><div class="st-value" style="color:#148A63">R$ 181.02</div><div class="st-sub">Onde o hedge é mais denso</div></div>
+        <div class="st-card"><div class="st-label">μ DEX (centro de delta)</div><div class="st-value" style="color:#8C5CC4">R$ 175.79</div><div class="st-sub">Maior exposição direcional</div></div>
+        <div class="st-card"><div class="st-label">GEX Flip</div><div class="st-value" style="color:#B33530">R$ 173</div><div class="st-sub">Fronteira GEX neg→pos</div></div>
+        <div class="st-card"><div class="st-label">Spot</div><div class="st-value" >R$ 180</div></div>
+      </div>
+
+      <!-- CONVERGENCE -->
+      <div class="stat-section-title">Convergência entre centros</div>
+      <div class="stats-grid">
+        <div class="st-card"><div class="st-label">Score</div><div class="st-value" style="color:#B8720A">35%</div><div class="st-sub">Convergência fraca</div></div>
+        <div class="st-card"><div class="st-label">Spread máx.</div><div class="st-value" >R$ 5.2</div><div class="st-sub">MP ≈ μOI</div></div>
+        <div class="st-card"><div class="st-label">MP vs μOI</div><div class="st-value" >R$ -1.39</div><div class="st-sub">Alinhados</div></div>
+        <div class="st-card"><div class="st-label">MP vs μGEX</div><div class="st-value" >R$ -4.02</div><div class="st-sub">Desalinhados</div></div>
+        <div class="st-card"><div class="st-label">μOI vs μGEX</div><div class="st-value" >R$ -2.63</div><div class="st-sub">Desalinhados</div></div>
+      </div>
+
+      <!-- SENTIMENT -->
+      <div class="stat-section-title">Sentimento e direção</div>
+      <div class="stats-grid">
+        <div class="st-card"><div class="st-label">Sentimento</div><div class="st-value" style="color:#6B6960">Neutro</div><div class="st-sub">Skew +0.04 · PCR 0.78 · μCall R$179 · μPut R$178</div></div>
+        <div class="st-card"><div class="st-label">Direção MP</div><div class="st-value" >para baixo</div><div class="st-sub">MP abaixo do spot</div></div>
+        <div class="st-card"><div class="st-label">Coerência</div><div class="st-value" style="color:#148A63">Forças alinhadas ✓</div><div class="st-sub">Sentimento neutro — sem resistência ao max pain</div></div>
+        <div class="st-card"><div class="st-label">μ Calls</div><div class="st-value" >R$ 178.9</div><div class="st-sub">-0.6% do spot</div></div>
+        <div class="st-card"><div class="st-label">μ Puts</div><div class="st-value" >R$ 177.7</div><div class="st-sub">-1.3% do spot</div></div>
+      </div>
+
+      <!-- DISTRIBUTION -->
+      <div class="stat-section-title">Distribuição estatística</div>
+      <div class="stats-grid">
+        <div class="st-card"><div class="st-label">Skew</div><div class="st-value" >+0.038</div><div class="st-sub">Simétrica</div></div>
+        <div class="st-card"><div class="st-label">Curtose</div><div class="st-value" >1.93</div><div class="st-sub">Excesso: -1.07</div></div>
+        <div class="st-card"><div class="st-label">HHI</div><div class="st-value" >0.0644</div></div>
+        <div class="st-card"><div class="st-label">Gini</div><div class="st-value" >0.172</div></div>
+        <div class="st-card"><div class="st-label">Entropia</div><div class="st-value" >4.01 bits</div><div class="st-sub">Ratio: 98.1%</div></div>
+        <div class="st-card"><div class="st-label">R² (Normal)</div><div class="st-value" style="color:#B33530">0.3758</div><div class="st-sub">Ajuste fraco</div></div>
+        <div class="st-card"><div class="st-label">OI ±1σ do MP</div><div class="st-value" >58.0%</div><div class="st-sub">Normal: 68.3%</div></div>
+        <div class="st-card"><div class="st-label">OI ±2σ do MP</div><div class="st-value" >97.8%</div><div class="st-sub">Normal: 95.4%</div></div>
+      </div>
+
+      <!-- CHARTS -->
+      <div class="charts-2col">
+        <div class="ch-card"><h4>OI + ajuste normal + centros</h4>
+          <div class="ch-wrap"><canvas id="oi_3"></canvas></div></div>
+        <div class="ch-card"><h4>GEX por strike</h4>
+          <div class="ch-wrap"><canvas id="gex_3"></canvas></div></div>
+      </div>
+      <div class="charts-2col">
+        <div class="ch-card"><h4>DEX por strike</h4>
+          <div class="ch-wrap"><canvas id="dex_3"></canvas></div></div>
+        <div class="ch-card"><h4>Curva de max pain</h4>
+          <div class="ch-wrap"><canvas id="mp_3"></canvas></div></div>
+      </div>
+
+      <script>
+      (function(){
+        const D={"strikes": [171.0, 172.0, 173.0, 174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0], "call_oi": [209280.0, 143580.0, 139360.0, 97600.0, 157990.0, 121300.0, 255590.0, 143980.0, 120760.0, 199660.0, 95570.0, 177610.0, 199440.0, 89190.0, 307470.0, 94790.0, 89580.0], "put_oi": [86530.0, 172970.0, 134640.0, 143890.0, 165870.0, 132760.0, 119740.0, 204200.0, 99280.0, 207080.0, 195470.0, 194780.0, 75640.0, 55650.0, 35080.0, 33080.0, 14220.0], "total_oi": [295810.0, 316550.0, 274000.0, 241490.0, 323860.0, 254060.0, 375330.0, 348180.0, 220040.0, 406740.0, 291040.0, 372390.0, 275080.0, 144840.0, 342550.0, 127870.0, 103800.0], "fit": [250511.45244455838, 272304.55365332385, 291711.4412868658, 307980.5301235237, 320452.9703022608, 328606.82614991965, 332093.2896440961, 330761.4291513095, 324669.02692506043, 314078.42114536074, 299437.7693708166, 281349.5978850982, 260529.7116254568, 237760.36502588642, 213841.94653232145, 189547.28985177196, 165582.14322231003], "residuals": [45298.54755544162, 44245.44634667615, -17711.441286865796, -66490.53012352373, 3407.029697739228, -74546.82614991965, 43236.710355903895, 17418.57084869052, -104629.02692506043, 92661.57885463926, -8397.76937081659, 91040.40211490181, 14550.28837454319, -92920.36502588642, 128708.05346767855, -61677.28985177196, -61782.14322231003], "gex": [{"strike": 171.0, "call_gex": 1586677.248, "put_gex": -653232.2760000001, "net_gex": 933444.9719999998}, {"strike": 172.0, "call_gex": 1330469.712, "put_gex": -1585996.5239999997, "net_gex": -255526.81199999969}, {"strike": 173.0, "call_gex": 1530674.496, "put_gex": -1474469.5679999997, "net_gex": 56204.928000000305}, {"strike": 174.0, "call_gex": 1242760.32, "put_gex": -1818194.04, "net_gex": -575433.72}, {"strike": 175.0, "call_gex": 2277899.82, "put_gex": -2391513.6599999997, "net_gex": -113613.83999999985}, {"strike": 176.0, "call_gex": 1929688.92, "put_gex": -2111999.184, "net_gex": -182310.26399999997}, {"strike": 177.0, "call_gex": 4388991.48, "put_gex": -2060054.8560000001, "net_gex": 2328936.6240000003}, {"strike": 178.0, "call_gex": 2617038.0719999997, "put_gex": -3711620.88, "net_gex": -1094582.8080000002}, {"strike": 179.0, "call_gex": 2265409.296, "put_gex": -1862453.088, "net_gex": 402956.2080000001}, {"strike": 180.0, "call_gex": 3790824.624, "put_gex": -3931703.712, "net_gex": -140879.088}, {"strike": 181.0, "call_gex": 1795951.4400000002, "put_gex": -3673272.24, "net_gex": -1877320.8}, {"strike": 182.0, "call_gex": 3234064.9680000003, "put_gex": -3546710.0640000002, "net_gex": -312645.0959999999}, {"strike": 183.0, "call_gex": 3450631.1040000003, "put_gex": -1306242.288, "net_gex": 2144388.8160000006}, {"strike": 184.0, "call_gex": 1433318.9759999998, "put_gex": -894317.7599999999, "net_gex": 539001.2159999999}, {"strike": 185.0, "call_gex": 4512798.683999999, "put_gex": -513739.584, "net_gex": 3999059.0999999996}, {"strike": 186.0, "call_gex": 1249976.7719999999, "put_gex": -433003.968, "net_gex": 816972.8039999999}, {"strike": 187.0, "call_gex": 1033251.5519999999, "put_gex": -164019.168, "net_gex": 869232.3839999998}], "dex": [{"strike": 171.0, "call_dex": 34280064.0, "put_dex": -1401786.0, "net_dex": 32878278.0}, {"strike": 172.0, "call_dex": 22743072.0, "put_dex": -3424806.0, "net_dex": 19318266.0}, {"strike": 173.0, "call_dex": 21322080.0, "put_dex": -3635280.0, "net_dex": 17686800.0}, {"strike": 174.0, "call_dex": 14230080.0, "put_dex": -4662036.0, "net_dex": 9568044.0}, {"strike": 175.0, "call_dex": 21897414.0, "put_dex": -6867018.0, "net_dex": 15030396.0}, {"strike": 176.0, "call_dex": 15720480.0, "put_dex": -6691104.000000001, "net_dex": 9029376.0}, {"strike": 177.0, "call_dex": 30824154.000000004, "put_dex": -7112556.000000001, "net_dex": 23711598.000000004}, {"strike": 178.0, "call_dex": 16068168.000000002, "put_dex": -13967280.0, "net_dex": 2100888.000000002}, {"strike": 179.0, "call_dex": 12172608.000000002, "put_dex": -7862975.999999999, "net_dex": 4309632.000000003}, {"strike": 180.0, "call_dex": 17969400.0, "put_dex": -18637200.0, "net_dex": -667800.0}, {"strike": 181.0, "call_dex": 7569144.000000001, "put_dex": -19703376.000000004, "net_dex": -12134232.000000004}, {"strike": 182.0, "call_dex": 12468222.000000002, "put_dex": -21386844.0, "net_dex": -8918621.999999998}, {"strike": 183.0, "call_dex": 11846736.0, "put_dex": -9122184.0, "net_dex": 2724552.0}, {"strike": 184.0, "call_dex": 4495176.0, "put_dex": -7212240.0, "net_dex": -2717064.0}, {"strike": 185.0, "call_dex": 13282704.0, "put_dex": -4798944.0, "net_dex": 8483760.0}, {"strike": 186.0, "call_dex": 3412440.0, "put_dex": -4823064.000000001, "net_dex": -1410624.000000001}, {"strike": 187.0, "call_dex": 2579904.0, "put_dex": -2150064.0, "net_dex": 429840.0}], "mp_curve": [{"strike": 171.0, "call_loss": 0.0, "put_loss": 13950250.0, "total_loss": 13950250.0}, {"strike": 172.0, "call_loss": 209280.0, "put_loss": 11965900.0, "total_loss": 12175180.0}, {"strike": 173.0, "call_loss": 562140.0, "put_loss": 10154520.0, "total_loss": 10716660.0}, {"strike": 174.0, "call_loss": 1054360.0, "put_loss": 8477780.0, "total_loss": 9532140.0}, {"strike": 175.0, "call_loss": 1644180.0, "put_loss": 6944930.0, "total_loss": 8589110.0}, {"strike": 176.0, "call_loss": 2391990.0, "put_loss": 5577950.0, "total_loss": 7969940.0}, {"strike": 177.0, "call_loss": 3261100.0, "put_loss": 4343730.0, "total_loss": 7604830.0}, {"strike": 178.0, "call_loss": 4385800.0, "put_loss": 3229250.0, "total_loss": 7615050.0}, {"strike": 179.0, "call_loss": 5654480.0, "put_loss": 2318970.0, "total_loss": 7973450.0}, {"strike": 180.0, "call_loss": 7043920.0, "put_loss": 1507970.0, "total_loss": 8551890.0}, {"strike": 181.0, "call_loss": 8633020.0, "put_loss": 904050.0, "total_loss": 9537070.0}, {"strike": 182.0, "call_loss": 10317690.0, "put_loss": 495600.0, "total_loss": 10813290.0}, {"strike": 183.0, "call_loss": 12179970.0, "put_loss": 281930.0, "total_loss": 12461900.0}, {"strike": 184.0, "call_loss": 14241690.0, "put_loss": 143900.0, "total_loss": 14385590.0}, {"strike": 185.0, "call_loss": 16392600.0, "put_loss": 61520.0, "total_loss": 16454120.0}, {"strike": 186.0, "call_loss": 18850980.0, "put_loss": 14220.0, "total_loss": 18865200.0}, {"strike": 187.0, "call_loss": 21404150.0, "put_loss": 0.0, "total_loss": 21404150.0}], "mp": 177.0, "spot": 180.0, "mu_oi": 178.3892308051332, "mu_gex": 181.01583498115576, "mu_dex": 175.7943061775468, "mu_call": 178.90080408665216, "mu_put": 177.73638742949856, "gex_flip": 173.0};
+        function vline(ctx,xs,ys,val,arr,color,lbl){
+          const i=arr.reduce((a,v,j)=>Math.abs(v-val)<Math.abs(arr[a]-val)?j:a,0);
+          const x=xs.getPixelForValue(i);
+          ctx.save();ctx.strokeStyle=color;ctx.lineWidth=1;ctx.setLineDash([3,2]);
+          ctx.beginPath();ctx.moveTo(x,ys.top);ctx.lineTo(x,ys.bottom);ctx.stroke();
+          ctx.fillStyle=color;ctx.font="600 8px var(--mono)";ctx.textAlign='center';
+          ctx.fillText(lbl,x,ys.top-4);ctx.restore();
+        }
+        function yfmt(v){
+          const a=Math.abs(v);
+          if(a>=1e6)return(v/1e6).toFixed(1)+'M';
+          if(a>=1e3)return(v/1e3).toFixed(0)+'k';
+          return Math.round(v);
+        }
+        const tOpt={font:{size:9,family:'var(--mono)'}};
+        const gOpt={color:'rgba(0,0,0,0.05)'};
+
+        // OI + Normal + Centers
+        new Chart(document.getElementById('oi_3'),{
+          type:'bar',
+          data:{labels:D.strikes,datasets:[
+            {label:'OI Total',data:D.total_oi,backgroundColor:'rgba(90,133,24,0.5)',
+              borderColor:'rgba(90,133,24,0.8)',borderWidth:1,borderRadius:2,barPercentage:0.8,order:2},
+            {label:'Normal Fit',data:D.fit,type:'line',borderColor:'#B8720A',
+              borderWidth:2,pointRadius:0,tension:0.4,fill:false,order:1}
+          ]},
+          options:{responsive:true,maintainAspectRatio:false,
+            interaction:{mode:'index',intersect:false},
+            plugins:{legend:{position:'top',labels:{boxWidth:8,padding:10,font:{size:9}}}},
+            scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
+          },
+          plugins:[{afterDraw(c){
+            const xs=c.scales.x,ys=c.scales.y,ctx=c.ctx;
+            vline(ctx,xs,ys,D.mp,D.strikes,'#B8720A','MP');
+            vline(ctx,xs,ys,D.mu_oi,D.strikes,'#2E6BBF','μOI');
+            vline(ctx,xs,ys,D.mu_gex,D.strikes,'#148A63','μGEX');
+            vline(ctx,xs,ys,D.mu_dex,D.strikes,'#8C5CC4','μDEX');
+            vline(ctx,xs,ys,D.spot,D.strikes,'#6B6960','SPOT');
+          }}]
+        });
+
+        // GEX
+        new Chart(document.getElementById('gex_3'),{
+          type:'bar',
+          data:{labels:D.gex.map(d=>d.strike),datasets:[
+            {label:'Net GEX',data:D.gex.map(d=>d.net_gex),
+              backgroundColor:D.gex.map(d=>d.net_gex>=0?'rgba(20,138,99,0.6)':'rgba(179,53,48,0.55)'),
+              borderRadius:2,barPercentage:0.85}
+          ]},
+          options:{responsive:true,maintainAspectRatio:false,
+            plugins:{legend:{display:false}},
+            scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
+          },
+          plugins:[{afterDraw(c){
+            const xs=c.scales.x,ys=c.scales.y,ctx=c.ctx;
+            vline(ctx,xs,ys,D.mu_gex,D.gex.map(d=>d.strike),'#148A63','μGEX');
+            if(D.gex_flip) vline(ctx,xs,ys,D.gex_flip,D.gex.map(d=>d.strike),'#B33530','FLIP');
+          }}]
+        });
+
+        // DEX
+        new Chart(document.getElementById('dex_3'),{
+          type:'bar',
+          data:{labels:D.dex.map(d=>d.strike),datasets:[
+            {label:'Net DEX',data:D.dex.map(d=>d.net_dex),
+              backgroundColor:D.dex.map(d=>d.net_dex>=0?'rgba(20,138,99,0.6)':'rgba(179,53,48,0.55)'),
+              borderRadius:2,barPercentage:0.85}
+          ]},
+          options:{responsive:true,maintainAspectRatio:false,
+            plugins:{legend:{display:false}},
+            scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
+          },
+          plugins:[{afterDraw(c){
+            const xs=c.scales.x,ys=c.scales.y,ctx=c.ctx;
+            vline(ctx,xs,ys,D.mu_dex,D.dex.map(d=>d.strike),'#8C5CC4','μDEX');
+          }}]
+        });
+
+        // Max Pain Curve
+        new Chart(document.getElementById('mp_3'),{
+          type:'line',
+          data:{labels:D.mp_curve.map(d=>d.strike),datasets:[
+            {label:'Perda total',data:D.mp_curve.map(d=>d.total_loss),borderColor:'#B8720A',
+              backgroundColor:'rgba(184,114,10,0.1)',borderWidth:1.8,fill:true,tension:0.3,pointRadius:0},
+            {label:'Call loss',data:D.mp_curve.map(d=>d.call_loss),borderColor:'#148A63',
+              borderWidth:1,borderDash:[3,2],fill:false,tension:0.3,pointRadius:0},
+            {label:'Put loss',data:D.mp_curve.map(d=>d.put_loss),borderColor:'#B33530',
+              borderWidth:1,borderDash:[3,2],fill:false,tension:0.3,pointRadius:0}
+          ]},
+          options:{responsive:true,maintainAspectRatio:false,
+            interaction:{mode:'index',intersect:false},
+            plugins:{legend:{position:'top',labels:{boxWidth:8,padding:10,font:{size:9}}}},
+            scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:v=>(v/1e6).toFixed(1)+'M',...tOpt},grid:gOpt}}
+          }
+        });
+      })();
+      </script>
+    </div>
+
+    <div class="exp-block" id="exp4" style="animation-delay:0.24s">
+      <div class="exp-top">
+        <div>
+          <h2>27 Mar — W4</h2>
+          <span class="tag tw">Semanal</span>
+          <span class="tag tg">0 DTE</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <div class="pill" style="--pc:#B33530">Bearish (+23)</div>
+          <div class="pill" style="--pc:#B33530">Converg. 11%</div>
+          <div class="pill" style="--pc:#B33530">✗ Divergente</div>
+        </div>
+      </div>
+
+      <!-- CENTER MAP -->
+      <div class="center-map-section">
+        <div class="stat-section-title">Mapa gravitacional — centros sobrepostos</div>
+        <div class="center-map">
+          <div class="cm-track"></div>
+          
+        <div class="cm-mark" style="left:35.714285714285715%">
+          <div class="cm-dot" style="background:#6B6960"></div>
+          <div class="cm-label" style="color:#6B6960">Spot<br>R$179.0</div>
+        </div>
+        <div class="cm-mark" style="left:92.85714285714286%">
+          <div class="cm-dot" style="background:#B8720A"></div>
+          <div class="cm-label" style="color:#B8720A">MP<br>R$187.0</div>
+        </div>
+        <div class="cm-mark" style="left:68.22160929169841%">
+          <div class="cm-dot" style="background:#2E6BBF"></div>
+          <div class="cm-label" style="color:#2E6BBF">μOI<br>R$183.6</div>
+        </div>
+        <div class="cm-mark" style="left:41.767553131873974%">
+          <div class="cm-dot" style="background:#148A63"></div>
+          <div class="cm-label" style="color:#148A63">μGEX<br>R$179.8</div>
+        </div>
+        <div class="cm-mark" style="left:75.69682131300327%">
+          <div class="cm-dot" style="background:#8C5CC4"></div>
+          <div class="cm-label" style="color:#8C5CC4">μDEX<br>R$184.6</div>
+        </div>
+        <div class="cm-mark" style="left:7.142857142857142%">
+          <div class="cm-dot" style="background:#B33530"></div>
+          <div class="cm-label" style="color:#B33530">Flip<br>R$175.0</div>
+        </div>
+        </div>
+        <div class="cm-legend">
+          <span style="color:#6B6960">● Spot R$179.0</span><span style="color:#B8720A">● MP R$187.0</span><span style="color:#2E6BBF">● μOI R$183.6</span><span style="color:#148A63">● μGEX R$179.8</span><span style="color:#8C5CC4">● μDEX R$184.6</span><span style="color:#B33530">● Flip R$175.0</span>
+        </div>
+      </div>
+
+      <!-- CENTERS -->
+      <div class="stat-section-title">Centros de massa</div>
+      <div class="stats-grid">
+        <div class="st-card"><div class="st-label">Max Pain</div><div class="st-value" >R$ 187</div><div class="st-sub">Min. perda total dos compradores</div></div>
+        <div class="st-card"><div class="st-label">μ OI (centro de massa)</div><div class="st-value" style="color:#2E6BBF">R$ 183.55</div><div class="st-sub">σ = R$ 4.99</div></div>
+        <div class="st-card"><div class="st-label">μ GEX (centro de gamma)</div><div class="st-value" style="color:#148A63">R$ 179.85</div><div class="st-sub">Onde o hedge é mais denso</div></div>
+        <div class="st-card"><div class="st-label">μ DEX (centro de delta)</div><div class="st-value" style="color:#8C5CC4">R$ 184.60</div><div class="st-sub">Maior exposição direcional</div></div>
+        <div class="st-card"><div class="st-label">GEX Flip</div><div class="st-value" style="color:#B33530">R$ 175</div><div class="st-sub">Fronteira GEX neg→pos</div></div>
+        <div class="st-card"><div class="st-label">Spot</div><div class="st-value" >R$ 179</div></div>
+      </div>
+
+      <!-- CONVERGENCE -->
+      <div class="stat-section-title">Convergência entre centros</div>
+      <div class="stats-grid">
+        <div class="st-card"><div class="st-label">Score</div><div class="st-value" style="color:#B33530">11%</div><div class="st-sub">Divergência</div></div>
+        <div class="st-card"><div class="st-label">Spread máx.</div><div class="st-value" >R$ 7.2</div><div class="st-sub">Spread de R$7.2 entre centros</div></div>
+        <div class="st-card"><div class="st-label">MP vs μOI</div><div class="st-value" >R$ +3.45</div><div class="st-sub">Desalinhados</div></div>
+        <div class="st-card"><div class="st-label">MP vs μGEX</div><div class="st-value" >R$ +7.15</div><div class="st-sub">Desalinhados</div></div>
+        <div class="st-card"><div class="st-label">μOI vs μGEX</div><div class="st-value" >R$ +3.70</div><div class="st-sub">Desalinhados</div></div>
+      </div>
+
+      <!-- SENTIMENT -->
+      <div class="stat-section-title">Sentimento e direção</div>
+      <div class="stats-grid">
+        <div class="st-card"><div class="st-label">Sentimento</div><div class="st-value" style="color:#B33530">Bearish</div><div class="st-sub">Skew -1.14 · PCR 0.95 · μCall R$184 · μPut R$183</div></div>
+        <div class="st-card"><div class="st-label">Direção MP</div><div class="st-value" >para cima</div><div class="st-sub">MP acima do spot</div></div>
+        <div class="st-card"><div class="st-label">Coerência</div><div class="st-value" style="color:#B33530">Forças opostas ✗</div><div class="st-sub">Sentimento bear vs MP acima — forças opostas</div></div>
+        <div class="st-card"><div class="st-label">μ Calls</div><div class="st-value" >R$ 183.8</div><div class="st-sub">+2.7% do spot</div></div>
+        <div class="st-card"><div class="st-label">μ Puts</div><div class="st-value" >R$ 183.3</div><div class="st-sub">+2.4% do spot</div></div>
+      </div>
+
+      <!-- DISTRIBUTION -->
+      <div class="stat-section-title">Distribuição estatística</div>
+      <div class="stats-grid">
+        <div class="st-card"><div class="st-label">Skew</div><div class="st-value" >-1.142</div><div class="st-sub">Cauda esquerda</div></div>
+        <div class="st-card"><div class="st-label">Curtose</div><div class="st-value" >2.86</div><div class="st-sub">Excesso: -0.14</div></div>
+        <div class="st-card"><div class="st-label">HHI</div><div class="st-value" >0.3579</div></div>
+        <div class="st-card"><div class="st-label">Gini</div><div class="st-value" >0.594</div></div>
+        <div class="st-card"><div class="st-label">Entropia</div><div class="st-value" >2.60 bits</div><div class="st-sub">Ratio: 63.5%</div></div>
+        <div class="st-card"><div class="st-label">R² (Normal)</div><div class="st-value" style="color:#B33530">0.0000</div><div class="st-sub">Ajuste fraco</div></div>
+        <div class="st-card"><div class="st-label">OI ±1σ do MP</div><div class="st-value" >67.6%</div><div class="st-sub">Normal: 68.3%</div></div>
+        <div class="st-card"><div class="st-label">OI ±2σ do MP</div><div class="st-value" >82.8%</div><div class="st-sub">Normal: 95.4%</div></div>
+      </div>
+
+      <!-- CHARTS -->
+      <div class="charts-2col">
+        <div class="ch-card"><h4>OI + ajuste normal + centros</h4>
+          <div class="ch-wrap"><canvas id="oi_4"></canvas></div></div>
+        <div class="ch-card"><h4>GEX por strike</h4>
+          <div class="ch-wrap"><canvas id="gex_4"></canvas></div></div>
+      </div>
+      <div class="charts-2col">
+        <div class="ch-card"><h4>DEX por strike</h4>
+          <div class="ch-wrap"><canvas id="dex_4"></canvas></div></div>
+        <div class="ch-card"><h4>Curva de max pain</h4>
+          <div class="ch-wrap"><canvas id="mp_4"></canvas></div></div>
+      </div>
+
+      <script>
+      (function(){
+        const D={"strikes": [171.0, 172.0, 173.0, 174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0], "call_oi": [123910.0, 225110.0, 333590.0, 219190.0, 504270.0, 184740.0, 616620.0, 379210.0, 361090.0, 626460.0, 253790.0, 595060.0, 331890.0, 227150.0, 559840.0, 548190.0, 8400000.0], "put_oi": [414870.0, 388420.0, 371270.0, 356680.0, 425440.0, 403790.0, 274710.0, 338890.0, 333360.0, 846740.0, 238480.0, 314210.0, 186760.0, 230880.0, 189710.0, 202770.0, 8189999.999999999], "total_oi": [538780.0, 613530.0, 704860.0, 575870.0, 929710.0, 588530.0, 891330.0, 718100.0, 694450.0, 1473200.0, 492270.0, 909270.0, 518650.0, 458030.0, 749550.0, 750960.0, 16590000.0], "fit": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "residuals": [538780.0, 613530.0, 704860.0, 575870.0, 929710.0, 588530.0, 891330.0, 718100.0, 694450.0, 1473200.0, 492270.0, 909270.0, 518650.0, 458030.0, 749550.0, 750960.0, 16590000.0], "gex": [{"strike": 171.0, "call_gex": 543917.44247, "put_gex": -1821120.40479, "net_gex": -1277202.96232}, {"strike": 172.0, "call_gex": 1514677.3971000002, "put_gex": -2613526.6962000006, "net_gex": -1098849.2991000004}, {"strike": 173.0, "call_gex": 3249321.3857600004, "put_gex": -3616342.0692800004, "net_gex": -367020.68351999996}, {"strike": 174.0, "call_gex": 2921595.78464, "put_gex": -4754207.69408, "net_gex": -1832611.9094399996}, {"strike": 175.0, "call_gex": 8692635.50766, "put_gex": -7333759.39552, "net_gex": 1358876.1121399999}, {"strike": 176.0, "call_gex": 3912627.1187400003, "put_gex": -8577784.863570001, "net_gex": -4665157.744830001}, {"strike": 177.0, "call_gex": 15193226.371979998, "put_gex": -6768725.01159, "net_gex": 8424501.360389998}, {"strike": 178.0, "call_gex": 10315577.20089, "put_gex": -9218759.942010002, "net_gex": 1096817.2588799987}, {"strike": 179.0, "call_gex": 10308589.05879, "put_gex": -9506257.1064, "net_gex": 802331.9523900002}, {"strike": 180.0, "call_gex": 17824295.51568, "put_gex": -24091791.949920002, "net_gex": -6267496.434240002}, {"strike": 181.0, "call_gex": 6855010.783770001, "put_gex": -6441479.064240001, "net_gex": 413531.7195299994}, {"strike": 182.0, "call_gex": 14604799.17436, "put_gex": -7671513.188820001, "net_gex": 6933285.985539999}, {"strike": 183.0, "call_gex": 6975961.393440001, "put_gex": -3925489.01696, "net_gex": 3050472.3764800006}, {"strike": 184.0, "call_gex": 3922902.98785, "put_gex": -3987320.4571200004, "net_gex": -64417.469270000234}, {"strike": 185.0, "call_gex": 7587703.545120001, "put_gex": -2571204.70053, "net_gex": 5016498.844590001}, {"strike": 186.0, "call_gex": 5532835.07385, "put_gex": -2059534.2816900003, "net_gex": 3473300.7921599997}, {"strike": 187.0, "call_gex": 61095778.800000004, "put_gex": -59568384.330000006, "net_gex": 1527394.4699999988}], "dex": [{"strike": 171.0, "call_dex": 21514493.3, "put_dex": -2227851.9, "net_dex": 19286641.400000002}, {"strike": 172.0, "call_dex": 38682902.4, "put_dex": -2781087.2, "net_dex": 35901815.199999996}, {"strike": 173.0, "call_dex": 55532727.300000004, "put_dex": -4652013.100000001, "net_dex": 50880714.2}, {"strike": 174.0, "call_dex": 34919158.9, "put_dex": -7023029.2, "net_dex": 27896129.7}, {"strike": 175.0, "call_dex": 75822037.2, "put_dex": -12184601.6, "net_dex": 63637435.6}, {"strike": 176.0, "call_dex": 25793398.8, "put_dex": -15901250.200000001, "net_dex": 9892148.6}, {"strike": 177.0, "call_dex": 78366235.8, "put_dex": -14260196.1, "net_dex": 64106039.699999996}, {"strike": 178.0, "call_dex": 42763511.699999996, "put_dex": -22444684.7, "net_dex": 20318826.999999996}, {"strike": 179.0, "call_dex": 34902959.4, "put_dex": -27448862.400000002, "net_dex": 7454096.999999996}, {"strike": 180.0, "call_dex": 50461353.0, "put_dex": -83361553.00000001, "net_dex": -32900200.000000015}, {"strike": 181.0, "call_dex": 16354227.6, "put_dex": -27320268.8, "net_dex": -10966041.200000001}, {"strike": 182.0, "call_dex": 30889564.599999998, "put_dex": -39932948.9, "net_dex": -9043384.3}, {"strike": 183.0, "call_dex": 13069828.200000001, "put_dex": -26075431.200000003, "net_dex": -13005603.000000002}, {"strike": 184.0, "call_dex": 6505576.0, "put_dex": -34715116.8, "net_dex": -28209540.799999997}, {"strike": 185.0, "call_dex": 11023249.6, "put_dex": -30222700.099999998, "net_dex": -19199450.5}, {"strike": 186.0, "call_dex": 6868820.7, "put_dex": -33755121.9, "net_dex": -26886301.2}, {"strike": 187.0, "call_dex": 75180000.0, "put_dex": -1392709499.9999998, "net_dex": -1317529499.9999998}], "mp_curve": [{"strike": 171.0, "call_loss": 0.0, "put_loss": 168050900.0, "total_loss": 168050900.0}, {"strike": 172.0, "call_loss": 123910.0, "put_loss": 154758790.0, "total_loss": 154882700.0}, {"strike": 173.0, "call_loss": 472930.0, "put_loss": 141855100.0, "total_loss": 142328030.0}, {"strike": 174.0, "call_loss": 1155540.0, "put_loss": 129322679.99999999, "total_loss": 130478219.99999999}, {"strike": 175.0, "call_loss": 2057340.0, "put_loss": 117146939.99999999, "total_loss": 119204279.99999999}, {"strike": 176.0, "call_loss": 3463410.0, "put_loss": 105396639.99999999, "total_loss": 108860049.99999999}, {"strike": 177.0, "call_loss": 5054220.0, "put_loss": 94050129.99999999, "total_loss": 99104349.99999999}, {"strike": 178.0, "call_loss": 7261650.0, "put_loss": 82978329.99999999, "total_loss": 90239979.99999999}, {"strike": 179.0, "call_loss": 9848290.0, "put_loss": 72245420.0, "total_loss": 82093710.0}, {"strike": 180.0, "call_loss": 12796020.0, "put_loss": 61845869.99999999, "total_loss": 74641890.0}, {"strike": 181.0, "call_loss": 16370210.0, "put_loss": 52293059.99999999, "total_loss": 68663270.0}, {"strike": 182.0, "call_loss": 20198190.0, "put_loss": 42978729.99999999, "total_loss": 63176919.99999999}, {"strike": 183.0, "call_loss": 24621230.0, "put_loss": 33978610.0, "total_loss": 58599840.0}, {"strike": 184.0, "call_loss": 29376160.0, "put_loss": 25165249.999999996, "total_loss": 54541410.0}, {"strike": 185.0, "call_loss": 34358240.0, "put_loss": 16582769.999999998, "total_loss": 50941010.0}, {"strike": 186.0, "call_loss": 39900160.0, "put_loss": 8189999.999999999, "total_loss": 48090160.0}, {"strike": 187.0, "call_loss": 45990270.0, "put_loss": 0.0, "total_loss": 45990270.0}], "mp": 187.0, "spot": 179.0, "mu_oi": 183.55102530083778, "mu_gex": 179.84745743846236, "mu_dex": 184.59755498382046, "mu_call": 183.82609241751788, "mu_put": 183.26024259173064, "gex_flip": 175.0};
+        function vline(ctx,xs,ys,val,arr,color,lbl){
+          const i=arr.reduce((a,v,j)=>Math.abs(v-val)<Math.abs(arr[a]-val)?j:a,0);
+          const x=xs.getPixelForValue(i);
+          ctx.save();ctx.strokeStyle=color;ctx.lineWidth=1;ctx.setLineDash([3,2]);
+          ctx.beginPath();ctx.moveTo(x,ys.top);ctx.lineTo(x,ys.bottom);ctx.stroke();
+          ctx.fillStyle=color;ctx.font="600 8px var(--mono)";ctx.textAlign='center';
+          ctx.fillText(lbl,x,ys.top-4);ctx.restore();
+        }
+        function yfmt(v){
+          const a=Math.abs(v);
+          if(a>=1e6)return(v/1e6).toFixed(1)+'M';
+          if(a>=1e3)return(v/1e3).toFixed(0)+'k';
+          return Math.round(v);
+        }
+        const tOpt={font:{size:9,family:'var(--mono)'}};
+        const gOpt={color:'rgba(0,0,0,0.05)'};
+
+        // OI + Normal + Centers
+        new Chart(document.getElementById('oi_4'),{
+          type:'bar',
+          data:{labels:D.strikes,datasets:[
+            {label:'OI Total',data:D.total_oi,backgroundColor:'rgba(90,133,24,0.5)',
+              borderColor:'rgba(90,133,24,0.8)',borderWidth:1,borderRadius:2,barPercentage:0.8,order:2},
+            {label:'Normal Fit',data:D.fit,type:'line',borderColor:'#B8720A',
+              borderWidth:2,pointRadius:0,tension:0.4,fill:false,order:1}
+          ]},
+          options:{responsive:true,maintainAspectRatio:false,
+            interaction:{mode:'index',intersect:false},
+            plugins:{legend:{position:'top',labels:{boxWidth:8,padding:10,font:{size:9}}}},
+            scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
+          },
+          plugins:[{afterDraw(c){
+            const xs=c.scales.x,ys=c.scales.y,ctx=c.ctx;
+            vline(ctx,xs,ys,D.mp,D.strikes,'#B8720A','MP');
+            vline(ctx,xs,ys,D.mu_oi,D.strikes,'#2E6BBF','μOI');
+            vline(ctx,xs,ys,D.mu_gex,D.strikes,'#148A63','μGEX');
+            vline(ctx,xs,ys,D.mu_dex,D.strikes,'#8C5CC4','μDEX');
+            vline(ctx,xs,ys,D.spot,D.strikes,'#6B6960','SPOT');
+          }}]
+        });
+
+        // GEX
+        new Chart(document.getElementById('gex_4'),{
+          type:'bar',
+          data:{labels:D.gex.map(d=>d.strike),datasets:[
+            {label:'Net GEX',data:D.gex.map(d=>d.net_gex),
+              backgroundColor:D.gex.map(d=>d.net_gex>=0?'rgba(20,138,99,0.6)':'rgba(179,53,48,0.55)'),
+              borderRadius:2,barPercentage:0.85}
+          ]},
+          options:{responsive:true,maintainAspectRatio:false,
+            plugins:{legend:{display:false}},
+            scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
+          },
+          plugins:[{afterDraw(c){
+            const xs=c.scales.x,ys=c.scales.y,ctx=c.ctx;
+            vline(ctx,xs,ys,D.mu_gex,D.gex.map(d=>d.strike),'#148A63','μGEX');
+            if(D.gex_flip) vline(ctx,xs,ys,D.gex_flip,D.gex.map(d=>d.strike),'#B33530','FLIP');
+          }}]
+        });
+
+        // DEX
+        new Chart(document.getElementById('dex_4'),{
+          type:'bar',
+          data:{labels:D.dex.map(d=>d.strike),datasets:[
+            {label:'Net DEX',data:D.dex.map(d=>d.net_dex),
+              backgroundColor:D.dex.map(d=>d.net_dex>=0?'rgba(20,138,99,0.6)':'rgba(179,53,48,0.55)'),
+              borderRadius:2,barPercentage:0.85}
+          ]},
+          options:{responsive:true,maintainAspectRatio:false,
+            plugins:{legend:{display:false}},
+            scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
+          },
+          plugins:[{afterDraw(c){
+            const xs=c.scales.x,ys=c.scales.y,ctx=c.ctx;
+            vline(ctx,xs,ys,D.mu_dex,D.dex.map(d=>d.strike),'#8C5CC4','μDEX');
+          }}]
+        });
+
+        // Max Pain Curve
+        new Chart(document.getElementById('mp_4'),{
+          type:'line',
+          data:{labels:D.mp_curve.map(d=>d.strike),datasets:[
+            {label:'Perda total',data:D.mp_curve.map(d=>d.total_loss),borderColor:'#B8720A',
+              backgroundColor:'rgba(184,114,10,0.1)',borderWidth:1.8,fill:true,tension:0.3,pointRadius:0},
+            {label:'Call loss',data:D.mp_curve.map(d=>d.call_loss),borderColor:'#148A63',
+              borderWidth:1,borderDash:[3,2],fill:false,tension:0.3,pointRadius:0},
+            {label:'Put loss',data:D.mp_curve.map(d=>d.put_loss),borderColor:'#B33530',
+              borderWidth:1,borderDash:[3,2],fill:false,tension:0.3,pointRadius:0}
+          ]},
+          options:{responsive:true,maintainAspectRatio:false,
+            interaction:{mode:'index',intersect:false},
+            plugins:{legend:{position:'top',labels:{boxWidth:8,padding:10,font:{size:9}}}},
+            scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:v=>(v/1e6).toFixed(1)+'M',...tOpt},grid:gOpt}}
+          }
+        });
+      })();
+      </script>
+    </div>
+  <div class="footer">
+    BOVA11 Mapa Gravitacional — MP · μOI · μGEX · μDEX · Convergência · Sentimento<br>
+    Não constitui recomendação de investimento.
+  </div>
+</div>
+<script>
+Chart.defaults.color='#9C9A91';
+Chart.defaults.borderColor='rgba(0,0,0,0.06)';
+Chart.defaults.font.family="'Instrument Sans',sans-serif";
+Chart.defaults.font.size=10;
+</script>
+</body>
+</html>

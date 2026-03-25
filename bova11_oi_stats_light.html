@@ -1,0 +1,1745 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BOVA11 — Distribuição Estatística do OI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg:#FAFAF8; --bg2:#F2F1EE; --bg3:#E8E7E3; --card:#FFFFFF;
+  --border:rgba(0,0,0,0.08); --border2:rgba(0,0,0,0.14);
+  --t1:#1A1A18; --t2:#6B6960; --t3:#9C9A91;
+  --green:#148A63; --lime:#5A8518; --amber:#B8720A; --red:#B33530; --blue:#2E6BBF;
+  --font:'Instrument Sans',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-font-smoothing:antialiased; }
+
+.shell { max-width:1200px; margin:0 auto; padding:48px 28px 80px; }
+
+/* Header */
+.hdr { display:flex; justify-content:space-between; align-items:flex-end;
+        margin-bottom:36px; border-bottom:1px solid var(--border); padding-bottom:24px;
+        flex-wrap:wrap; gap:16px; }
+.hdr h1 { font-size:26px; font-weight:700; letter-spacing:-0.03em; }
+.hdr h1 span { color:var(--t3); font-weight:400; font-size:20px; }
+.hdr .meta { font-size:11px; color:var(--t3); font-family:var(--mono); text-align:right; line-height:1.7; }
+
+/* Nav strip */
+.nav-strip {
+  display:flex; gap:6px; overflow-x:auto; margin-bottom:36px;
+  padding-bottom:4px; scrollbar-width:thin;
+}
+.nav-strip::-webkit-scrollbar { height:3px; }
+.nav-strip::-webkit-scrollbar-thumb { background:var(--t3); border-radius:2px; }
+.nav-chip {
+  flex:0 0 auto; padding:10px 14px; border-radius:10px;
+  background:var(--card); border:1px solid var(--border);
+  cursor:pointer; transition:all 0.2s; text-decoration:none; display:block;
+  min-width:170px;
+}
+.nav-chip:hover { border-color:var(--border2); background:var(--bg3); }
+.nc-label { font-size:12px; font-weight:600; color:var(--t1); margin-bottom:3px; }
+.nc-row { display:flex; align-items:baseline; gap:8px; }
+.nc-mp { font-size:13px; font-family:var(--mono); color:var(--t2); }
+.nc-grade { font-size:11px; font-weight:600; }
+.nc-sub { font-size:10px; color:var(--t3); font-family:var(--mono); margin-top:3px; }
+
+/* Expiration blocks */
+.exp-block {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:16px; padding:28px; margin-bottom:28px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+  animation: fadeUp 0.5s ease both;
+}
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.exp-top {
+  display:flex; justify-content:space-between; align-items:flex-start;
+  margin-bottom:20px; flex-wrap:wrap; gap:12px;
+}
+.exp-top h2 { font-size:20px; font-weight:600; letter-spacing:-0.02em; margin-bottom:6px; }
+.tag {
+  display:inline-block; font-size:10px; font-weight:600; font-family:var(--mono);
+  padding:3px 8px; border-radius:5px; text-transform:uppercase; letter-spacing:0.04em;
+}
+.tw { background:rgba(59,125,216,0.12); color:var(--blue); }
+.tm { background:rgba(29,158,117,0.12); color:var(--green); }
+.tg { background:rgba(0,0,0,0.04); color:var(--t2); margin-left:4px; }
+.grade-pill {
+  display:flex; align-items:center; gap:6px; font-size:12px; font-weight:600;
+  color:var(--gc); padding:6px 14px; border-radius:20px;
+  background:color-mix(in srgb, var(--gc) 8%, transparent);
+  border:1px solid color-mix(in srgb, var(--gc) 20%, transparent);
+}
+.gp-dot { width:6px; height:6px; border-radius:50%; background:var(--gc); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* Section titles */
+.stat-section-title {
+  font-size:10px; font-weight:600; color:var(--t3);
+  text-transform:uppercase; letter-spacing:0.07em;
+  margin:20px 0 8px; padding-left:2px;
+}
+
+/* Stat cards */
+.stats-grid {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(155px,1fr));
+  gap:8px; margin-bottom:4px;
+}
+.st-card {
+  background:var(--bg2); border-radius:8px; padding:10px 12px;
+}
+.st-label {
+  font-size:10px; color:var(--t3); text-transform:uppercase;
+  letter-spacing:0.05em; font-weight:600; margin-bottom:4px;
+}
+.st-value {
+  font-size:15px; font-weight:600; font-family:var(--mono);
+  letter-spacing:-0.02em; line-height:1.3;
+}
+.st-sub {
+  font-size:10px; color:var(--t3); margin-top:3px; line-height:1.4;
+}
+
+/* Charts */
+.charts-2col {
+  display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px;
+}
+@media(max-width:750px) { .charts-2col { grid-template-columns:1fr; } }
+.ch-card {
+  background:var(--bg2); border-radius:10px; padding:14px;
+}
+.ch-card h4 {
+  font-size:10px; color:var(--t3); text-transform:uppercase;
+  letter-spacing:0.05em; font-weight:600; margin-bottom:8px;
+}
+.ch-wrap { position:relative; height:220px; }
+.ch-wrap canvas { position:absolute; inset:0; }
+
+/* Glossary */
+.glossary {
+  margin:32px 0 24px; border:1px solid var(--border); border-radius:12px;
+  background:var(--bg2); overflow:hidden;
+}
+.glossary summary {
+  padding:14px 20px; cursor:pointer; font-size:13px; font-weight:600;
+  color:var(--t2); list-style:none; user-select:none;
+}
+.glossary summary::-webkit-details-marker { display:none }
+.glossary[open] summary { border-bottom:1px solid var(--border); color:var(--t1); }
+.gl-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:1px; background:var(--border);
+}
+.gl-item { background:var(--bg2); padding:14px 18px; }
+.gl-title { font-size:11px; font-weight:700; color:var(--t1); margin-bottom:5px; letter-spacing:0.02em; }
+.gl-body { font-size:11px; color:var(--t2); line-height:1.6; }
+
+/* Footer */
+.footer {
+  text-align:center; padding:32px 0 0; margin-top:16px;
+  border-top:1px solid var(--border);
+  font-size:11px; color:var(--t3); line-height:1.8;
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="hdr">
+    <div><h1>BOVA11 <span>Distribuição estatística do OI</span></h1></div>
+    <div class="meta">Referência: 24/Mar/2026<br>Spot ≈ R$ 181.00<br>Gerado: 24/03/2026 21:15</div>
+  </div>
+
+  <div class="nav-strip">
+        <a class="nav-chip" href="#" onclick="event.preventDefault();
+           document.getElementById('exp0').scrollIntoView({behavior:'smooth'})">
+          <div class="nc-label">10 Abr — W2</div>
+          <div class="nc-row">
+            <span class="nc-mp">MP R$179</span>
+            <span class="nc-grade" style="color:#148A63">Alta</span>
+          </div>
+          <div class="nc-sub">R²=1.00 · Gini=0.84 · 17DTE</div>
+        </a>
+        <a class="nav-chip" href="#" onclick="event.preventDefault();
+           document.getElementById('exp1').scrollIntoView({behavior:'smooth'})">
+          <div class="nc-label">15 Mai — Mensal</div>
+          <div class="nc-row">
+            <span class="nc-mp">MP R$176</span>
+            <span class="nc-grade" style="color:#B8720A">Levemente</span>
+          </div>
+          <div class="nc-sub">R²=0.00 · Gini=0.37 · 52DTE</div>
+        </a>
+        <a class="nav-chip" href="#" onclick="event.preventDefault();
+           document.getElementById('exp2').scrollIntoView({behavior:'smooth'})">
+          <div class="nc-label">17 Abr — Mensal</div>
+          <div class="nc-row">
+            <span class="nc-mp">MP R$180</span>
+            <span class="nc-grade" style="color:#B8720A">Levemente</span>
+          </div>
+          <div class="nc-sub">R²=0.17 · Gini=0.37 · 24DTE</div>
+        </a>
+        <a class="nav-chip" href="#" onclick="event.preventDefault();
+           document.getElementById('exp3').scrollIntoView({behavior:'smooth'})">
+          <div class="nc-label">2 Abr — W1</div>
+          <div class="nc-row">
+            <span class="nc-mp">MP R$177</span>
+            <span class="nc-grade" style="color:#B33530">Distribuição</span>
+          </div>
+          <div class="nc-sub">R²=0.38 · Gini=0.17 · 9DTE</div>
+        </a>
+        <a class="nav-chip" href="#" onclick="event.preventDefault();
+           document.getElementById('exp4').scrollIntoView({behavior:'smooth'})">
+          <div class="nc-label">27 Mar — W4</div>
+          <div class="nc-row">
+            <span class="nc-mp">MP R$187</span>
+            <span class="nc-grade" style="color:#148A63">Alta</span>
+          </div>
+          <div class="nc-sub">R²=0.00 · Gini=0.59 · 3DTE</div>
+        </a></div>
+
+  
+    <div class="exp-block" id="exp0" style="animation-delay:0.0s">
+      <div class="exp-top">
+        <div>
+          <h2>10 Abr — W2</h2>
+          <span class="tag tw">Semanal</span>
+          <span class="tag tg">17 DTE</span>
+        </div>
+        <div class="grade-pill" style="--gc:#148A63">
+          <span class="gp-dot"></span>Alta concentração
+        </div>
+      </div>
+
+      <!-- Stat cards row 1: Posição -->
+      <div class="stat-section-title">Posição</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Max Pain</div>
+      <div class="st-value" >R$ 179</div></div>
+        <div class="st-card">
+      <div class="st-label">Spot</div>
+      <div class="st-value" >R$ 181</div></div>
+        <div class="st-card">
+      <div class="st-label">Distância MP→Spot</div>
+      <div class="st-value" style="color:#B8720A">+1.10%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI Total</div>
+      <div class="st-value" >50.0M</div></div>
+      </div>
+
+      <!-- Stat cards row 2: Centro de massa -->
+      <div class="stat-section-title">Centro de massa do OI</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Média ponderada (μ)</div>
+      <div class="st-value" >R$ 179.49</div><div class="st-sub">Centro de massa total</div></div>
+        <div class="st-card">
+      <div class="st-label">σ ponderado</div>
+      <div class="st-value" >R$ 1.34</div><div class="st-sub">Dispersão em torno de μ</div></div>
+        <div class="st-card">
+      <div class="st-label">μ Calls</div>
+      <div class="st-value" >R$ 179.61</div><div class="st-sub">Centro de massa das calls</div></div>
+        <div class="st-card">
+      <div class="st-label">μ Puts</div>
+      <div class="st-value" >R$ 179.36</div><div class="st-sub">Centro de massa das puts</div></div>
+        <div class="st-card">
+      <div class="st-label">MP vs μ OI</div>
+      <div class="st-value" >-0.49</div><div class="st-sub">Max pain abaixo</div></div>
+      </div>
+
+      <!-- Stat cards row 3: Forma -->
+      <div class="stat-section-title">Forma da distribuição</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Assimetria (Skew)</div>
+      <div class="st-value" style="color:#148A63">-0.237</div><div class="st-sub">Simétrica</div></div>
+        <div class="st-card">
+      <div class="st-label">Curtose</div>
+      <div class="st-value" style="color:#148A63">19.867</div><div class="st-sub">Excesso: +16.867</div></div>
+        <div class="st-card">
+      <div class="st-label">KS Estatística</div>
+      <div class="st-value" >0.3311</div><div class="st-sub">p-valor: 0.0000</div></div>
+        <div class="st-card">
+      <div class="st-label">Normalidade?</div>
+      <div class="st-value" style="color:#B33530">Não ✗</div><div class="st-sub">Rejeita H₀ de normalidade</div></div>
+      </div>
+
+      <!-- Stat cards row 4: Concentração -->
+      <div class="stat-section-title">Métricas de concentração</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">HHI</div>
+      <div class="st-value" >0.4469</div><div class="st-sub">Normalizado: 0.4124</div></div>
+        <div class="st-card">
+      <div class="st-label">Gini</div>
+      <div class="st-value" style="color:#148A63">0.844</div><div class="st-sub">0 = uniforme, 1 = concentrado</div></div>
+        <div class="st-card">
+      <div class="st-label">Entropia</div>
+      <div class="st-value" >1.46 bits</div><div class="st-sub">Máx: 4.09 · Ratio: 35.79%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±1σ do MP</div>
+      <div class="st-value" style="color:#148A63">94.8%</div><div class="st-sub">Normal teórico: 68.3%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±2σ do MP</div>
+      <div class="st-value" >95.4%</div><div class="st-sub">Normal teórico: 95.4%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±R$2 do MP</div>
+      <div class="st-value" >95.4%</div><div class="st-sub">Contratos perto do max pain</div></div>
+      </div>
+
+      <!-- Ajuste normal -->
+      <div class="stat-section-title">Ajuste Gaussiano</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">μ (fit)</div>
+      <div class="st-value" >R$ 179.47</div></div>
+        <div class="st-card">
+      <div class="st-label">σ (fit)</div>
+      <div class="st-value" >R$ 0.46</div></div>
+        <div class="st-card">
+      <div class="st-label">R²</div>
+      <div class="st-value" style="color:#148A63">0.9994</div><div class="st-sub">Bom ajuste</div></div>
+        <div class="st-card">
+      <div class="st-label">Forma</div>
+      <div class="st-value" >simétrica, pico acentuado (leptocúrtica)</div></div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-2col">
+        <div class="ch-card">
+          <h4>Distribuição do OI vs Ajuste Normal</h4>
+          <div class="ch-wrap"><canvas id="oi_0"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <h4>Curva de max pain (perda total)</h4>
+          <div class="ch-wrap"><canvas id="mp_0"></canvas></div>
+        </div>
+      </div>
+      <div class="charts-2col">
+        <div class="ch-card">
+          <h4>Calls vs Puts — distribuição separada</h4>
+          <div class="ch-wrap"><canvas id="cp_0"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <h4>Resíduos do ajuste (OI real − Normal)</h4>
+          <div class="ch-wrap"><canvas id="res_0"></canvas></div>
+        </div>
+      </div>
+
+      <script>
+      (function() {
+        const D = {"strikes": [171.0, 172.0, 173.0, 174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0], "call_oi": [21400.0, 174150.0, 58800.0, 59190.0, 75330.0, 13230.0, 90700.0, 190020.0, 12500000.0, 11090000.0, 178800.0, 49260.0, 182920.0, 250360.0, 481120.0, 207330.0, 67060.0], "put_oi": [99810.0, 51330.0, 49260.0, 84750.0, 237980.0, 503.0, 43260.0, 30930.0, 12560000.0, 11050000.0, 14430.0, 25850.0, 23400.0, 9450.0, 907.0, 9570.0, 53200.0], "total_oi": [121210.0, 225480.0, 108060.0, 143940.0, 313310.0, 13733.0, 133960.0, 220950.0, 25060000.0, 22140000.0, 193230.0, 75110.0, 206320.0, 259810.0, 482027.0, 216900.0, 120260.0], "normal_fit": [1.6676746213130695e-67, 5.59355996532564e-51, 1.5879814841238544e-36, 3.815774730831266e-24, 7.760687186705105e-14, 1.335973324936441e-05, 19.46594771214597, 240067.558454348, 25059451.22452276, 22140620.81467725, 165572.49362986223, 10.480131751781586, 5.614685732066635e-06, 2.5460347121837863e-14, 9.771997464097346e-25, 3.17455260560517e-37, 8.728947233401512e-52], "residuals": [121210.0, 225480.0, 108060.0, 143940.0, 313310.0, 13732.999986640267, 133940.53405228784, -19117.558454348007, 548.7754772417247, -620.8146772496402, 27657.506370137766, 75099.51986824822, 206319.99999438532, 259810.0, 482027.0, 216900.0, 120260.0], "mp": 179.0, "spot": 181.0, "mu": 179.49064847514606, "sigma": 1.335250928848962, "call_mean": 179.6112161035934, "put_mean": 179.36341948922617};
+        const MPC = [{"strike": 171.0, "call_loss": 0.0, "put_loss": 203604353.0, "total_loss": 203604353.0}, {"strike": 172.0, "call_loss": 21400.0, "put_loss": 179359533.0, "total_loss": 179380933.0}, {"strike": 173.0, "call_loss": 216950.0, "put_loss": 155166043.0, "total_loss": 155382993.0}, {"strike": 174.0, "call_loss": 471300.0, "put_loss": 131021813.0, "total_loss": 131493113.0}, {"strike": 175.0, "call_loss": 784840.0, "put_loss": 106962333.0, "total_loss": 107747173.0}, {"strike": 176.0, "call_loss": 1173710.0, "put_loss": 83140833.0, "total_loss": 84314543.0}, {"strike": 177.0, "call_loss": 1575810.0, "put_loss": 59319836.0, "total_loss": 60895646.0}, {"strike": 178.0, "call_loss": 2068610.0, "put_loss": 35542099.0, "total_loss": 37610709.0}, {"strike": 179.0, "call_loss": 2751430.0, "put_loss": 11795292.0, "total_loss": 14546722.0}, {"strike": 180.0, "call_loss": 15934250.0, "put_loss": 608485.0, "total_loss": 16542735.0}, {"strike": 181.0, "call_loss": 40207070.0, "put_loss": 471678.0, "total_loss": 40678748.0}, {"strike": 182.0, "call_loss": 64658690.0, "put_loss": 349301.0, "total_loss": 65007991.0}, {"strike": 183.0, "call_loss": 89159570.0, "put_loss": 252774.0, "total_loss": 89412344.0}, {"strike": 184.0, "call_loss": 113843370.0, "put_loss": 179647.0, "total_loss": 114023017.0}, {"strike": 185.0, "call_loss": 138777530.0, "put_loss": 115970.0, "total_loss": 138893500.0}, {"strike": 186.0, "call_loss": 164192810.0, "put_loss": 53200.0, "total_loss": 164246010.0}, {"strike": 187.0, "call_loss": 189815420.0, "put_loss": 0.0, "total_loss": 189815420.0}];
+
+        // ── OI Distribution + Normal Fit ──
+        new Chart(document.getElementById('oi_0'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [
+              { label: 'OI Total', data: D.total_oi, backgroundColor: 'rgba(90,133,24,0.55)',
+                 borderColor: 'rgba(90,133,24,0.9)', borderWidth: 1, borderRadius: 2,
+                 barPercentage: 0.8, order: 2 },
+              { label: 'Ajuste Normal', data: D.normal_fit, type: 'line',
+                 borderColor: '#B8720A', borderWidth: 2, pointRadius: 0,
+                 tension: 0.4, fill: false, order: 1 },
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { position: 'top', labels: { boxWidth: 8, padding: 10, font: { size: 9 } } },
+            },
+            scales: {
+              x: { ticks: { font: { size: 9, family: 'var(--mono)' } }, grid: { display: false } },
+              y: { ticks: { callback: v => {
+                     if (Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if (Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font: { size: 9, family: 'var(--mono)' } },
+                   grid: { color: 'rgba(0,0,0,0.05)' } },
+            }
+          },
+          plugins: [{
+            afterDraw(chart) {
+              const xs = chart.scales.x, ys = chart.scales.y, ctx = chart.ctx;
+              // Max pain line
+              const mpI = D.strikes.indexOf(D.mp);
+              if (mpI >= 0) {
+                const x = xs.getPixelForValue(mpI);
+                ctx.save(); ctx.strokeStyle='#B8720A'; ctx.lineWidth=1;
+                ctx.setLineDash([3,2]); ctx.beginPath();
+                ctx.moveTo(x,ys.top); ctx.lineTo(x,ys.bottom); ctx.stroke();
+                ctx.fillStyle='#B8720A'; ctx.font="600 8px var(--mono)";
+                ctx.textAlign='center'; ctx.fillText('MP',x,ys.top-4); ctx.restore();
+              }
+              // μ line
+              const muI = D.strikes.reduce((a,v,i) => Math.abs(v-D.mu)<Math.abs(D.strikes[a]-D.mu)?i:a, 0);
+              const mx = xs.getPixelForValue(muI);
+              ctx.save(); ctx.strokeStyle='#2E6BBF'; ctx.lineWidth=1;
+              ctx.setLineDash([3,2]); ctx.beginPath();
+              ctx.moveTo(mx,ys.top); ctx.lineTo(mx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#2E6BBF'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ',mx,ys.top-4); ctx.restore();
+              // Spot line
+              const spI = D.strikes.reduce((a,v,i) => Math.abs(v-D.spot)<Math.abs(D.strikes[a]-D.spot)?i:a, 0);
+              const sx = xs.getPixelForValue(spI);
+              ctx.save(); ctx.strokeStyle='#6B6960'; ctx.lineWidth=1;
+              ctx.setLineDash([2,3]); ctx.beginPath();
+              ctx.moveTo(sx,ys.top); ctx.lineTo(sx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#6B6960'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('SPOT',sx,ys.top-4); ctx.restore();
+            }
+          }]
+        });
+
+        // ── Max Pain Curve ──
+        new Chart(document.getElementById('mp_0'), {
+          type: 'line',
+          data: {
+            labels: MPC.map(d=>d.strike),
+            datasets: [
+              { label:'Perda total', data: MPC.map(d=>d.total_loss), borderColor:'#B8720A',
+                 backgroundColor:'rgba(184,114,10,0.12)', borderWidth:1.8, fill:true,
+                 tension:0.3, pointRadius:0 },
+              { label:'Call loss', data: MPC.map(d=>d.call_loss), borderColor:'#148A63',
+                 borderWidth:1, borderDash:[3,2], fill:false, tension:0.3, pointRadius:0 },
+              { label:'Put loss', data: MPC.map(d=>d.put_loss), borderColor:'#B33530',
+                 borderWidth:1, borderDash:[3,2], fill:false, tension:0.3, pointRadius:0 },
+            ]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            interaction: { mode:'index', intersect:false },
+            plugins: { legend: { position:'top', labels:{ boxWidth:8, padding:10, font:{size:9} } } },
+            scales: {
+              x: { ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=>(v/1e6).toFixed(1)+'M', font:{size:9,family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          }
+        });
+
+        // ── Calls vs Puts ──
+        new Chart(document.getElementById('cp_0'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [
+              { label:'Call OI', data:D.call_oi, backgroundColor:'rgba(20,138,99,0.6)',
+                 borderRadius:2, barPercentage:0.9 },
+              { label:'Put OI', data:D.put_oi, backgroundColor:'rgba(179,53,48,0.55)',
+                 borderRadius:2, barPercentage:0.9 },
+            ]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins: { legend:{ position:'top', labels:{ boxWidth:8, padding:10, font:{size:9} } } },
+            scales: {
+              x: { stacked:false, ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=> {
+                     if(Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if(Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font:{size:9, family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          },
+          plugins: [{
+            afterDraw(chart) {
+              const xs=chart.scales.x, ys=chart.scales.y, ctx=chart.ctx;
+              // Call mean
+              const ci = D.strikes.reduce((a,v,i)=>Math.abs(v-D.call_mean)<Math.abs(D.strikes[a]-D.call_mean)?i:a,0);
+              const cx = xs.getPixelForValue(ci);
+              ctx.save(); ctx.strokeStyle='#148A63'; ctx.lineWidth=1; ctx.setLineDash([3,2]);
+              ctx.beginPath(); ctx.moveTo(cx,ys.top); ctx.lineTo(cx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#148A63'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ Call',cx,ys.top-4); ctx.restore();
+              // Put mean
+              const pi = D.strikes.reduce((a,v,i)=>Math.abs(v-D.put_mean)<Math.abs(D.strikes[a]-D.put_mean)?i:a,0);
+              const px = xs.getPixelForValue(pi);
+              ctx.save(); ctx.strokeStyle='#B33530'; ctx.lineWidth=1; ctx.setLineDash([3,2]);
+              ctx.beginPath(); ctx.moveTo(px,ys.top); ctx.lineTo(px,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#B33530'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ Put',px,ys.top-4); ctx.restore();
+            }
+          }]
+        });
+
+        // ── Residuals ──
+        const resColors = D.residuals.map(v => v >= 0 ? 'rgba(90,133,24,0.65)' : 'rgba(179,53,48,0.6)');
+        new Chart(document.getElementById('res_0'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [{ label:'Resíduo', data:D.residuals, backgroundColor:resColors,
+                          borderRadius:2, barPercentage:0.8 }]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins: { legend:{ display:false } },
+            scales: {
+              x: { ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=> {
+                     if(Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if(Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font:{size:9, family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          }
+        });
+      })();
+      </script>
+    </div>
+
+    <div class="exp-block" id="exp1" style="animation-delay:0.06s">
+      <div class="exp-top">
+        <div>
+          <h2>15 Mai — Mensal</h2>
+          <span class="tag tm">Mensal</span>
+          <span class="tag tg">52 DTE</span>
+        </div>
+        <div class="grade-pill" style="--gc:#B8720A">
+          <span class="gp-dot"></span>Levemente concentrado
+        </div>
+      </div>
+
+      <!-- Stat cards row 1: Posição -->
+      <div class="stat-section-title">Posição</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Max Pain</div>
+      <div class="st-value" >R$ 176</div></div>
+        <div class="st-card">
+      <div class="st-label">Spot</div>
+      <div class="st-value" >R$ 184</div></div>
+        <div class="st-card">
+      <div class="st-label">Distância MP→Spot</div>
+      <div class="st-value" style="color:#B8720A">+4.35%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI Total</div>
+      <div class="st-value" >13.6M</div></div>
+      </div>
+
+      <!-- Stat cards row 2: Centro de massa -->
+      <div class="stat-section-title">Centro de massa do OI</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Média ponderada (μ)</div>
+      <div class="st-value" >R$ 177.24</div><div class="st-sub">Centro de massa total</div></div>
+        <div class="st-card">
+      <div class="st-label">σ ponderado</div>
+      <div class="st-value" >R$ 4.91</div><div class="st-sub">Dispersão em torno de μ</div></div>
+        <div class="st-card">
+      <div class="st-label">μ Calls</div>
+      <div class="st-value" >R$ 177.77</div><div class="st-sub">Centro de massa das calls</div></div>
+        <div class="st-card">
+      <div class="st-label">μ Puts</div>
+      <div class="st-value" >R$ 176.67</div><div class="st-sub">Centro de massa das puts</div></div>
+        <div class="st-card">
+      <div class="st-label">MP vs μ OI</div>
+      <div class="st-value" >-1.24</div><div class="st-sub">Max pain abaixo</div></div>
+      </div>
+
+      <!-- Stat cards row 3: Forma -->
+      <div class="stat-section-title">Forma da distribuição</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Assimetria (Skew)</div>
+      <div class="st-value" style="color:#B8720A">+0.638</div><div class="st-sub">Cauda à direita</div></div>
+        <div class="st-card">
+      <div class="st-label">Curtose</div>
+      <div class="st-value" style="color:#B8720A">2.178</div><div class="st-sub">Excesso: -0.822</div></div>
+        <div class="st-card">
+      <div class="st-label">KS Estatística</div>
+      <div class="st-value" >0.1825</div><div class="st-sub">p-valor: 0.0245</div></div>
+        <div class="st-card">
+      <div class="st-label">Normalidade?</div>
+      <div class="st-value" style="color:#B33530">Não ✗</div><div class="st-sub">Rejeita H₀ de normalidade</div></div>
+      </div>
+
+      <!-- Stat cards row 4: Concentração -->
+      <div class="stat-section-title">Métricas de concentração</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">HHI</div>
+      <div class="st-value" >0.0890</div><div class="st-sub">Normalizado: 0.0321</div></div>
+        <div class="st-card">
+      <div class="st-label">Gini</div>
+      <div class="st-value" style="color:#B8720A">0.369</div><div class="st-sub">0 = uniforme, 1 = concentrado</div></div>
+        <div class="st-card">
+      <div class="st-label">Entropia</div>
+      <div class="st-value" >3.76 bits</div><div class="st-sub">Máx: 4.09 · Ratio: 92.06%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±1σ do MP</div>
+      <div class="st-value" style="color:#148A63">68.8%</div><div class="st-sub">Normal teórico: 68.3%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±2σ do MP</div>
+      <div class="st-value" >91.1%</div><div class="st-sub">Normal teórico: 95.4%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±R$2 do MP</div>
+      <div class="st-value" >32.4%</div><div class="st-sub">Contratos perto do max pain</div></div>
+      </div>
+
+      <!-- Ajuste normal -->
+      <div class="stat-section-title">Ajuste Gaussiano</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">μ (fit)</div>
+      <div class="st-value" >R$ 177.24</div></div>
+        <div class="st-card">
+      <div class="st-label">σ (fit)</div>
+      <div class="st-value" >R$ 4.91</div></div>
+        <div class="st-card">
+      <div class="st-label">R²</div>
+      <div class="st-value" style="color:#B33530">0.0000</div><div class="st-sub">Ajuste ruim</div></div>
+        <div class="st-card">
+      <div class="st-label">Forma</div>
+      <div class="st-value" >assimétrica à direita (skew +0.64), perfil mesocúrtico</div></div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-2col">
+        <div class="ch-card">
+          <h4>Distribuição do OI vs Ajuste Normal</h4>
+          <div class="ch-wrap"><canvas id="oi_1"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <h4>Curva de max pain (perda total)</h4>
+          <div class="ch-wrap"><canvas id="mp_1"></canvas></div>
+        </div>
+      </div>
+      <div class="charts-2col">
+        <div class="ch-card">
+          <h4>Calls vs Puts — distribuição separada</h4>
+          <div class="ch-wrap"><canvas id="cp_1"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <h4>Resíduos do ajuste (OI real − Normal)</h4>
+          <div class="ch-wrap"><canvas id="res_1"></canvas></div>
+        </div>
+      </div>
+
+      <script>
+      (function() {
+        const D = {"strikes": [171.0, 172.0, 173.0, 174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0], "call_oi": [509310.0, 304070.0, 1160000.0, 831680.0, 239710.0, 177190.0, 357170.0, 95340.0, 375270.0, 1020000.0, 402250.0, 118140.0, 161680.0, 183260.0, 392760.0, 134040.0, 505890.0], "put_oi": [555440.0, 378920.0, 1210000.0, 1030000.0, 314810.0, 665190.0, 239410.0, 458260.0, 172820.0, 326420.0, 73690.0, 91820.0, 47340.0, 86240.0, 412390.0, 136750.0, 429930.0], "total_oi": [1064750.0, 682990.0, 2370000.0, 1861680.0, 554520.0, 842380.0, 596580.0, 553600.0, 548090.0, 1346420.0, 475940.0, 209960.0, 209020.0, 269500.0, 805150.0, 270790.0, 935820.0], "normal_fit": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "residuals": [1064750.0, 682990.0, 2370000.0, 1861680.0, 554520.0, 842380.0, 596580.0, 553600.0, 548090.0, 1346420.0, 475940.0, 209960.0, 209020.0, 269500.0, 805150.0, 270790.0, 935820.0], "mp": 176.0, "spot": 184.0, "mu": 177.23532950558166, "sigma": 4.910670181565882, "call_mean": 177.77470521372723, "put_mean": 176.66842699900292};
+        const MPC = [{"strike": 171.0, "call_loss": 0.0, "put_loss": 37578440.0, "total_loss": 37578440.0}, {"strike": 172.0, "call_loss": 509310.0, "put_loss": 31504450.0, "total_loss": 32013760.0}, {"strike": 173.0, "call_loss": 1322690.0, "put_loss": 25809380.0, "total_loss": 27132070.0}, {"strike": 174.0, "call_loss": 3296070.0, "put_loss": 21324310.0, "total_loss": 24620380.0}, {"strike": 175.0, "call_loss": 6101130.0, "put_loss": 17869240.0, "total_loss": 23970370.0}, {"strike": 176.0, "call_loss": 9145900.0, "put_loss": 14728980.0, "total_loss": 23874880.0}, {"strike": 177.0, "call_loss": 12367860.0, "put_loss": 12253910.0, "total_loss": 24621770.0}, {"strike": 178.0, "call_loss": 15946990.0, "put_loss": 10018250.0, "total_loss": 25965240.0}, {"strike": 179.0, "call_loss": 19621460.0, "put_loss": 8240850.0, "total_loss": 27862310.0}, {"strike": 180.0, "call_loss": 23671200.0, "put_loss": 6636270.0, "total_loss": 30307470.0}, {"strike": 181.0, "call_loss": 28740940.0, "put_loss": 5358110.0, "total_loss": 34099050.0}, {"strike": 182.0, "call_loss": 34212930.0, "put_loss": 4153640.0, "total_loss": 38366570.0}, {"strike": 183.0, "call_loss": 39803060.0, "put_loss": 3040990.0, "total_loss": 42844050.0}, {"strike": 184.0, "call_loss": 45554870.0, "put_loss": 1975680.0, "total_loss": 47530550.0}, {"strike": 185.0, "call_loss": 51489940.0, "put_loss": 996610.0, "total_loss": 52486550.0}, {"strike": 186.0, "call_loss": 57817770.0, "put_loss": 429930.0, "total_loss": 58247700.0}, {"strike": 187.0, "call_loss": 64279640.0, "put_loss": 0.0, "total_loss": 64279640.0}];
+
+        // ── OI Distribution + Normal Fit ──
+        new Chart(document.getElementById('oi_1'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [
+              { label: 'OI Total', data: D.total_oi, backgroundColor: 'rgba(90,133,24,0.55)',
+                 borderColor: 'rgba(90,133,24,0.9)', borderWidth: 1, borderRadius: 2,
+                 barPercentage: 0.8, order: 2 },
+              { label: 'Ajuste Normal', data: D.normal_fit, type: 'line',
+                 borderColor: '#B8720A', borderWidth: 2, pointRadius: 0,
+                 tension: 0.4, fill: false, order: 1 },
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { position: 'top', labels: { boxWidth: 8, padding: 10, font: { size: 9 } } },
+            },
+            scales: {
+              x: { ticks: { font: { size: 9, family: 'var(--mono)' } }, grid: { display: false } },
+              y: { ticks: { callback: v => {
+                     if (Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if (Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font: { size: 9, family: 'var(--mono)' } },
+                   grid: { color: 'rgba(0,0,0,0.05)' } },
+            }
+          },
+          plugins: [{
+            afterDraw(chart) {
+              const xs = chart.scales.x, ys = chart.scales.y, ctx = chart.ctx;
+              // Max pain line
+              const mpI = D.strikes.indexOf(D.mp);
+              if (mpI >= 0) {
+                const x = xs.getPixelForValue(mpI);
+                ctx.save(); ctx.strokeStyle='#B8720A'; ctx.lineWidth=1;
+                ctx.setLineDash([3,2]); ctx.beginPath();
+                ctx.moveTo(x,ys.top); ctx.lineTo(x,ys.bottom); ctx.stroke();
+                ctx.fillStyle='#B8720A'; ctx.font="600 8px var(--mono)";
+                ctx.textAlign='center'; ctx.fillText('MP',x,ys.top-4); ctx.restore();
+              }
+              // μ line
+              const muI = D.strikes.reduce((a,v,i) => Math.abs(v-D.mu)<Math.abs(D.strikes[a]-D.mu)?i:a, 0);
+              const mx = xs.getPixelForValue(muI);
+              ctx.save(); ctx.strokeStyle='#2E6BBF'; ctx.lineWidth=1;
+              ctx.setLineDash([3,2]); ctx.beginPath();
+              ctx.moveTo(mx,ys.top); ctx.lineTo(mx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#2E6BBF'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ',mx,ys.top-4); ctx.restore();
+              // Spot line
+              const spI = D.strikes.reduce((a,v,i) => Math.abs(v-D.spot)<Math.abs(D.strikes[a]-D.spot)?i:a, 0);
+              const sx = xs.getPixelForValue(spI);
+              ctx.save(); ctx.strokeStyle='#6B6960'; ctx.lineWidth=1;
+              ctx.setLineDash([2,3]); ctx.beginPath();
+              ctx.moveTo(sx,ys.top); ctx.lineTo(sx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#6B6960'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('SPOT',sx,ys.top-4); ctx.restore();
+            }
+          }]
+        });
+
+        // ── Max Pain Curve ──
+        new Chart(document.getElementById('mp_1'), {
+          type: 'line',
+          data: {
+            labels: MPC.map(d=>d.strike),
+            datasets: [
+              { label:'Perda total', data: MPC.map(d=>d.total_loss), borderColor:'#B8720A',
+                 backgroundColor:'rgba(184,114,10,0.12)', borderWidth:1.8, fill:true,
+                 tension:0.3, pointRadius:0 },
+              { label:'Call loss', data: MPC.map(d=>d.call_loss), borderColor:'#148A63',
+                 borderWidth:1, borderDash:[3,2], fill:false, tension:0.3, pointRadius:0 },
+              { label:'Put loss', data: MPC.map(d=>d.put_loss), borderColor:'#B33530',
+                 borderWidth:1, borderDash:[3,2], fill:false, tension:0.3, pointRadius:0 },
+            ]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            interaction: { mode:'index', intersect:false },
+            plugins: { legend: { position:'top', labels:{ boxWidth:8, padding:10, font:{size:9} } } },
+            scales: {
+              x: { ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=>(v/1e6).toFixed(1)+'M', font:{size:9,family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          }
+        });
+
+        // ── Calls vs Puts ──
+        new Chart(document.getElementById('cp_1'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [
+              { label:'Call OI', data:D.call_oi, backgroundColor:'rgba(20,138,99,0.6)',
+                 borderRadius:2, barPercentage:0.9 },
+              { label:'Put OI', data:D.put_oi, backgroundColor:'rgba(179,53,48,0.55)',
+                 borderRadius:2, barPercentage:0.9 },
+            ]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins: { legend:{ position:'top', labels:{ boxWidth:8, padding:10, font:{size:9} } } },
+            scales: {
+              x: { stacked:false, ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=> {
+                     if(Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if(Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font:{size:9, family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          },
+          plugins: [{
+            afterDraw(chart) {
+              const xs=chart.scales.x, ys=chart.scales.y, ctx=chart.ctx;
+              // Call mean
+              const ci = D.strikes.reduce((a,v,i)=>Math.abs(v-D.call_mean)<Math.abs(D.strikes[a]-D.call_mean)?i:a,0);
+              const cx = xs.getPixelForValue(ci);
+              ctx.save(); ctx.strokeStyle='#148A63'; ctx.lineWidth=1; ctx.setLineDash([3,2]);
+              ctx.beginPath(); ctx.moveTo(cx,ys.top); ctx.lineTo(cx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#148A63'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ Call',cx,ys.top-4); ctx.restore();
+              // Put mean
+              const pi = D.strikes.reduce((a,v,i)=>Math.abs(v-D.put_mean)<Math.abs(D.strikes[a]-D.put_mean)?i:a,0);
+              const px = xs.getPixelForValue(pi);
+              ctx.save(); ctx.strokeStyle='#B33530'; ctx.lineWidth=1; ctx.setLineDash([3,2]);
+              ctx.beginPath(); ctx.moveTo(px,ys.top); ctx.lineTo(px,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#B33530'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ Put',px,ys.top-4); ctx.restore();
+            }
+          }]
+        });
+
+        // ── Residuals ──
+        const resColors = D.residuals.map(v => v >= 0 ? 'rgba(90,133,24,0.65)' : 'rgba(179,53,48,0.6)');
+        new Chart(document.getElementById('res_1'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [{ label:'Resíduo', data:D.residuals, backgroundColor:resColors,
+                          borderRadius:2, barPercentage:0.8 }]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins: { legend:{ display:false } },
+            scales: {
+              x: { ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=> {
+                     if(Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if(Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font:{size:9, family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          }
+        });
+      })();
+      </script>
+    </div>
+
+    <div class="exp-block" id="exp2" style="animation-delay:0.12s">
+      <div class="exp-top">
+        <div>
+          <h2>17 Abr — Mensal</h2>
+          <span class="tag tm">Mensal</span>
+          <span class="tag tg">24 DTE</span>
+        </div>
+        <div class="grade-pill" style="--gc:#B8720A">
+          <span class="gp-dot"></span>Levemente concentrado
+        </div>
+      </div>
+
+      <!-- Stat cards row 1: Posição -->
+      <div class="stat-section-title">Posição</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Max Pain</div>
+      <div class="st-value" >R$ 180</div></div>
+        <div class="st-card">
+      <div class="st-label">Spot</div>
+      <div class="st-value" >R$ 181</div></div>
+        <div class="st-card">
+      <div class="st-label">Distância MP→Spot</div>
+      <div class="st-value" style="color:#148A63">+0.55%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI Total</div>
+      <div class="st-value" >95.3M</div></div>
+      </div>
+
+      <!-- Stat cards row 2: Centro de massa -->
+      <div class="stat-section-title">Centro de massa do OI</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Média ponderada (μ)</div>
+      <div class="st-value" >R$ 180.26</div><div class="st-sub">Centro de massa total</div></div>
+        <div class="st-card">
+      <div class="st-label">σ ponderado</div>
+      <div class="st-value" >R$ 4.27</div><div class="st-sub">Dispersão em torno de μ</div></div>
+        <div class="st-card">
+      <div class="st-label">μ Calls</div>
+      <div class="st-value" >R$ 180.72</div><div class="st-sub">Centro de massa das calls</div></div>
+        <div class="st-card">
+      <div class="st-label">μ Puts</div>
+      <div class="st-value" >R$ 179.84</div><div class="st-sub">Centro de massa das puts</div></div>
+        <div class="st-card">
+      <div class="st-label">MP vs μ OI</div>
+      <div class="st-value" >-0.26</div><div class="st-sub">Max pain abaixo</div></div>
+      </div>
+
+      <!-- Stat cards row 3: Forma -->
+      <div class="stat-section-title">Forma da distribuição</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Assimetria (Skew)</div>
+      <div class="st-value" style="color:#B8720A">-0.434</div><div class="st-sub">Cauda à esquerda</div></div>
+        <div class="st-card">
+      <div class="st-label">Curtose</div>
+      <div class="st-value" style="color:#B8720A">2.354</div><div class="st-sub">Excesso: -0.646</div></div>
+        <div class="st-card">
+      <div class="st-label">KS Estatística</div>
+      <div class="st-value" >0.1589</div><div class="st-sub">p-valor: 0.2266</div></div>
+        <div class="st-card">
+      <div class="st-label">Normalidade?</div>
+      <div class="st-value" style="color:#148A63">Sim ✓</div><div class="st-sub">KS test p > 0.05</div></div>
+      </div>
+
+      <!-- Stat cards row 4: Concentração -->
+      <div class="stat-section-title">Métricas de concentração</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">HHI</div>
+      <div class="st-value" >0.1032</div><div class="st-sub">Normalizado: 0.0471</div></div>
+        <div class="st-card">
+      <div class="st-label">Gini</div>
+      <div class="st-value" style="color:#B8720A">0.374</div><div class="st-sub">0 = uniforme, 1 = concentrado</div></div>
+        <div class="st-card">
+      <div class="st-label">Entropia</div>
+      <div class="st-value" >3.70 bits</div><div class="st-sub">Máx: 4.09 · Ratio: 90.55%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±1σ do MP</div>
+      <div class="st-value" style="color:#B8720A">59.2%</div><div class="st-sub">Normal teórico: 68.3%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±2σ do MP</div>
+      <div class="st-value" >97.1%</div><div class="st-sub">Normal teórico: 95.4%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±R$2 do MP</div>
+      <div class="st-value" >44.3%</div><div class="st-sub">Contratos perto do max pain</div></div>
+      </div>
+
+      <!-- Ajuste normal -->
+      <div class="stat-section-title">Ajuste Gaussiano</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">μ (fit)</div>
+      <div class="st-value" >R$ 181.65</div></div>
+        <div class="st-card">
+      <div class="st-label">σ (fit)</div>
+      <div class="st-value" >R$ 5.57</div></div>
+        <div class="st-card">
+      <div class="st-label">R²</div>
+      <div class="st-value" style="color:#B33530">0.1681</div><div class="st-sub">Ajuste ruim</div></div>
+        <div class="st-card">
+      <div class="st-label">Forma</div>
+      <div class="st-value" >assimétrica à esquerda (skew -0.43), perfil mesocúrtico</div></div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-2col">
+        <div class="ch-card">
+          <h4>Distribuição do OI vs Ajuste Normal</h4>
+          <div class="ch-wrap"><canvas id="oi_2"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <h4>Curva de max pain (perda total)</h4>
+          <div class="ch-wrap"><canvas id="mp_2"></canvas></div>
+        </div>
+      </div>
+      <div class="charts-2col">
+        <div class="ch-card">
+          <h4>Calls vs Puts — distribuição separada</h4>
+          <div class="ch-wrap"><canvas id="cp_2"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <h4>Resíduos do ajuste (OI real − Normal)</h4>
+          <div class="ch-wrap"><canvas id="res_2"></canvas></div>
+        </div>
+      </div>
+
+      <script>
+      (function() {
+        const D = {"strikes": [171.0, 172.0, 173.0, 174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0], "call_oi": [932390.0, 858560.0, 1110000.0, 1040000.0, 1670000.0, 2200000.0, 1200000.0, 1360000.0, 1690000.0, 11780000.0, 3230000.0, 3050000.0, 1490000.0, 2890000.0, 6410000.0, 2930000.0, 1740000.0], "put_oi": [1810000.0, 2860000.0, 1540000.0, 1560000.0, 2890000.0, 2340000.0, 1180000.0, 2450000.0, 1420000.0, 10140000.0, 3150000.0, 3910000.0, 889990.0, 2000000.0, 7150000.0, 3250000.0, 1130000.0], "total_oi": [2742390.0, 3718560.0, 2650000.0, 2600000.0, 4560000.0, 4540000.0, 2380000.0, 3810000.0, 3110000.0, 21920000.0, 6380000.0, 6960000.0, 2379990.0, 4890000.0, 13560000.0, 6180000.0, 2870000.0], "normal_fit": [1298901.384303736, 1801958.565290521, 2420545.1786773684, 3148338.043431973, 3965055.706303187, 4835228.482319635, 5709321.248557577, 6527572.910320351, 7226346.038776383, 7746143.688808608, 8039927.175931522, 8080131.950622538, 7862932.775206171, 7408843.891187121, 6759523.7317595575, 5971473.673217707, 5107950.952929974], "residuals": [1443488.615696264, 1916601.434709479, 229454.82132263156, -548338.0434319731, 594944.2936968128, -295228.48231963534, -3329321.248557577, -2717572.910320351, -4116346.038776383, 14173856.311191391, -1659927.1759315217, -1120131.950622538, -5482942.775206171, -2518843.891187121, 6800476.2682404425, 208526.3267822927, -2237950.9529299736], "mp": 180.0, "spot": 181.0, "mu": 180.2578450144429, "sigma": 4.27361004548013, "call_mean": 180.71828274750746, "put_mean": 179.8353124290945};
+        const MPC = [{"strike": 171.0, "call_loss": 0.0, "put_loss": 438849880.0, "total_loss": 438849880.0}, {"strike": 172.0, "call_loss": 932390.0, "put_loss": 390989890.0, "total_loss": 391922280.0}, {"strike": 173.0, "call_loss": 2723340.0, "put_loss": 345989900.0, "total_loss": 348713240.0}, {"strike": 174.0, "call_loss": 5624290.0, "put_loss": 302529910.0, "total_loss": 308154200.0}, {"strike": 175.0, "call_loss": 9565240.0, "put_loss": 260629920.0, "total_loss": 270195160.0}, {"strike": 176.0, "call_loss": 15176190.0, "put_loss": 221619930.0, "total_loss": 236796120.0}, {"strike": 177.0, "call_loss": 22987140.0, "put_loss": 184949940.0, "total_loss": 207937080.0}, {"strike": 178.0, "call_loss": 31998090.0, "put_loss": 149459950.0, "total_loss": 181458040.0}, {"strike": 179.0, "call_loss": 42369040.0, "put_loss": 116419960.0, "total_loss": 158789000.0}, {"strike": 180.0, "call_loss": 54429990.0, "put_loss": 84799970.0, "total_loss": 139229960.0}, {"strike": 181.0, "call_loss": 78270940.0, "put_loss": 63319980.0, "total_loss": 141590920.0}, {"strike": 182.0, "call_loss": 105341890.0, "put_loss": 44989990.0, "total_loss": 150331880.0}, {"strike": 183.0, "call_loss": 135462840.0, "put_loss": 30570000.0, "total_loss": 166032840.0}, {"strike": 184.0, "call_loss": 167073790.0, "put_loss": 17040000.0, "total_loss": 184113790.0}, {"strike": 185.0, "call_loss": 201574740.0, "put_loss": 5510000.0, "total_loss": 207084740.0}, {"strike": 186.0, "call_loss": 242485690.0, "put_loss": 1130000.0, "total_loss": 243615690.0}, {"strike": 187.0, "call_loss": 286326640.0, "put_loss": 0.0, "total_loss": 286326640.0}];
+
+        // ── OI Distribution + Normal Fit ──
+        new Chart(document.getElementById('oi_2'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [
+              { label: 'OI Total', data: D.total_oi, backgroundColor: 'rgba(90,133,24,0.55)',
+                 borderColor: 'rgba(90,133,24,0.9)', borderWidth: 1, borderRadius: 2,
+                 barPercentage: 0.8, order: 2 },
+              { label: 'Ajuste Normal', data: D.normal_fit, type: 'line',
+                 borderColor: '#B8720A', borderWidth: 2, pointRadius: 0,
+                 tension: 0.4, fill: false, order: 1 },
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { position: 'top', labels: { boxWidth: 8, padding: 10, font: { size: 9 } } },
+            },
+            scales: {
+              x: { ticks: { font: { size: 9, family: 'var(--mono)' } }, grid: { display: false } },
+              y: { ticks: { callback: v => {
+                     if (Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if (Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font: { size: 9, family: 'var(--mono)' } },
+                   grid: { color: 'rgba(0,0,0,0.05)' } },
+            }
+          },
+          plugins: [{
+            afterDraw(chart) {
+              const xs = chart.scales.x, ys = chart.scales.y, ctx = chart.ctx;
+              // Max pain line
+              const mpI = D.strikes.indexOf(D.mp);
+              if (mpI >= 0) {
+                const x = xs.getPixelForValue(mpI);
+                ctx.save(); ctx.strokeStyle='#B8720A'; ctx.lineWidth=1;
+                ctx.setLineDash([3,2]); ctx.beginPath();
+                ctx.moveTo(x,ys.top); ctx.lineTo(x,ys.bottom); ctx.stroke();
+                ctx.fillStyle='#B8720A'; ctx.font="600 8px var(--mono)";
+                ctx.textAlign='center'; ctx.fillText('MP',x,ys.top-4); ctx.restore();
+              }
+              // μ line
+              const muI = D.strikes.reduce((a,v,i) => Math.abs(v-D.mu)<Math.abs(D.strikes[a]-D.mu)?i:a, 0);
+              const mx = xs.getPixelForValue(muI);
+              ctx.save(); ctx.strokeStyle='#2E6BBF'; ctx.lineWidth=1;
+              ctx.setLineDash([3,2]); ctx.beginPath();
+              ctx.moveTo(mx,ys.top); ctx.lineTo(mx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#2E6BBF'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ',mx,ys.top-4); ctx.restore();
+              // Spot line
+              const spI = D.strikes.reduce((a,v,i) => Math.abs(v-D.spot)<Math.abs(D.strikes[a]-D.spot)?i:a, 0);
+              const sx = xs.getPixelForValue(spI);
+              ctx.save(); ctx.strokeStyle='#6B6960'; ctx.lineWidth=1;
+              ctx.setLineDash([2,3]); ctx.beginPath();
+              ctx.moveTo(sx,ys.top); ctx.lineTo(sx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#6B6960'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('SPOT',sx,ys.top-4); ctx.restore();
+            }
+          }]
+        });
+
+        // ── Max Pain Curve ──
+        new Chart(document.getElementById('mp_2'), {
+          type: 'line',
+          data: {
+            labels: MPC.map(d=>d.strike),
+            datasets: [
+              { label:'Perda total', data: MPC.map(d=>d.total_loss), borderColor:'#B8720A',
+                 backgroundColor:'rgba(184,114,10,0.12)', borderWidth:1.8, fill:true,
+                 tension:0.3, pointRadius:0 },
+              { label:'Call loss', data: MPC.map(d=>d.call_loss), borderColor:'#148A63',
+                 borderWidth:1, borderDash:[3,2], fill:false, tension:0.3, pointRadius:0 },
+              { label:'Put loss', data: MPC.map(d=>d.put_loss), borderColor:'#B33530',
+                 borderWidth:1, borderDash:[3,2], fill:false, tension:0.3, pointRadius:0 },
+            ]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            interaction: { mode:'index', intersect:false },
+            plugins: { legend: { position:'top', labels:{ boxWidth:8, padding:10, font:{size:9} } } },
+            scales: {
+              x: { ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=>(v/1e6).toFixed(1)+'M', font:{size:9,family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          }
+        });
+
+        // ── Calls vs Puts ──
+        new Chart(document.getElementById('cp_2'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [
+              { label:'Call OI', data:D.call_oi, backgroundColor:'rgba(20,138,99,0.6)',
+                 borderRadius:2, barPercentage:0.9 },
+              { label:'Put OI', data:D.put_oi, backgroundColor:'rgba(179,53,48,0.55)',
+                 borderRadius:2, barPercentage:0.9 },
+            ]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins: { legend:{ position:'top', labels:{ boxWidth:8, padding:10, font:{size:9} } } },
+            scales: {
+              x: { stacked:false, ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=> {
+                     if(Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if(Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font:{size:9, family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          },
+          plugins: [{
+            afterDraw(chart) {
+              const xs=chart.scales.x, ys=chart.scales.y, ctx=chart.ctx;
+              // Call mean
+              const ci = D.strikes.reduce((a,v,i)=>Math.abs(v-D.call_mean)<Math.abs(D.strikes[a]-D.call_mean)?i:a,0);
+              const cx = xs.getPixelForValue(ci);
+              ctx.save(); ctx.strokeStyle='#148A63'; ctx.lineWidth=1; ctx.setLineDash([3,2]);
+              ctx.beginPath(); ctx.moveTo(cx,ys.top); ctx.lineTo(cx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#148A63'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ Call',cx,ys.top-4); ctx.restore();
+              // Put mean
+              const pi = D.strikes.reduce((a,v,i)=>Math.abs(v-D.put_mean)<Math.abs(D.strikes[a]-D.put_mean)?i:a,0);
+              const px = xs.getPixelForValue(pi);
+              ctx.save(); ctx.strokeStyle='#B33530'; ctx.lineWidth=1; ctx.setLineDash([3,2]);
+              ctx.beginPath(); ctx.moveTo(px,ys.top); ctx.lineTo(px,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#B33530'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ Put',px,ys.top-4); ctx.restore();
+            }
+          }]
+        });
+
+        // ── Residuals ──
+        const resColors = D.residuals.map(v => v >= 0 ? 'rgba(90,133,24,0.65)' : 'rgba(179,53,48,0.6)');
+        new Chart(document.getElementById('res_2'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [{ label:'Resíduo', data:D.residuals, backgroundColor:resColors,
+                          borderRadius:2, barPercentage:0.8 }]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins: { legend:{ display:false } },
+            scales: {
+              x: { ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=> {
+                     if(Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if(Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font:{size:9, family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          }
+        });
+      })();
+      </script>
+    </div>
+
+    <div class="exp-block" id="exp3" style="animation-delay:0.18s">
+      <div class="exp-top">
+        <div>
+          <h2>2 Abr — W1</h2>
+          <span class="tag tw">Semanal</span>
+          <span class="tag tg">9 DTE</span>
+        </div>
+        <div class="grade-pill" style="--gc:#B33530">
+          <span class="gp-dot"></span>Distribuição dispersa
+        </div>
+      </div>
+
+      <!-- Stat cards row 1: Posição -->
+      <div class="stat-section-title">Posição</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Max Pain</div>
+      <div class="st-value" >R$ 177</div></div>
+        <div class="st-card">
+      <div class="st-label">Spot</div>
+      <div class="st-value" >R$ 180</div></div>
+        <div class="st-card">
+      <div class="st-label">Distância MP→Spot</div>
+      <div class="st-value" style="color:#B8720A">+1.67%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI Total</div>
+      <div class="st-value" >4.7M</div></div>
+      </div>
+
+      <!-- Stat cards row 2: Centro de massa -->
+      <div class="stat-section-title">Centro de massa do OI</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Média ponderada (μ)</div>
+      <div class="st-value" >R$ 178.39</div><div class="st-sub">Centro de massa total</div></div>
+        <div class="st-card">
+      <div class="st-label">σ ponderado</div>
+      <div class="st-value" >R$ 4.52</div><div class="st-sub">Dispersão em torno de μ</div></div>
+        <div class="st-card">
+      <div class="st-label">μ Calls</div>
+      <div class="st-value" >R$ 178.90</div><div class="st-sub">Centro de massa das calls</div></div>
+        <div class="st-card">
+      <div class="st-label">μ Puts</div>
+      <div class="st-value" >R$ 177.74</div><div class="st-sub">Centro de massa das puts</div></div>
+        <div class="st-card">
+      <div class="st-label">MP vs μ OI</div>
+      <div class="st-value" >-1.39</div><div class="st-sub">Max pain abaixo</div></div>
+      </div>
+
+      <!-- Stat cards row 3: Forma -->
+      <div class="stat-section-title">Forma da distribuição</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Assimetria (Skew)</div>
+      <div class="st-value" style="color:#148A63">+0.038</div><div class="st-sub">Simétrica</div></div>
+        <div class="st-card">
+      <div class="st-label">Curtose</div>
+      <div class="st-value" style="color:#B8720A">1.932</div><div class="st-sub">Excesso: -1.068</div></div>
+        <div class="st-card">
+      <div class="st-label">KS Estatística</div>
+      <div class="st-value" >0.0847</div><div class="st-sub">p-valor: 0.8765</div></div>
+        <div class="st-card">
+      <div class="st-label">Normalidade?</div>
+      <div class="st-value" style="color:#148A63">Sim ✓</div><div class="st-sub">KS test p > 0.05</div></div>
+      </div>
+
+      <!-- Stat cards row 4: Concentração -->
+      <div class="stat-section-title">Métricas de concentração</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">HHI</div>
+      <div class="st-value" >0.0644</div><div class="st-sub">Normalizado: 0.0059</div></div>
+        <div class="st-card">
+      <div class="st-label">Gini</div>
+      <div class="st-value" style="color:#B33530">0.172</div><div class="st-sub">0 = uniforme, 1 = concentrado</div></div>
+        <div class="st-card">
+      <div class="st-label">Entropia</div>
+      <div class="st-value" >4.01 bits</div><div class="st-sub">Máx: 4.09 · Ratio: 98.13%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±1σ do MP</div>
+      <div class="st-value" style="color:#B8720A">58.0%</div><div class="st-sub">Normal teórico: 68.3%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±2σ do MP</div>
+      <div class="st-value" >97.8%</div><div class="st-sub">Normal teórico: 95.4%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±R$2 do MP</div>
+      <div class="st-value" >32.3%</div><div class="st-sub">Contratos perto do max pain</div></div>
+      </div>
+
+      <!-- Ajuste normal -->
+      <div class="stat-section-title">Ajuste Gaussiano</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">μ (fit)</div>
+      <div class="st-value" >R$ 177.22</div></div>
+        <div class="st-card">
+      <div class="st-label">σ (fit)</div>
+      <div class="st-value" >R$ 8.28</div></div>
+        <div class="st-card">
+      <div class="st-label">R²</div>
+      <div class="st-value" style="color:#B33530">0.3758</div><div class="st-sub">Ajuste ruim</div></div>
+        <div class="st-card">
+      <div class="st-label">Forma</div>
+      <div class="st-value" >simétrica, achatada (platicúrtica)</div></div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-2col">
+        <div class="ch-card">
+          <h4>Distribuição do OI vs Ajuste Normal</h4>
+          <div class="ch-wrap"><canvas id="oi_3"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <h4>Curva de max pain (perda total)</h4>
+          <div class="ch-wrap"><canvas id="mp_3"></canvas></div>
+        </div>
+      </div>
+      <div class="charts-2col">
+        <div class="ch-card">
+          <h4>Calls vs Puts — distribuição separada</h4>
+          <div class="ch-wrap"><canvas id="cp_3"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <h4>Resíduos do ajuste (OI real − Normal)</h4>
+          <div class="ch-wrap"><canvas id="res_3"></canvas></div>
+        </div>
+      </div>
+
+      <script>
+      (function() {
+        const D = {"strikes": [171.0, 172.0, 173.0, 174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0], "call_oi": [209280.0, 143580.0, 139360.0, 97600.0, 157990.0, 121300.0, 255590.0, 143980.0, 120760.0, 199660.0, 95570.0, 177610.0, 199440.0, 89190.0, 307470.0, 94790.0, 89580.0], "put_oi": [86530.0, 172970.0, 134640.0, 143890.0, 165870.0, 132760.0, 119740.0, 204200.0, 99280.0, 207080.0, 195470.0, 194780.0, 75640.0, 55650.0, 35080.0, 33080.0, 14220.0], "total_oi": [295810.0, 316550.0, 274000.0, 241490.0, 323860.0, 254060.0, 375330.0, 348180.0, 220040.0, 406740.0, 291040.0, 372390.0, 275080.0, 144840.0, 342550.0, 127870.0, 103800.0], "normal_fit": [250511.45244455838, 272304.55365332385, 291711.4412868658, 307980.5301235237, 320452.9703022608, 328606.82614991965, 332093.2896440961, 330761.4291513095, 324669.02692506043, 314078.42114536074, 299437.7693708166, 281349.5978850982, 260529.7116254568, 237760.36502588642, 213841.94653232145, 189547.28985177196, 165582.14322231003], "residuals": [45298.54755544162, 44245.44634667615, -17711.441286865796, -66490.53012352373, 3407.029697739228, -74546.82614991965, 43236.710355903895, 17418.57084869052, -104629.02692506043, 92661.57885463926, -8397.76937081659, 91040.40211490181, 14550.28837454319, -92920.36502588642, 128708.05346767855, -61677.28985177196, -61782.14322231003], "mp": 177.0, "spot": 180.0, "mu": 178.3892308051332, "sigma": 4.515009022091078, "call_mean": 178.90080408665216, "put_mean": 177.73638742949856};
+        const MPC = [{"strike": 171.0, "call_loss": 0.0, "put_loss": 13950250.0, "total_loss": 13950250.0}, {"strike": 172.0, "call_loss": 209280.0, "put_loss": 11965900.0, "total_loss": 12175180.0}, {"strike": 173.0, "call_loss": 562140.0, "put_loss": 10154520.0, "total_loss": 10716660.0}, {"strike": 174.0, "call_loss": 1054360.0, "put_loss": 8477780.0, "total_loss": 9532140.0}, {"strike": 175.0, "call_loss": 1644180.0, "put_loss": 6944930.0, "total_loss": 8589110.0}, {"strike": 176.0, "call_loss": 2391990.0, "put_loss": 5577950.0, "total_loss": 7969940.0}, {"strike": 177.0, "call_loss": 3261100.0, "put_loss": 4343730.0, "total_loss": 7604830.0}, {"strike": 178.0, "call_loss": 4385800.0, "put_loss": 3229250.0, "total_loss": 7615050.0}, {"strike": 179.0, "call_loss": 5654480.0, "put_loss": 2318970.0, "total_loss": 7973450.0}, {"strike": 180.0, "call_loss": 7043920.0, "put_loss": 1507970.0, "total_loss": 8551890.0}, {"strike": 181.0, "call_loss": 8633020.0, "put_loss": 904050.0, "total_loss": 9537070.0}, {"strike": 182.0, "call_loss": 10317690.0, "put_loss": 495600.0, "total_loss": 10813290.0}, {"strike": 183.0, "call_loss": 12179970.0, "put_loss": 281930.0, "total_loss": 12461900.0}, {"strike": 184.0, "call_loss": 14241690.0, "put_loss": 143900.0, "total_loss": 14385590.0}, {"strike": 185.0, "call_loss": 16392600.0, "put_loss": 61520.0, "total_loss": 16454120.0}, {"strike": 186.0, "call_loss": 18850980.0, "put_loss": 14220.0, "total_loss": 18865200.0}, {"strike": 187.0, "call_loss": 21404150.0, "put_loss": 0.0, "total_loss": 21404150.0}];
+
+        // ── OI Distribution + Normal Fit ──
+        new Chart(document.getElementById('oi_3'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [
+              { label: 'OI Total', data: D.total_oi, backgroundColor: 'rgba(90,133,24,0.55)',
+                 borderColor: 'rgba(90,133,24,0.9)', borderWidth: 1, borderRadius: 2,
+                 barPercentage: 0.8, order: 2 },
+              { label: 'Ajuste Normal', data: D.normal_fit, type: 'line',
+                 borderColor: '#B8720A', borderWidth: 2, pointRadius: 0,
+                 tension: 0.4, fill: false, order: 1 },
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { position: 'top', labels: { boxWidth: 8, padding: 10, font: { size: 9 } } },
+            },
+            scales: {
+              x: { ticks: { font: { size: 9, family: 'var(--mono)' } }, grid: { display: false } },
+              y: { ticks: { callback: v => {
+                     if (Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if (Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font: { size: 9, family: 'var(--mono)' } },
+                   grid: { color: 'rgba(0,0,0,0.05)' } },
+            }
+          },
+          plugins: [{
+            afterDraw(chart) {
+              const xs = chart.scales.x, ys = chart.scales.y, ctx = chart.ctx;
+              // Max pain line
+              const mpI = D.strikes.indexOf(D.mp);
+              if (mpI >= 0) {
+                const x = xs.getPixelForValue(mpI);
+                ctx.save(); ctx.strokeStyle='#B8720A'; ctx.lineWidth=1;
+                ctx.setLineDash([3,2]); ctx.beginPath();
+                ctx.moveTo(x,ys.top); ctx.lineTo(x,ys.bottom); ctx.stroke();
+                ctx.fillStyle='#B8720A'; ctx.font="600 8px var(--mono)";
+                ctx.textAlign='center'; ctx.fillText('MP',x,ys.top-4); ctx.restore();
+              }
+              // μ line
+              const muI = D.strikes.reduce((a,v,i) => Math.abs(v-D.mu)<Math.abs(D.strikes[a]-D.mu)?i:a, 0);
+              const mx = xs.getPixelForValue(muI);
+              ctx.save(); ctx.strokeStyle='#2E6BBF'; ctx.lineWidth=1;
+              ctx.setLineDash([3,2]); ctx.beginPath();
+              ctx.moveTo(mx,ys.top); ctx.lineTo(mx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#2E6BBF'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ',mx,ys.top-4); ctx.restore();
+              // Spot line
+              const spI = D.strikes.reduce((a,v,i) => Math.abs(v-D.spot)<Math.abs(D.strikes[a]-D.spot)?i:a, 0);
+              const sx = xs.getPixelForValue(spI);
+              ctx.save(); ctx.strokeStyle='#6B6960'; ctx.lineWidth=1;
+              ctx.setLineDash([2,3]); ctx.beginPath();
+              ctx.moveTo(sx,ys.top); ctx.lineTo(sx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#6B6960'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('SPOT',sx,ys.top-4); ctx.restore();
+            }
+          }]
+        });
+
+        // ── Max Pain Curve ──
+        new Chart(document.getElementById('mp_3'), {
+          type: 'line',
+          data: {
+            labels: MPC.map(d=>d.strike),
+            datasets: [
+              { label:'Perda total', data: MPC.map(d=>d.total_loss), borderColor:'#B8720A',
+                 backgroundColor:'rgba(184,114,10,0.12)', borderWidth:1.8, fill:true,
+                 tension:0.3, pointRadius:0 },
+              { label:'Call loss', data: MPC.map(d=>d.call_loss), borderColor:'#148A63',
+                 borderWidth:1, borderDash:[3,2], fill:false, tension:0.3, pointRadius:0 },
+              { label:'Put loss', data: MPC.map(d=>d.put_loss), borderColor:'#B33530',
+                 borderWidth:1, borderDash:[3,2], fill:false, tension:0.3, pointRadius:0 },
+            ]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            interaction: { mode:'index', intersect:false },
+            plugins: { legend: { position:'top', labels:{ boxWidth:8, padding:10, font:{size:9} } } },
+            scales: {
+              x: { ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=>(v/1e6).toFixed(1)+'M', font:{size:9,family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          }
+        });
+
+        // ── Calls vs Puts ──
+        new Chart(document.getElementById('cp_3'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [
+              { label:'Call OI', data:D.call_oi, backgroundColor:'rgba(20,138,99,0.6)',
+                 borderRadius:2, barPercentage:0.9 },
+              { label:'Put OI', data:D.put_oi, backgroundColor:'rgba(179,53,48,0.55)',
+                 borderRadius:2, barPercentage:0.9 },
+            ]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins: { legend:{ position:'top', labels:{ boxWidth:8, padding:10, font:{size:9} } } },
+            scales: {
+              x: { stacked:false, ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=> {
+                     if(Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if(Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font:{size:9, family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          },
+          plugins: [{
+            afterDraw(chart) {
+              const xs=chart.scales.x, ys=chart.scales.y, ctx=chart.ctx;
+              // Call mean
+              const ci = D.strikes.reduce((a,v,i)=>Math.abs(v-D.call_mean)<Math.abs(D.strikes[a]-D.call_mean)?i:a,0);
+              const cx = xs.getPixelForValue(ci);
+              ctx.save(); ctx.strokeStyle='#148A63'; ctx.lineWidth=1; ctx.setLineDash([3,2]);
+              ctx.beginPath(); ctx.moveTo(cx,ys.top); ctx.lineTo(cx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#148A63'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ Call',cx,ys.top-4); ctx.restore();
+              // Put mean
+              const pi = D.strikes.reduce((a,v,i)=>Math.abs(v-D.put_mean)<Math.abs(D.strikes[a]-D.put_mean)?i:a,0);
+              const px = xs.getPixelForValue(pi);
+              ctx.save(); ctx.strokeStyle='#B33530'; ctx.lineWidth=1; ctx.setLineDash([3,2]);
+              ctx.beginPath(); ctx.moveTo(px,ys.top); ctx.lineTo(px,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#B33530'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ Put',px,ys.top-4); ctx.restore();
+            }
+          }]
+        });
+
+        // ── Residuals ──
+        const resColors = D.residuals.map(v => v >= 0 ? 'rgba(90,133,24,0.65)' : 'rgba(179,53,48,0.6)');
+        new Chart(document.getElementById('res_3'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [{ label:'Resíduo', data:D.residuals, backgroundColor:resColors,
+                          borderRadius:2, barPercentage:0.8 }]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins: { legend:{ display:false } },
+            scales: {
+              x: { ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=> {
+                     if(Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if(Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font:{size:9, family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          }
+        });
+      })();
+      </script>
+    </div>
+
+    <div class="exp-block" id="exp4" style="animation-delay:0.24s">
+      <div class="exp-top">
+        <div>
+          <h2>27 Mar — W4</h2>
+          <span class="tag tw">Semanal</span>
+          <span class="tag tg">3 DTE</span>
+        </div>
+        <div class="grade-pill" style="--gc:#148A63">
+          <span class="gp-dot"></span>Alta concentração
+        </div>
+      </div>
+
+      <!-- Stat cards row 1: Posição -->
+      <div class="stat-section-title">Posição</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Max Pain</div>
+      <div class="st-value" >R$ 187</div></div>
+        <div class="st-card">
+      <div class="st-label">Spot</div>
+      <div class="st-value" >R$ 179</div></div>
+        <div class="st-card">
+      <div class="st-label">Distância MP→Spot</div>
+      <div class="st-value" style="color:#B8720A">-4.47%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI Total</div>
+      <div class="st-value" >28.2M</div></div>
+      </div>
+
+      <!-- Stat cards row 2: Centro de massa -->
+      <div class="stat-section-title">Centro de massa do OI</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Média ponderada (μ)</div>
+      <div class="st-value" >R$ 183.55</div><div class="st-sub">Centro de massa total</div></div>
+        <div class="st-card">
+      <div class="st-label">σ ponderado</div>
+      <div class="st-value" >R$ 4.99</div><div class="st-sub">Dispersão em torno de μ</div></div>
+        <div class="st-card">
+      <div class="st-label">μ Calls</div>
+      <div class="st-value" >R$ 183.83</div><div class="st-sub">Centro de massa das calls</div></div>
+        <div class="st-card">
+      <div class="st-label">μ Puts</div>
+      <div class="st-value" >R$ 183.26</div><div class="st-sub">Centro de massa das puts</div></div>
+        <div class="st-card">
+      <div class="st-label">MP vs μ OI</div>
+      <div class="st-value" >+3.45</div><div class="st-sub">Max pain acima</div></div>
+      </div>
+
+      <!-- Stat cards row 3: Forma -->
+      <div class="stat-section-title">Forma da distribuição</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Assimetria (Skew)</div>
+      <div class="st-value" style="color:#B8720A">-1.142</div><div class="st-sub">Cauda à esquerda</div></div>
+        <div class="st-card">
+      <div class="st-label">Curtose</div>
+      <div class="st-value" style="color:#B8720A">2.861</div><div class="st-sub">Excesso: -0.139</div></div>
+        <div class="st-card">
+      <div class="st-label">KS Estatística</div>
+      <div class="st-value" >0.3360</div><div class="st-sub">p-valor: 0.0000</div></div>
+        <div class="st-card">
+      <div class="st-label">Normalidade?</div>
+      <div class="st-value" style="color:#B33530">Não ✗</div><div class="st-sub">Rejeita H₀ de normalidade</div></div>
+      </div>
+
+      <!-- Stat cards row 4: Concentração -->
+      <div class="stat-section-title">Métricas de concentração</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">HHI</div>
+      <div class="st-value" >0.3579</div><div class="st-sub">Normalizado: 0.3178</div></div>
+        <div class="st-card">
+      <div class="st-label">Gini</div>
+      <div class="st-value" style="color:#148A63">0.594</div><div class="st-sub">0 = uniforme, 1 = concentrado</div></div>
+        <div class="st-card">
+      <div class="st-label">Entropia</div>
+      <div class="st-value" >2.60 bits</div><div class="st-sub">Máx: 4.09 · Ratio: 63.49%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±1σ do MP</div>
+      <div class="st-value" style="color:#148A63">67.6%</div><div class="st-sub">Normal teórico: 68.3%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±2σ do MP</div>
+      <div class="st-value" >82.8%</div><div class="st-sub">Normal teórico: 95.4%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±R$2 do MP</div>
+      <div class="st-value" >64.2%</div><div class="st-sub">Contratos perto do max pain</div></div>
+      </div>
+
+      <!-- Ajuste normal -->
+      <div class="stat-section-title">Ajuste Gaussiano</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">μ (fit)</div>
+      <div class="st-value" >R$ 183.55</div></div>
+        <div class="st-card">
+      <div class="st-label">σ (fit)</div>
+      <div class="st-value" >R$ 4.99</div></div>
+        <div class="st-card">
+      <div class="st-label">R²</div>
+      <div class="st-value" style="color:#B33530">0.0000</div><div class="st-sub">Ajuste ruim</div></div>
+        <div class="st-card">
+      <div class="st-label">Forma</div>
+      <div class="st-value" >assimétrica à esquerda (skew -1.14), perfil mesocúrtico</div></div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-2col">
+        <div class="ch-card">
+          <h4>Distribuição do OI vs Ajuste Normal</h4>
+          <div class="ch-wrap"><canvas id="oi_4"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <h4>Curva de max pain (perda total)</h4>
+          <div class="ch-wrap"><canvas id="mp_4"></canvas></div>
+        </div>
+      </div>
+      <div class="charts-2col">
+        <div class="ch-card">
+          <h4>Calls vs Puts — distribuição separada</h4>
+          <div class="ch-wrap"><canvas id="cp_4"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <h4>Resíduos do ajuste (OI real − Normal)</h4>
+          <div class="ch-wrap"><canvas id="res_4"></canvas></div>
+        </div>
+      </div>
+
+      <script>
+      (function() {
+        const D = {"strikes": [171.0, 172.0, 173.0, 174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0], "call_oi": [123910.0, 225110.0, 333590.0, 219190.0, 504270.0, 184740.0, 616620.0, 379210.0, 361090.0, 626460.0, 253790.0, 595060.0, 331890.0, 227150.0, 559840.0, 548190.0, 8400000.0], "put_oi": [414870.0, 388420.0, 371270.0, 356680.0, 425440.0, 403790.0, 274710.0, 338890.0, 333360.0, 846740.0, 238480.0, 314210.0, 186760.0, 230880.0, 189710.0, 202770.0, 8189999.999999999], "total_oi": [538780.0, 613530.0, 704860.0, 575870.0, 929710.0, 588530.0, 891330.0, 718100.0, 694450.0, 1473200.0, 492270.0, 909270.0, 518650.0, 458030.0, 749550.0, 750960.0, 16590000.0], "normal_fit": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "residuals": [538780.0, 613530.0, 704860.0, 575870.0, 929710.0, 588530.0, 891330.0, 718100.0, 694450.0, 1473200.0, 492270.0, 909270.0, 518650.0, 458030.0, 749550.0, 750960.0, 16590000.0], "mp": 187.0, "spot": 179.0, "mu": 183.55102530083778, "sigma": 4.988450822608043, "call_mean": 183.82609241751788, "put_mean": 183.26024259173064};
+        const MPC = [{"strike": 171.0, "call_loss": 0.0, "put_loss": 168050900.0, "total_loss": 168050900.0}, {"strike": 172.0, "call_loss": 123910.0, "put_loss": 154758790.0, "total_loss": 154882700.0}, {"strike": 173.0, "call_loss": 472930.0, "put_loss": 141855100.0, "total_loss": 142328030.0}, {"strike": 174.0, "call_loss": 1155540.0, "put_loss": 129322679.99999999, "total_loss": 130478219.99999999}, {"strike": 175.0, "call_loss": 2057340.0, "put_loss": 117146939.99999999, "total_loss": 119204279.99999999}, {"strike": 176.0, "call_loss": 3463410.0, "put_loss": 105396639.99999999, "total_loss": 108860049.99999999}, {"strike": 177.0, "call_loss": 5054220.0, "put_loss": 94050129.99999999, "total_loss": 99104349.99999999}, {"strike": 178.0, "call_loss": 7261650.0, "put_loss": 82978329.99999999, "total_loss": 90239979.99999999}, {"strike": 179.0, "call_loss": 9848290.0, "put_loss": 72245420.0, "total_loss": 82093710.0}, {"strike": 180.0, "call_loss": 12796020.0, "put_loss": 61845869.99999999, "total_loss": 74641890.0}, {"strike": 181.0, "call_loss": 16370210.0, "put_loss": 52293059.99999999, "total_loss": 68663270.0}, {"strike": 182.0, "call_loss": 20198190.0, "put_loss": 42978729.99999999, "total_loss": 63176919.99999999}, {"strike": 183.0, "call_loss": 24621230.0, "put_loss": 33978610.0, "total_loss": 58599840.0}, {"strike": 184.0, "call_loss": 29376160.0, "put_loss": 25165249.999999996, "total_loss": 54541410.0}, {"strike": 185.0, "call_loss": 34358240.0, "put_loss": 16582769.999999998, "total_loss": 50941010.0}, {"strike": 186.0, "call_loss": 39900160.0, "put_loss": 8189999.999999999, "total_loss": 48090160.0}, {"strike": 187.0, "call_loss": 45990270.0, "put_loss": 0.0, "total_loss": 45990270.0}];
+
+        // ── OI Distribution + Normal Fit ──
+        new Chart(document.getElementById('oi_4'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [
+              { label: 'OI Total', data: D.total_oi, backgroundColor: 'rgba(90,133,24,0.55)',
+                 borderColor: 'rgba(90,133,24,0.9)', borderWidth: 1, borderRadius: 2,
+                 barPercentage: 0.8, order: 2 },
+              { label: 'Ajuste Normal', data: D.normal_fit, type: 'line',
+                 borderColor: '#B8720A', borderWidth: 2, pointRadius: 0,
+                 tension: 0.4, fill: false, order: 1 },
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { position: 'top', labels: { boxWidth: 8, padding: 10, font: { size: 9 } } },
+            },
+            scales: {
+              x: { ticks: { font: { size: 9, family: 'var(--mono)' } }, grid: { display: false } },
+              y: { ticks: { callback: v => {
+                     if (Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if (Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font: { size: 9, family: 'var(--mono)' } },
+                   grid: { color: 'rgba(0,0,0,0.05)' } },
+            }
+          },
+          plugins: [{
+            afterDraw(chart) {
+              const xs = chart.scales.x, ys = chart.scales.y, ctx = chart.ctx;
+              // Max pain line
+              const mpI = D.strikes.indexOf(D.mp);
+              if (mpI >= 0) {
+                const x = xs.getPixelForValue(mpI);
+                ctx.save(); ctx.strokeStyle='#B8720A'; ctx.lineWidth=1;
+                ctx.setLineDash([3,2]); ctx.beginPath();
+                ctx.moveTo(x,ys.top); ctx.lineTo(x,ys.bottom); ctx.stroke();
+                ctx.fillStyle='#B8720A'; ctx.font="600 8px var(--mono)";
+                ctx.textAlign='center'; ctx.fillText('MP',x,ys.top-4); ctx.restore();
+              }
+              // μ line
+              const muI = D.strikes.reduce((a,v,i) => Math.abs(v-D.mu)<Math.abs(D.strikes[a]-D.mu)?i:a, 0);
+              const mx = xs.getPixelForValue(muI);
+              ctx.save(); ctx.strokeStyle='#2E6BBF'; ctx.lineWidth=1;
+              ctx.setLineDash([3,2]); ctx.beginPath();
+              ctx.moveTo(mx,ys.top); ctx.lineTo(mx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#2E6BBF'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ',mx,ys.top-4); ctx.restore();
+              // Spot line
+              const spI = D.strikes.reduce((a,v,i) => Math.abs(v-D.spot)<Math.abs(D.strikes[a]-D.spot)?i:a, 0);
+              const sx = xs.getPixelForValue(spI);
+              ctx.save(); ctx.strokeStyle='#6B6960'; ctx.lineWidth=1;
+              ctx.setLineDash([2,3]); ctx.beginPath();
+              ctx.moveTo(sx,ys.top); ctx.lineTo(sx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#6B6960'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('SPOT',sx,ys.top-4); ctx.restore();
+            }
+          }]
+        });
+
+        // ── Max Pain Curve ──
+        new Chart(document.getElementById('mp_4'), {
+          type: 'line',
+          data: {
+            labels: MPC.map(d=>d.strike),
+            datasets: [
+              { label:'Perda total', data: MPC.map(d=>d.total_loss), borderColor:'#B8720A',
+                 backgroundColor:'rgba(184,114,10,0.12)', borderWidth:1.8, fill:true,
+                 tension:0.3, pointRadius:0 },
+              { label:'Call loss', data: MPC.map(d=>d.call_loss), borderColor:'#148A63',
+                 borderWidth:1, borderDash:[3,2], fill:false, tension:0.3, pointRadius:0 },
+              { label:'Put loss', data: MPC.map(d=>d.put_loss), borderColor:'#B33530',
+                 borderWidth:1, borderDash:[3,2], fill:false, tension:0.3, pointRadius:0 },
+            ]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            interaction: { mode:'index', intersect:false },
+            plugins: { legend: { position:'top', labels:{ boxWidth:8, padding:10, font:{size:9} } } },
+            scales: {
+              x: { ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=>(v/1e6).toFixed(1)+'M', font:{size:9,family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          }
+        });
+
+        // ── Calls vs Puts ──
+        new Chart(document.getElementById('cp_4'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [
+              { label:'Call OI', data:D.call_oi, backgroundColor:'rgba(20,138,99,0.6)',
+                 borderRadius:2, barPercentage:0.9 },
+              { label:'Put OI', data:D.put_oi, backgroundColor:'rgba(179,53,48,0.55)',
+                 borderRadius:2, barPercentage:0.9 },
+            ]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins: { legend:{ position:'top', labels:{ boxWidth:8, padding:10, font:{size:9} } } },
+            scales: {
+              x: { stacked:false, ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=> {
+                     if(Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if(Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font:{size:9, family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          },
+          plugins: [{
+            afterDraw(chart) {
+              const xs=chart.scales.x, ys=chart.scales.y, ctx=chart.ctx;
+              // Call mean
+              const ci = D.strikes.reduce((a,v,i)=>Math.abs(v-D.call_mean)<Math.abs(D.strikes[a]-D.call_mean)?i:a,0);
+              const cx = xs.getPixelForValue(ci);
+              ctx.save(); ctx.strokeStyle='#148A63'; ctx.lineWidth=1; ctx.setLineDash([3,2]);
+              ctx.beginPath(); ctx.moveTo(cx,ys.top); ctx.lineTo(cx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#148A63'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ Call',cx,ys.top-4); ctx.restore();
+              // Put mean
+              const pi = D.strikes.reduce((a,v,i)=>Math.abs(v-D.put_mean)<Math.abs(D.strikes[a]-D.put_mean)?i:a,0);
+              const px = xs.getPixelForValue(pi);
+              ctx.save(); ctx.strokeStyle='#B33530'; ctx.lineWidth=1; ctx.setLineDash([3,2]);
+              ctx.beginPath(); ctx.moveTo(px,ys.top); ctx.lineTo(px,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#B33530'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ Put',px,ys.top-4); ctx.restore();
+            }
+          }]
+        });
+
+        // ── Residuals ──
+        const resColors = D.residuals.map(v => v >= 0 ? 'rgba(90,133,24,0.65)' : 'rgba(179,53,48,0.6)');
+        new Chart(document.getElementById('res_4'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [{ label:'Resíduo', data:D.residuals, backgroundColor:resColors,
+                          borderRadius:2, barPercentage:0.8 }]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins: { legend:{ display:false } },
+            scales: {
+              x: { ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=> {
+                     if(Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if(Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font:{size:9, family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          }
+        });
+      })();
+      </script>
+    </div>
+
+  <details class="glossary">
+    <summary>📖 Glossário — o que cada métrica estatística significa</summary>
+    <div class="gl-grid">
+      <div class="gl-item">
+        <div class="gl-title">μ — Média ponderada (centro de massa)</div>
+        <div class="gl-body">O strike onde, se você "equilibrasse" toda a distribuição como uma régua, ela ficaria nivelada. Quando μ coincide com o max pain, a maior parte da exposição dos dealers está centrada no ponto de mínima perda, reforçando o efeito gravitacional. Quando μ diverge do max pain, existe assimetria de posicionamento que pode puxar o preço para um lado.</div>
+      </div>
+      <div class="gl-item">
+        <div class="gl-title">σ — Desvio padrão ponderado (dispersão)</div>
+        <div class="gl-body">Mede o quanto o OI está espalhado. σ baixo = OI extremamente concentrado em poucos strikes (efeito pinning forte). σ alto = distribuição espalhada por toda a cadeia, sem ponto de gravidade claro.</div>
+      </div>
+      <div class="gl-item">
+        <div class="gl-title">Skewness — Assimetria</div>
+        <div class="gl-body">Zero = distribuição simétrica. Negativo = cauda pesada à esquerda (mais OI em puts OTM profundas — proteção contra queda, viés bearish). Positivo = cauda à direita (mais OI em calls OTM — posicionamento para alta ou operações de financiamento).</div>
+      </div>
+      <div class="gl-item">
+        <div class="gl-title">Kurtosis — Concentração de pico</div>
+        <div class="gl-body">A distribuição normal tem curtose 3 (excesso 0). Acima de 3 (leptocúrtica) = pico concentrado com caudas finas, OI agrupado em poucos strikes. Abaixo de 3 (platicúrtica) = distribuição achatada e uniforme, sem concentração clara em nenhum ponto.</div>
+      </div>
+      <div class="gl-item">
+        <div class="gl-title">HHI — Índice Herfindahl-Hirschman</div>
+        <div class="gl-body">Índice de concentração que vai de 1/N (OI perfeitamente uniforme entre todos os strikes) a 1.0 (todo o OI em um único strike). Acima de 0.25 indica concentração alta — poucos strikes dominam o posicionamento.</div>
+      </div>
+      <div class="gl-item">
+        <div class="gl-title">Gini — Desigualdade de distribuição</div>
+        <div class="gl-body">0 = todos os strikes têm exatamente o mesmo OI. 1 = todo o OI está em um único strike. Valores acima de 0.5 indicam concentração significativa, com a maioria dos strikes tendo OI negligenciável comparado ao pico.</div>
+      </div>
+      <div class="gl-item">
+        <div class="gl-title">Entropia de Shannon — Desordem informacional</div>
+        <div class="gl-body">Máxima quando o OI está uniformemente distribuído (máxima incerteza sobre onde o preço "quer ir"). Mínima quando está concentrado em um único strike. O ratio entropia/máximo expressa o percentual de uniformidade — 100% = totalmente uniforme, 0% = totalmente concentrado.</div>
+      </div>
+      <div class="gl-item">
+        <div class="gl-title">R² Gaussiano — Ajuste à curva normal</div>
+        <div class="gl-body">Quanto a distribuição real do OI se parece com uma distribuição normal. R²≈1.0 = comportamento gaussiano previsível, com pico central e caudas simétricas. R²≈0 = distribuição irregular, com picos isolados, formas bimodais ou concentrações atípicas que não seguem padrão clássico.</div>
+      </div>
+      <div class="gl-item">
+        <div class="gl-title">Teste KS — Kolmogorov-Smirnov</div>
+        <div class="gl-body">Formaliza estatisticamente o teste de normalidade. Se p &gt; 0.05, não se rejeita a hipótese de que o OI segue uma distribuição normal. Complementa o R²: R² mede qualidade do ajuste, KS testa formalmente a hipótese.</div>
+      </div>
+    </div>
+  </details>
+
+  <div class="footer">
+    BOVA11 OI Distribution Analysis — Ajuste gaussiano, concentração e forma<br>
+    Métricas: HHI, Gini, Entropia de Shannon, Skewness, Kurtosis, KS Test, R²<br>
+    Não constitui recomendação de investimento.
+  </div>
+</div>
+
+<script>
+Chart.defaults.color = '#9C9A91';
+Chart.defaults.borderColor = 'rgba(0,0,0,0.06)';
+Chart.defaults.font.family = "'Instrument Sans', sans-serif";
+Chart.defaults.font.size = 10;
+</script>
+</body>
+</html>
