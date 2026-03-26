@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BOVA11 — GEX History</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg:#FAFAF8; --bg2:#F2F1EE; --bg3:#E8E7E3; --card:#FFFFFF;
+      --border:rgba(0,0,0,0.08); --border2:rgba(0,0,0,0.14);
+      --t1:#1A1A18; --t2:#6B6960; --t3:#9C9A91;
+      --green:#148A63; --amber:#B8720A; --red:#B33530; --blue:#2E6BBF;
+      --font:'Instrument Sans',system-ui,sans-serif;
+      --mono:'JetBrains Mono',monospace;
+    }
+    [data-theme="dark"] {
+      --bg:#0d1117; --bg2:#161b22; --bg3:#21262d; --card:#21262d;
+      --border:rgba(255,255,255,0.1); --border2:rgba(255,255,255,0.16);
+      --t1:#c9d1d9; --t2:#8b949e; --t3:#636c76;
+      --green:#3fb950; --amber:#d29922; --red:#f85149; --blue:#58a6ff;
+    }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--t1);
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+    }
+    #theme-toggle {
+      position: fixed; top: 16px; right: 16px; z-index: 999;
+      background: var(--card); border: 1px solid var(--border2);
+      border-radius: 8px; padding: 6px 10px; cursor: pointer;
+      font-size: 16px; line-height: 1;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+    .page-wrapper { max-width: 1100px; margin: 0 auto; }
+    h1 { font-size: 1.6rem; font-weight: 700; color: var(--t1); margin-bottom: 4px; }
+    .subtitle { color: var(--t2); font-size: 0.9rem; margin-bottom: 28px; }
+
+    /* ── Cards ── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px 18px;
+    }
+    .card-label {
+      font-size: 0.75rem; color: var(--t3);
+      text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px;
+    }
+    .card-value {
+      font-size: 1.4rem; font-weight: 700;
+      font-family: var(--mono); color: var(--t1);
+    }
+    .card-value.long { color: var(--green); }
+    .card-value.short { color: var(--red); }
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 0.8rem; font-weight: 600;
+    }
+    .badge.long  { background: rgba(20,138,99,0.15);  color: var(--green); }
+    .badge.short { background: rgba(179,53,48,0.15); color: var(--red); }
+
+    /* ── Insights ── */
+    .insights-section {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 22px; margin-bottom: 28px;
+    }
+    .insights-section h2 {
+      font-size: 1rem; font-weight: 600; margin-bottom: 14px; color: var(--t1);
+    }
+    .insights-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px 28px;
+    }
+    @media (max-width: 600px) { .insights-grid { grid-template-columns: 1fr; } }
+    .insight-row { display: flex; flex-direction: column; gap: 4px; }
+    .insight-label {
+      font-size: 0.75rem; color: var(--t3);
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .insight-value { font-size: 0.95rem; font-weight: 500; color: var(--t1); }
+
+    /* ── Top 5 ── */
+    .top5-list { display: flex; flex-direction: column; gap: 6px; }
+    .top5-item {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--bg2); border-radius: 8px; padding: 7px 12px;
+    }
+    .top5-strike {
+      font-family: var(--mono); font-size: 0.9rem;
+      font-weight: 600; min-width: 60px;
+    }
+    .top5-dir {
+      font-size: 0.75rem; font-weight: 700;
+      text-transform: uppercase; flex: 1;
+    }
+    .top5-val { font-family: var(--mono); font-size: 0.88rem; color: var(--t2); }
+
+    /* ── Regime changes ── */
+    .regime-changes-list { display: flex; flex-direction: column; gap: 6px; }
+    .regime-change-item {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.88rem; padding: 5px 0;
+    }
+    .rc-date { font-weight: 600; min-width: 50px; }
+
+    /* ── Timeline ── */
+    .timeline-section {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 22px; margin-bottom: 28px;
+    }
+    .timeline-section h2 {
+      font-size: 1rem; font-weight: 600; margin-bottom: 16px; color: var(--t1);
+    }
+    .timeline-strip {
+      display: flex; align-items: flex-start;
+      position: relative; padding: 8px 0 24px;
+    }
+    .timeline-strip::before {
+      content: '';
+      position: absolute; top: 16px; left: 0; right: 0; height: 2px;
+      background: var(--border2);
+    }
+    .tl-dot {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      cursor: pointer; position: relative; z-index: 1;
+    }
+    .tl-dot-circle {
+      width: 14px; height: 14px; border-radius: 50%;
+      background: var(--bg3); border: 2px solid var(--border2);
+      transition: all 0.2s;
+    }
+    .tl-dot:hover .tl-dot-circle { background: var(--blue); border-color: var(--blue); }
+    .tl-dot.active .tl-dot-circle {
+      background: var(--blue); border-color: var(--blue);
+      width: 18px; height: 18px; margin-top: -2px;
+    }
+    .tl-dot-label {
+      margin-top: 8px; font-size: 0.78rem; color: var(--t2);
+      font-weight: 500; text-align: center;
+    }
+    .tl-dot.active .tl-dot-label { color: var(--blue); font-weight: 700; }
+
+    /* ── Charts ── */
+    .chart-section {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 22px; margin-bottom: 24px;
+    }
+    .chart-section h2 {
+      font-size: 1rem; font-weight: 600; margin-bottom: 14px; color: var(--t1);
+    }
+    canvas { max-height: 340px; }
+    .charts-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+    }
+    @media (max-width: 700px) { .charts-row { grid-template-columns: 1fr; } }
+    .chart-col { display: flex; flex-direction: column; }
+    .chart-col h3 {
+      font-size: 0.88rem; color: var(--t2); margin-bottom: 10px; font-weight: 600;
+    }
+    .info-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 20px; padding: 4px 12px;
+      font-size: 0.8rem; color: var(--t2); margin-bottom: 12px;
+    }
+    .info-chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+  </style>
+</head>
+<body>
+<button id="theme-toggle" onclick="toggleTheme()">🌙</button>
+<script>
+(function(){ var t=localStorage.getItem('bova11-theme')||'light'; if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');document.getElementById('theme-toggle').textContent='☀️';} })();
+function toggleTheme(){ var btn=document.getElementById('theme-toggle'); if(document.documentElement.getAttribute('data-theme')==='dark'){document.documentElement.removeAttribute('data-theme');localStorage.setItem('bova11-theme','light');btn.textContent='🌙';}else{document.documentElement.setAttribute('data-theme','dark');localStorage.setItem('bova11-theme','dark');btn.textContent='☀️';} }
+</script>
+
+<div class="page-wrapper">
+
+  <h1>BOVA11 Market Maker — Histórico GEX</h1>
+  <p class="subtitle">Gamma Exposure por strike · últimos 5 dias úteis · referência 25/Mar</p>
+
+  <!-- Summary Cards -->
+  <div class="cards-grid">
+    <div class="card">
+      <div class="card-label">Referência</div>
+      <div class="card-value" id="card-ref">25/Mar</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Gamma Flip</div>
+      <div class="card-value" id="card-gf">179.8</div>
+    </div>
+    <div class="card">
+      <div class="card-label">GEX Total</div>
+      <div class="card-value long" id="card-gex-total">+46.4M</div>
+    </div>
+    <div class="card">
+      <div class="card-label">GEX Descoberto</div>
+      <div class="card-value" id="card-gex-desc">+14.0M</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Regime</div>
+      <div class="card-value">
+        <span class="badge long" id="card-regime">Long Gamma</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Insights -->
+  <div class="insights-section">
+    <h2>Análise do Período</h2>
+    <div class="insights-grid">
+      <div class="insight-row">
+        <span class="insight-label">Período Analisado</span>
+        <span class="insight-value">5 dias úteis</span>
+      </div>
+      <div class="insight-row">
+        <span class="insight-label">Regime Atual</span>
+        <span class="insight-value">
+          <span class="badge long">Long Gamma</span>
+        </span>
+      </div>
+      <div class="insight-row">
+        <span class="insight-label">Variação GEX Descoberto</span>
+        <span class="insight-value">-36.3%</span>
+      </div>
+      <div class="insight-row">
+        <span class="insight-label">Gamma Flip no Período</span>
+        <span class="insight-value" style="font-family:var(--mono)">179.8</span>
+      </div>
+      <div class="insight-row" style="grid-column:1 / -1">
+        <span class="insight-label">Top 5 Strikes Mais Impactados (data mais recente)</span>
+        <div class="top5-list" style="margin-top:8px">
+          <div class="top5-item"><span class="top5-strike">K 180</span><span class="top5-dir" style="color:var(--green)">MORE LONG</span><span class="top5-val">+12.1M</span></div>
+<div class="top5-item"><span class="top5-strike">K 184</span><span class="top5-dir" style="color:var(--green)">MORE LONG</span><span class="top5-val">+8.7M</span></div>
+<div class="top5-item"><span class="top5-strike">K 183</span><span class="top5-dir" style="color:var(--green)">MORE LONG</span><span class="top5-val">+6.6M</span></div>
+<div class="top5-item"><span class="top5-strike">K 178</span><span class="top5-dir" style="color:var(--red)">MORE SHORT</span><span class="top5-val">-4.8M</span></div>
+<div class="top5-item"><span class="top5-strike">K 185</span><span class="top5-dir" style="color:var(--green)">MORE LONG</span><span class="top5-val">+4.7M</span></div>
+        </div>
+      </div>
+      <div class="insight-row" style="grid-column:1 / -1">
+        <span class="insight-label">Mudanças de Regime</span>
+        <div class="regime-changes-list" style="margin-top:8px">
+          <div class="regime-change-item"><span class="rc-date">24/Mar</span><span style="color:var(--red)">Short Gamma</span>&nbsp;&rarr;&nbsp;<span style="color:var(--green)">Long Gamma</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="timeline-section">
+    <h2>Selecionar Data</h2>
+    <div class="timeline-strip" id="timeline">
+      <div class="tl-dot active" data-idx="0" onclick="selectDate(0)"><div class="tl-dot-circle"></div><div class="tl-dot-label">25/Mar</div></div>
+<div class="tl-dot " data-idx="1" onclick="selectDate(1)"><div class="tl-dot-circle"></div><div class="tl-dot-label">24/Mar</div></div>
+<div class="tl-dot " data-idx="2" onclick="selectDate(2)"><div class="tl-dot-circle"></div><div class="tl-dot-label">23/Mar</div></div>
+<div class="tl-dot " data-idx="3" onclick="selectDate(3)"><div class="tl-dot-circle"></div><div class="tl-dot-label">20/Mar</div></div>
+<div class="tl-dot " data-idx="4" onclick="selectDate(4)"><div class="tl-dot-circle"></div><div class="tl-dot-label">19/Mar</div></div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="chart-section">
+    <h2>GEX por Strike — <span id="chart-date-label">25/Mar</span></h2>
+    <div id="regime-chips" style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;"></div>
+    <div class="charts-row">
+      <div class="chart-col">
+        <h3>GEX Líquido por Strike</h3>
+        <canvas id="gexBarChart"></canvas>
+      </div>
+      <div class="chart-col">
+        <h3>GEX Cumulativo</h3>
+        <canvas id="gexCumChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page-wrapper -->
+
+<script>
+// ── Dados embutidos ──────────────────────────────────────────
+const ALL_DATA = [{"tag": "25posmar", "iso_date": "2026-03-25", "display": "25/Mar", "strikes": [173.0, 174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0, 188.0, 189.0, 190.0, 191.0], "gex_call": [2474700.0, 4772921.2, 6469547.8, 7732902.5, 8749475.0, 8054483.9, 62856664.89999999, 106552426.19999999, 18547826.2, 23573890.0, 12777338.6, 19008168.1, 34652479.9, 16548918.8, 46249710.400000006, 7378367.4, 5395208.9, 3906735.4, 334428.0], "gex_put": [3438300.0, 6659218.3, 10328667.4, 10134054.3, 6414307.0, 12900939.9, 60442527.6, 94489325.8, 16049523.0, 19437593.4, 6174134.899999999, 10278405.799999999, 29970163.080000002, 13775207.899999999, 41818987.4, 3834391.0000000005, 3135105.9, 308813.19999999995, 10962.0], "gex_net": [-963600.0, -1886297.1, -3859119.6, -2401151.8000000003, 2335168.0, -4846456.0, 2414137.2999999924, 12063100.399999993, 2498303.2, 4136296.600000003, 6603203.699999999, 8729762.3, 4682316.82, 2773710.8999999994, 4430722.999999999, 3543976.3999999994, 2260103.0, 3597922.2, 323466.0], "cum_gex": [-963600.0, -2849897.1, -6709016.7, -9110168.5, -6775000.5, -11621456.5, -9207319.200000007, 2855781.199999986, 5354084.399999986, 9490380.999999989, 16093584.699999988, 24823346.99999999, 29505663.81999999, 32279374.719999988, 36710097.719999984, 40254074.11999998, 42514177.11999998, 46112099.319999985, 46435565.319999985], "gamma_flip": 179.76326308284726, "total_gex_b": 0.04643556531999998, "gex_descoberto_b": 0.0139566245, "regime": "Long Gamma", "top5": [{"strike": 180.0, "gex_net": 12063100.399999993}, {"strike": 184.0, "gex_net": 8729762.3}, {"strike": 183.0, "gex_net": 6603203.699999999}, {"strike": 178.0, "gex_net": -4846456.0}, {"strike": 185.0, "gex_net": 4682316.82}]}, {"tag": "24mar", "iso_date": "2026-03-24", "display": "24/Mar", "strikes": [171.0, 172.0, 173.0, 174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0], "gex_call": [3789084.5, 4123572.2, 7098060.0, 6340580.7, 9455033.0, 9539392.2, 11462848.1, 9929289.3, 66043840.0, 102734772.39999999, 16643296.7, 17519902.4, 9983924.0, 13741866.9, 29461234.7, 13289218.2, 26641963.8], "gex_put": [6185987.200000001, 9396741.1, 8447172.2, 9131467.3, 13646490.1, 12596181.799999999, 7569327.8, 14024355.5, 64436713.400000006, 96670111.0, 15211234.7, 18505351.0, 5155288.5, 9085917.0, 27423491.729999997, 12314089.799999997, 23646976.0], "gex_net": [-2396902.7, -5273168.899999999, -1349112.1999999997, -2790886.6, -4191457.0999999996, -3056789.6, 3893520.3, -4095066.2, 1607126.6000000006, 6064661.399999999, 1432061.9999999995, -985448.6000000003, 4828635.5, 4655949.9, 2037742.9699999997, 975128.4000000003, 2994987.8000000003], "cum_gex": [-2396902.7, -7670071.6, -9019183.799999999, -11810070.399999999, -16001527.499999998, -19058317.099999998, -15164796.799999997, -19259862.999999996, -17652736.399999995, -11588074.999999996, -10156012.999999996, -11141461.599999996, -6312826.099999996, -1656876.1999999955, 380866.7700000042, 1355995.1700000046, 4350982.970000004], "gamma_flip": 184.81309381231725, "total_gex_b": 0.0043509829700000046, "gex_descoberto_b": 0.024138831899999998, "regime": "Long Gamma", "top5": [{"strike": 180.0, "gex_net": 6064661.399999999}, {"strike": 172.0, "gex_net": -5273168.899999999}, {"strike": 183.0, "gex_net": 4828635.5}, {"strike": 184.0, "gex_net": 4655949.9}, {"strike": 175.0, "gex_net": -4191457.0999999996}]}, {"tag": "23mar", "iso_date": "2026-03-23", "display": "23/Mar", "strikes": [170.0, 171.0, 172.0, 173.0, 174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0], "gex_call": [4823279.199999999, 3129306.1, 4157183.1, 5765136.1, 6156296.8, 8222297.6, 9055600.5, 9498523.5, 8485210.899999999, 63125871.699999996, 95622331.6, 16120524.599999998, 16122225.8, 7796926.5, 12026617.700000001, 26315072.099999998, 10475613.899999999, 22065700.0], "gex_put": [9543264.799999999, 5252347.6, 9269088.1, 6879978.0, 8823790.3, 13279902.799999999, 11346296.1, 6419654.799999999, 12588066.5, 60314103.1, 90878582.19999999, 13878374.399999999, 17425444.0, 5251737.0, 7296530.7, 26203108.299999997, 11412408.999999998, 21647999.999999996], "gex_net": [-4719985.6, -2123041.5, -5111905.0, -1114841.9000000001, -2667493.5, -5057605.2, -2290695.6000000006, 3078868.7, -4102855.6000000006, 2811768.599999999, 4743749.4, 2242150.2, -1303218.1999999997, 2545189.4999999995, 4730087.0, 111963.7999999997, -936795.1, 417700.0000000037], "cum_gex": [-4719985.6, -6843027.1, -11954932.1, -13069774.0, -15737267.5, -20794872.7, -23085568.3, -20006699.6, -24109555.200000003, -21297786.600000005, -16554037.200000005, -14311887.000000004, -15615105.200000003, -13069915.700000003, -8339828.700000003, -8227864.900000003, -9164660.000000004, -8746960.0], "gamma_flip": null, "total_gex_b": -0.00874696, "gex_descoberto_b": 0.020681477200000003, "regime": "Short Gamma", "top5": [{"strike": 172.0, "gex_net": -5111905.0}, {"strike": 175.0, "gex_net": -5057605.2}, {"strike": 180.0, "gex_net": 4743749.4}, {"strike": 184.0, "gex_net": 4730087.0}, {"strike": 170.0, "gex_net": -4719985.6}]}, {"tag": "20mar", "iso_date": "2026-03-20", "display": "20/Mar", "strikes": [162.0, 163.0, 164.0, 165.0, 166.0, 167.0, 168.0, 169.0, 170.0, 171.0, 172.0, 173.0, 174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0], "gex_call": [113069.0, 6522362.800000001, 10234114.7, 12574675.3, 8706268.940000001, 8974949.9, 19293803.4, 6521814.2, 29810433.3, 17610853.000000004, 15744594.4, 20833155.2, 21517590.4, 35781074.6, 41349326.4, 26989855.2, 23338692.6, 74258319.2, 39490288.2], "gex_put": [319333.0, 10764723.700000001, 9914922.700000001, 20859821.3, 11173176.3, 7675060.200000001, 16197588.7, 10848263.9, 66418663.3, 28651836.8, 45307876.7, 26152234.0, 28972650.9, 55025590.4, 43589379.760000005, 21535457.1, 43899423.89, 71564123.9, 38722955.4], "gex_net": [-206264.0, -4242360.9, 319192.00000000047, -8285146.0, -2466907.3600000003, 1299889.6999999993, 3096214.7, -4326449.699999999, -36608230.0, -11040983.8, -29563282.300000004, -5319078.8, -7455060.5, -19244515.8, -2240053.36, 5454398.099999999, -20560731.29, 2694195.3, 767332.7999999999], "cum_gex": [-206264.0, -4448624.9, -4129432.9, -12414578.9, -14881486.260000002, -13581596.560000002, -10485381.860000003, -14811831.560000002, -51420061.56, -62461045.36, -92024327.66, -97343406.46, -104798466.96, -124042982.75999999, -126283036.11999999, -120828638.02, -141389369.31, -138695174.01, -137927841.20999998], "gamma_flip": null, "total_gex_b": -0.13792784120999999, "gex_descoberto_b": 0.013631222600000001, "regime": "Short Gamma", "top5": [{"strike": 170.0, "gex_net": -36608230.0}, {"strike": 172.0, "gex_net": -29563282.300000004}, {"strike": 178.0, "gex_net": -20560731.29}, {"strike": 175.0, "gex_net": -19244515.8}, {"strike": 171.0, "gex_net": -11040983.8}]}, {"tag": "19mar", "iso_date": "2026-03-19", "display": "19/Mar", "strikes": [169.0, 170.0, 171.0, 172.0, 173.0, 174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0], "gex_call": [636063.7, 4266581.6, 1878049.6, 3634406.5, 5884164.7, 23416349.2, 15469193.899999999, 22366098.900000002, 44075647.6, 45075313.800000004, 88140900.4, 105634336.0, 23851341.6, 19013416.500000004, 7461128.4, 10215795.200000001, 11208854.8], "gex_put": [1487835.6000000003, 8993000.5, 4908577.1, 10430069.7, 44390738.1, 27832928.9, 42891368.89999999, 42148251.410000004, 45383076.8, 49236322.78, 84648116.0, 98309646.20000002, 20079156.0, 19968237.8, 5220473.899999999, 5128733.5, 13565935.5], "gex_net": [-851771.9000000001, -4726418.9, -3030527.4999999995, -6795663.2, -38506573.4, -4416579.7, -27422175.0, -19782152.51, -1307429.1999999995, -4161008.98, 3492784.4, 7324689.800000001, 3772185.5999999978, -954821.299999998, 2240654.5, 5087061.7, -2357080.7], "cum_gex": [-851771.9000000001, -5578190.800000001, -8608718.3, -15404381.5, -53910954.9, -58327534.6, -85749709.6, -105531862.11, -106839291.31, -111000300.29, -107507515.89, -100182826.09, -96410640.49000001, -97365461.79, -95124807.29, -90037745.59, -92394826.29], "gamma_flip": null, "total_gex_b": -0.09239482629000001, "gex_descoberto_b": 0.021917375999999995, "regime": "Short Gamma", "top5": [{"strike": 173.0, "gex_net": -38506573.4}, {"strike": 175.0, "gex_net": -27422175.0}, {"strike": 176.0, "gex_net": -19782152.51}, {"strike": 180.0, "gex_net": 7324689.800000001}, {"strike": 172.0, "gex_net": -6795663.2}]}];
+
+// ── Estado ───────────────────────────────────────────────────
+let currentIdx = 0;
+let barChart   = null;
+let cumChart   = null;
+
+// ── Helpers ──────────────────────────────────────────────────
+function isDark() {
+  return document.documentElement.getAttribute('data-theme') === 'dark';
+}
+function gridColor() {
+  return isDark() ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)';
+}
+function tickColor() {
+  return isDark() ? '#8b949e' : '#6B6960';
+}
+function fmtRaw(val) {
+  if (val === 0) return '0';
+  const abs  = Math.abs(val);
+  const sign = val > 0 ? '+' : '-';
+  if (abs >= 1e9) return sign + (abs / 1e9).toFixed(2) + 'B';
+  if (abs >= 1e6) return sign + (abs / 1e6).toFixed(1) + 'M';
+  return sign + abs.toFixed(0);
+}
+function fmtBilhoes(val) {
+  if (val === 0) return '0';
+  const abs  = Math.abs(val);
+  const sign = val > 0 ? '+' : '-';
+  if (abs >= 1) return sign + abs.toFixed(2) + 'B';
+  return sign + (abs * 1000).toFixed(1) + 'M';
+}
+
+// ── Plugin: linha vertical do Gamma Flip ─────────────────────
+function makeFlipPlugin(d) {
+  return {
+    id: 'flipLine',
+    afterDraw(chart) {
+      const gammaFlip = d.gamma_flip;
+      if (gammaFlip === null || gammaFlip === undefined) return;
+      const ctx    = chart.ctx;
+      const xAxis  = chart.scales.x;
+      const yAxis  = chart.scales.y;
+      const sarr   = d.strikes;
+      let xPx = null;
+      for (let i = 0; i < sarr.length - 1; i++) {
+        if (gammaFlip >= sarr[i] && gammaFlip <= sarr[i + 1]) {
+          const t  = (gammaFlip - sarr[i]) / (sarr[i + 1] - sarr[i]);
+          const x0 = xAxis.getPixelForValue(i);
+          const x1 = xAxis.getPixelForValue(i + 1);
+          xPx = x0 + t * (x1 - x0);
+          break;
+        }
+      }
+      if (xPx === null) {
+        const idx2 = sarr.findIndex(s => Math.abs(s - gammaFlip) < 0.5);
+        if (idx2 >= 0) xPx = xAxis.getPixelForValue(idx2);
+      }
+      if (xPx === null) return;
+      const dark = isDark();
+      ctx.save();
+      ctx.beginPath();
+      ctx.setLineDash([6, 4]);
+      ctx.strokeStyle = dark ? '#d29922' : '#B8720A';
+      ctx.lineWidth   = 2;
+      ctx.moveTo(xPx, yAxis.top);
+      ctx.lineTo(xPx, yAxis.bottom);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle  = dark ? '#d29922' : '#B8720A';
+      ctx.font       = 'bold 11px monospace';
+      ctx.textAlign  = 'center';
+      ctx.fillText('Flip ' + gammaFlip.toFixed(1), xPx, yAxis.top - 4);
+      ctx.restore();
+    }
+  };
+}
+
+// ── Renderizar charts ────────────────────────────────────────
+function renderCharts(idx) {
+  const d = ALL_DATA[idx];
+  if (!d) return;
+
+  const strikes = d.strikes.map(s => s.toFixed(0));
+  const gexNet  = d.gex_net;
+  const cumGex  = d.cum_gex;
+  const dark    = isDark();
+
+  const barColors = gexNet.map(v => v >= 0
+    ? (dark ? 'rgba(63,185,80,0.85)'  : 'rgba(20,138,99,0.85)')
+    : (dark ? 'rgba(248,81,73,0.85)'  : 'rgba(179,53,48,0.85)')
+  );
+  const barBorders = gexNet.map(v => v >= 0
+    ? (dark ? '#3fb950' : '#148A63')
+    : (dark ? '#f85149' : '#B33530')
+  );
+
+  if (barChart) { barChart.destroy(); barChart = null; }
+  if (cumChart) { cumChart.destroy(); cumChart = null; }
+
+  const flipPlugin = makeFlipPlugin(d);
+
+  // Bar chart — GEX liquido por strike
+  const barCtx = document.getElementById('gexBarChart').getContext('2d');
+  barChart = new Chart(barCtx, {
+    type: 'bar',
+    data: {
+      labels: strikes,
+      datasets: [{
+        label: 'GEX Net',
+        data: gexNet,
+        backgroundColor: barColors,
+        borderColor: barBorders,
+        borderWidth: 1,
+        borderRadius: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      animation: { duration: 300 },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => 'GEX: ' + fmtRaw(ctx.raw)
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: tickColor(), font: { size: 10 }, maxRotation: 45 },
+          grid: { color: gridColor() }
+        },
+        y: {
+          ticks: { color: tickColor(), callback: v => fmtRaw(v) },
+          grid: { color: gridColor() }
+        }
+      }
+    },
+    plugins: [flipPlugin]
+  });
+
+  // Line chart — GEX cumulativo
+  const cumCtx = document.getElementById('gexCumChart').getContext('2d');
+  cumChart = new Chart(cumCtx, {
+    type: 'line',
+    data: {
+      labels: strikes,
+      datasets: [
+        {
+          label: 'GEX Cumulativo',
+          data: cumGex,
+          borderColor: dark ? '#58a6ff' : '#2E6BBF',
+          backgroundColor: 'transparent',
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          borderWidth: 2,
+          tension: 0.3,
+          fill: false,
+        },
+        {
+          label: 'Zero',
+          data: new Array(strikes.length).fill(0),
+          borderColor: dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)',
+          borderWidth: 1,
+          borderDash: [4, 4],
+          pointRadius: 0,
+          fill: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      animation: { duration: 300 },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ctx.datasetIndex === 0 ? 'Cum: ' + fmtRaw(ctx.raw) : ''
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: tickColor(), font: { size: 10 }, maxRotation: 45 },
+          grid: { color: gridColor() }
+        },
+        y: {
+          ticks: { color: tickColor(), callback: v => fmtRaw(v) },
+          grid: { color: gridColor() }
+        }
+      }
+    },
+    plugins: [flipPlugin]
+  });
+}
+
+// ── Atualizar cards e chips ───────────────────────────────────
+function updateCards(idx) {
+  const d  = ALL_DATA[idx];
+  if (!d) return;
+
+  const gf = (d.gamma_flip !== null && d.gamma_flip !== undefined)
+    ? d.gamma_flip.toFixed(1) : 'N/A';
+
+  document.getElementById('card-ref').textContent  = d.display;
+  document.getElementById('card-gf').textContent   = gf;
+
+  const totalEl = document.getElementById('card-gex-total');
+  totalEl.textContent = fmtBilhoes(d.total_gex_b);
+  totalEl.className   = 'card-value ' + (d.total_gex_b >= 0 ? 'long' : 'short');
+
+  document.getElementById('card-gex-desc').textContent = fmtBilhoes(d.gex_descoberto_b);
+
+  const regEl = document.getElementById('card-regime');
+  regEl.textContent = d.regime;
+  regEl.className   = 'badge ' + (d.regime === 'Long Gamma' ? 'long' : 'short');
+
+  document.getElementById('chart-date-label').textContent = d.display;
+
+  // Chip de regime
+  const chipsDiv = document.getElementById('regime-chips');
+  chipsDiv.innerHTML = '';
+  const dotColor = d.regime === 'Long Gamma' ? '#3fb950' : '#f85149';
+  const chip = document.createElement('div');
+  chip.className = 'info-chip';
+  chip.innerHTML =
+    '<span class="dot" style="background:' + dotColor + '"></span>'
+    + d.regime + ' — Gamma Flip: ' + gf;
+  chipsDiv.appendChild(chip);
+}
+
+// ── Selecao de data na timeline ───────────────────────────────
+function selectDate(idx) {
+  currentIdx = idx;
+  document.querySelectorAll('.tl-dot').forEach((el, i) => {
+    el.classList.toggle('active', i === idx);
+  });
+  updateCards(idx);
+  renderCharts(idx);
+}
+
+// ── Re-render ao trocar tema (re-escreve toggleTheme global) ──
+const _origToggle = window.toggleTheme;
+window.toggleTheme = function() {
+  _origToggle();
+  setTimeout(() => renderCharts(currentIdx), 50);
+};
+
+// ── Inicializacao ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  updateCards(0);
+  renderCharts(0);
+});
+</script>
+</body>
+</html>

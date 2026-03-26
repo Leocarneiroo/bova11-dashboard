@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BOVA11 Hunter Walls — 25/03/2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.0.1/chartjs-plugin-annotation.min.js"></script>
+  <style>
+    :root {
+      --bg:#FAFAF8; --bg2:#F2F1EE; --bg3:#E8E7E3; --card:#FFFFFF;
+      --border:rgba(0,0,0,0.08); --border2:rgba(0,0,0,0.14);
+      --t1:#1A1A18; --t2:#6B6960; --t3:#9C9A91;
+      --green:#148A63; --amber:#B8720A; --red:#B33530; --blue:#2E6BBF;
+      --font:'Instrument Sans',system-ui,sans-serif;
+      --mono:'JetBrains Mono',monospace;
+    }
+    [data-theme="dark"] {
+      --bg:#0d1117; --bg2:#161b22; --bg3:#21262d; --card:#21262d;
+      --border:rgba(255,255,255,0.1); --border2:rgba(255,255,255,0.16);
+      --t1:#c9d1d9; --t2:#8b949e; --t3:#636c76;
+      --green:#3fb950; --amber:#d29922; --red:#f85149; --blue:#58a6ff;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--t1);
+      min-height: 100vh;
+      padding: 24px 20px 60px;
+    }
+
+    /* ── Theme toggle ───────────────────────────────────────── */
+    #theme-toggle {
+      position: fixed;
+      top: 16px;
+      right: 20px;
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 1rem;
+      color: var(--t1);
+      z-index: 999;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    #theme-toggle:hover { border-color: var(--blue); }
+
+    /* ── Page header ────────────────────────────────────────── */
+    .page-header {
+      max-width: 1200px;
+      margin: 0 auto 28px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border2);
+    }
+    .page-header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--t1);
+      margin-bottom: 4px;
+    }
+    .page-header .subtitle {
+      font-size: 0.95rem;
+      color: var(--t2);
+    }
+    .page-header .meta {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      color: var(--t3);
+      margin-top: 6px;
+    }
+
+    /* ── Stat cards ─────────────────────────────────────────── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 14px;
+      max-width: 1200px;
+      margin: 0 auto 32px;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+    }
+    .stat-card .label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--t3);
+      margin-bottom: 8px;
+    }
+    .stat-card .value {
+      font-family: var(--mono);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--t1);
+      line-height: 1;
+    }
+    .stat-card .sub {
+      font-size: 0.8rem;
+      color: var(--t2);
+      margin-top: 5px;
+    }
+    .stat-card.calls-card  .value { color: var(--blue); }
+    .stat-card.puts-card   .value { color: var(--red); }
+    .stat-card.pcr-bullish .value { color: var(--green); }
+    .stat-card.pcr-bearish .value { color: var(--red); }
+    .stat-card.pcr-neutral .value { color: var(--amber); }
+
+    /* ── Expiry sections ────────────────────────────────────── */
+    .expiry-section {
+      max-width: 1200px;
+      margin: 0 auto 28px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .expiry-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+    }
+    .expiry-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--t1);
+    }
+    .expiry-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .meta-pill {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border2);
+    }
+    .calls-pill  { color: var(--blue); border-color: var(--blue); }
+    .puts-pill   { color: var(--red);  border-color: var(--red); }
+    .pcr-bullish { color: var(--green); border-color: var(--green); }
+    .pcr-bearish { color: var(--red);   border-color: var(--red); }
+    .pcr-neutral { color: var(--amber); border-color: var(--amber); }
+
+    .chart-wrapper {
+      padding: 16px 20px;
+      position: relative;
+    }
+
+    /* ── Summary tables ─────────────────────────────────────── */
+    .summary-section {
+      max-width: 1200px;
+      margin: 0 auto 32px;
+    }
+    .summary-section h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--t1);
+      margin-bottom: 14px;
+    }
+    .tables-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 680px) {
+      .tables-row { grid-template-columns: 1fr; }
+    }
+    .table-block {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .table-block h3 {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 12px 14px 10px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+    }
+    .table-block.calls-block h3 { color: var(--blue); }
+    .table-block.puts-block  h3 { color: var(--red); }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    .data-table th {
+      background: var(--bg2);
+      color: var(--t2);
+      font-weight: 600;
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border2);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .data-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--t1);
+      vertical-align: middle;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .rank-cell   { font-family: var(--mono); color: var(--t3); width: 32px; text-align: center; }
+    .strike-cell { font-family: var(--mono); font-weight: 600; }
+    .expiry-cell { color: var(--t2); font-size: 0.82rem; }
+    .vol-cell    { min-width: 130px; }
+    .vol-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .vol-bar {
+      height: 6px;
+      border-radius: 3px;
+      flex-shrink: 0;
+      min-width: 4px;
+    }
+    .calls-bar { background: var(--blue); }
+    .puts-bar  { background: var(--red); }
+    .vol-label { font-family: var(--mono); font-size: 0.82rem; color: var(--t2); white-space: nowrap; }
+
+    /* ── Footer ─────────────────────────────────────────────── */
+    .footer {
+      max-width: 1200px;
+      margin: 0 auto;
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--t3);
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<button id="theme-toggle" onclick="toggleTheme()">🌙</button>
+
+<!-- Header -->
+<div class="page-header">
+  <h1>🎯 BOVA11 Hunter Walls</h1>
+  <p class="subtitle">Análise de Volume por Strike — Identificação de Muros de Opções</p>
+  <p class="meta">Data de referência: 25/03/2026 &nbsp;|&nbsp; Tag: 25posmar &nbsp;|&nbsp; Spot: R$ 182.20</p>
+</div>
+
+<!-- Stat cards -->
+<div class="cards-grid">
+  <div class="stat-card">
+    <div class="label">Volume Total</div>
+    <div class="value">232.33M</div>
+    <div class="sub">Calls + Puts — todos vencimentos</div>
+  </div>
+  <div class="stat-card calls-card">
+    <div class="label">Calls Total</div>
+    <div class="value">154.65M</div>
+    <div class="sub">66.6% do volume total</div>
+  </div>
+  <div class="stat-card puts-card">
+    <div class="label">Puts Total</div>
+    <div class="value">77.68M</div>
+    <div class="sub">33.4% do volume total</div>
+  </div>
+  <div class="stat-card pcr-bullish">
+    <div class="label">PCR Geral</div>
+    <div class="value">0.50</div>
+    <div class="sub">Bullish (< 0.8)</div>
+  </div>
+</div>
+
+<!-- Per-expiry butterfly charts -->
+
+        <div class="expiry-section">
+          <div class="expiry-header">
+            <span class="expiry-name">27 mar W4</span>
+            <div class="expiry-meta">
+              <span class="meta-pill calls-pill">Calls 7.52M</span>
+              <span class="meta-pill puts-pill">Puts 7.68M</span>
+              <span class="meta-pill pcr-pill pcr-neutral">PCR 1.02</span>
+            </div>
+          </div>
+          <div class="chart-wrapper" style="height:374px">
+            <canvas id="chart_0"></canvas>
+          </div>
+        </div>
+
+        <div class="expiry-section">
+          <div class="expiry-header">
+            <span class="expiry-name">2 abr W1</span>
+            <div class="expiry-meta">
+              <span class="meta-pill calls-pill">Calls 7.01M</span>
+              <span class="meta-pill puts-pill">Puts 6.74M</span>
+              <span class="meta-pill pcr-pill pcr-neutral">PCR 0.96</span>
+            </div>
+          </div>
+          <div class="chart-wrapper" style="height:374px">
+            <canvas id="chart_1"></canvas>
+          </div>
+        </div>
+
+        <div class="expiry-section">
+          <div class="expiry-header">
+            <span class="expiry-name">10 abr W2</span>
+            <div class="expiry-meta">
+              <span class="meta-pill calls-pill">Calls 539.7k</span>
+              <span class="meta-pill puts-pill">Puts 3.95M</span>
+              <span class="meta-pill pcr-pill pcr-bearish">PCR 7.33</span>
+            </div>
+          </div>
+          <div class="chart-wrapper" style="height:374px">
+            <canvas id="chart_2"></canvas>
+          </div>
+        </div>
+
+        <div class="expiry-section">
+          <div class="expiry-header">
+            <span class="expiry-name">17 abr Mensal</span>
+            <div class="expiry-meta">
+              <span class="meta-pill calls-pill">Calls 109.37M</span>
+              <span class="meta-pill puts-pill">Puts 45.11M</span>
+              <span class="meta-pill pcr-pill pcr-bullish">PCR 0.41</span>
+            </div>
+          </div>
+          <div class="chart-wrapper" style="height:374px">
+            <canvas id="chart_3"></canvas>
+          </div>
+        </div>
+
+        <div class="expiry-section">
+          <div class="expiry-header">
+            <span class="expiry-name">15 mai Mensal</span>
+            <div class="expiry-meta">
+              <span class="meta-pill calls-pill">Calls 30.20M</span>
+              <span class="meta-pill puts-pill">Puts 14.19M</span>
+              <span class="meta-pill pcr-pill pcr-bullish">PCR 0.47</span>
+            </div>
+          </div>
+          <div class="chart-wrapper" style="height:374px">
+            <canvas id="chart_4"></canvas>
+          </div>
+        </div>
+
+
+<!-- Summary tables -->
+<div class="summary-section">
+  <h2>📊 Top 5 por Volume — Todos os Vencimentos</h2>
+  <div class="tables-row">
+    <div class="table-block calls-block">
+      <h3>Calls — Maiores Volumes</h3>
+      <table class="data-table">
+        <thead>
+          <tr><th>#</th><th>Strike</th><th>Vencimento</th><th>Volume</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+              <td class="rank-cell">1</td>
+              <td class="strike-cell">175</td>
+              <td class="expiry-cell">17 abr Mensal</td>
+              <td class="vol-cell">
+                <div class="vol-bar-wrap">
+                  <div class="vol-bar calls-bar" style="width:100.0%"></div>
+                  <span class="vol-label">19.43M</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="rank-cell">2</td>
+              <td class="strike-cell">182</td>
+              <td class="expiry-cell">17 abr Mensal</td>
+              <td class="vol-cell">
+                <div class="vol-bar-wrap">
+                  <div class="vol-bar calls-bar" style="width:66.8%"></div>
+                  <span class="vol-label">12.98M</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="rank-cell">3</td>
+              <td class="strike-cell">188</td>
+              <td class="expiry-cell">17 abr Mensal</td>
+              <td class="vol-cell">
+                <div class="vol-bar-wrap">
+                  <div class="vol-bar calls-bar" style="width:64.2%"></div>
+                  <span class="vol-label">12.47M</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="rank-cell">4</td>
+              <td class="strike-cell">187</td>
+              <td class="expiry-cell">17 abr Mensal</td>
+              <td class="vol-cell">
+                <div class="vol-bar-wrap">
+                  <div class="vol-bar calls-bar" style="width:52.3%"></div>
+                  <span class="vol-label">10.17M</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="rank-cell">5</td>
+              <td class="strike-cell">185</td>
+              <td class="expiry-cell">17 abr Mensal</td>
+              <td class="vol-cell">
+                <div class="vol-bar-wrap">
+                  <div class="vol-bar calls-bar" style="width:50.5%"></div>
+                  <span class="vol-label">9.81M</span>
+                </div>
+              </td>
+            </tr></tbody>
+      </table>
+    </div>
+    <div class="table-block puts-block">
+      <h3>Puts — Maiores Volumes</h3>
+      <table class="data-table">
+        <thead>
+          <tr><th>#</th><th>Strike</th><th>Vencimento</th><th>Volume</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+              <td class="rank-cell">1</td>
+              <td class="strike-cell">180</td>
+              <td class="expiry-cell">17 abr Mensal</td>
+              <td class="vol-cell">
+                <div class="vol-bar-wrap">
+                  <div class="vol-bar puts-bar" style="width:100.0%"></div>
+                  <span class="vol-label">5.81M</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="rank-cell">2</td>
+              <td class="strike-cell">182</td>
+              <td class="expiry-cell">17 abr Mensal</td>
+              <td class="vol-cell">
+                <div class="vol-bar-wrap">
+                  <div class="vol-bar puts-bar" style="width:66.3%"></div>
+                  <span class="vol-label">3.85M</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="rank-cell">3</td>
+              <td class="strike-cell">177</td>
+              <td class="expiry-cell">17 abr Mensal</td>
+              <td class="vol-cell">
+                <div class="vol-bar-wrap">
+                  <div class="vol-bar puts-bar" style="width:64.5%"></div>
+                  <span class="vol-label">3.75M</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="rank-cell">4</td>
+              <td class="strike-cell">176</td>
+              <td class="expiry-cell">17 abr Mensal</td>
+              <td class="vol-cell">
+                <div class="vol-bar-wrap">
+                  <div class="vol-bar puts-bar" style="width:54.9%"></div>
+                  <span class="vol-label">3.19M</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="rank-cell">5</td>
+              <td class="strike-cell">179</td>
+              <td class="expiry-cell">17 abr Mensal</td>
+              <td class="vol-cell">
+                <div class="vol-bar-wrap">
+                  <div class="vol-bar puts-bar" style="width:52.0%"></div>
+                  <span class="vol-label">3.02M</span>
+                </div>
+              </td>
+            </tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  BOVA11 Hunter Walls &middot; Módulo 13 &middot; Gerado em 26/03/2026 01:11
+</div>
+
+<script>
+// ── Theme ──────────────────────────────────────────────────────
+(function(){
+  var t = localStorage.getItem('bova11-theme') || 'light';
+  if (t === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.getElementById('theme-toggle').textContent = '☀️';
+  }
+})();
+
+function toggleTheme() {
+  var btn = document.getElementById('theme-toggle');
+  if (document.documentElement.getAttribute('data-theme') === 'dark') {
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('bova11-theme', 'light');
+    btn.textContent = '🌙';
+  } else {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    localStorage.setItem('bova11-theme', 'dark');
+    btn.textContent = '☀️';
+  }
+}
+
+function chartTextColor() {
+  return document.documentElement.getAttribute('data-theme') === 'dark'
+    ? '#8b949e'
+    : '#6B6960';
+}
+
+// ── Per-expiry charts ──────────────────────────────────────────
+
+  // ── Chart 0: 27 mar W4 ──
+  (function() {
+    var ctx = document.getElementById('chart_0').getContext('2d');
+    var strikes  = [174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0, 189.0, 190.0, 191.0];
+    var callVals = [-188880.0, -767090.0, -443360.0, -1340000.0, -517070.00000000006, -537080.0, -972230.0, -584490.0, -925920.0, -384960.0, -489940.0, -181430.0, -89070.0, -43880.0, -33850.0, -19850.0, -5550.0];
+    var putVals  = [84430.0, 205770.0, 99640.0, 270580.0, 158130.0, 563060.0, 759260.0, 805290.0, 1040000.0, 868210.0, 1010000.0, 471240.0, 537270.0, 321910.0, 435010.0, 41080.0, 10460.0];
+
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: strikes,
+        datasets: [
+          {
+            label: 'Calls',
+            data: callVals,
+            backgroundColor: 'rgba(46, 107, 191, 0.75)',
+            borderColor: 'rgba(46, 107, 191, 1)',
+            borderWidth: 1,
+          },
+          {
+            label: 'Puts',
+            data: putVals,
+            backgroundColor: 'rgba(179, 53, 48, 0.75)',
+            borderColor: 'rgba(179, 53, 48, 1)',
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: { color: chartTextColor(), font: { size: 12 } },
+          },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                var raw = ctx.raw;
+                var abs = Math.abs(raw);
+                var lbl = ctx.dataset.label;
+                if (abs >= 1000000) return lbl + ': ' + (abs/1000000).toFixed(2) + 'M';
+                if (abs >= 1000)    return lbl + ': ' + (abs/1000).toFixed(1) + 'k';
+                return lbl + ': ' + abs.toFixed(0);
+              },
+            },
+          },
+          annotation: {
+            annotations: {
+              zeroLine: {
+                type: 'line',
+                scaleID: 'x',
+                value: 0,
+                borderColor: 'rgba(150,150,150,0.45)',
+                borderWidth: 1,
+              },
+              spotLine: {
+                type: 'line',
+                scaleID: 'y',
+                value: 182.2,
+                borderColor: 'rgba(255, 215, 0, 0.85)',
+                borderWidth: 2,
+                borderDash: [6, 4],
+                label: {
+                  display: true,
+                  content: 'Spot 182.20',
+                  position: 'end',
+                  color: '#ffd700',
+                  font: { size: 11, weight: '600' }
+                }
+              }
+            },
+          },
+        },
+        scales: {
+          x: {
+            stacked: false,
+            grid: { color: 'rgba(150,150,150,0.15)' },
+            ticks: {
+              color: chartTextColor(),
+              callback: function(value) {
+                var abs = Math.abs(value);
+                if (abs >= 1000000) return (abs/1000000).toFixed(1) + 'M';
+                if (abs >= 1000)    return (abs/1000).toFixed(0) + 'k';
+                return abs.toFixed(0);
+              },
+            },
+          },
+          y: {
+            stacked: false,
+            grid: { color: 'rgba(150,150,150,0.15)' },
+            ticks: { color: chartTextColor(), font: { size: 11 } },
+          },
+        },
+      },
+    });
+  })();
+
+  // ── Chart 1: 2 abr W1 ──
+  (function() {
+    var ctx = document.getElementById('chart_1').getContext('2d');
+    var strikes  = [174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0, 188.0, 189.0, 190.0];
+    var callVals = [-350500.0, -234740.0, -71390.0, -238750.0, -656550.0, -741610.0, -808670.0, -1180000.0, -714600.0, -379820.0, -444070.0, -364630.0, -476800.0, -44010.0, -86890.0, -52160.0, -169170.0];
+    var putVals  = [62390.0, 179910.0, 310310.0, 572180.0, 306520.0, 781050.0, 728960.0, 604300.0, 973220.0, 514549.99999999994, 494680.0, 387040.0, 216060.0, 111990.0, 380850.0, 86550.0, 30510.0];
+
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: strikes,
+        datasets: [
+          {
+            label: 'Calls',
+            data: callVals,
+            backgroundColor: 'rgba(46, 107, 191, 0.75)',
+            borderColor: 'rgba(46, 107, 191, 1)',
+            borderWidth: 1,
+          },
+          {
+            label: 'Puts',
+            data: putVals,
+            backgroundColor: 'rgba(179, 53, 48, 0.75)',
+            borderColor: 'rgba(179, 53, 48, 1)',
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: { color: chartTextColor(), font: { size: 12 } },
+          },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                var raw = ctx.raw;
+                var abs = Math.abs(raw);
+                var lbl = ctx.dataset.label;
+                if (abs >= 1000000) return lbl + ': ' + (abs/1000000).toFixed(2) + 'M';
+                if (abs >= 1000)    return lbl + ': ' + (abs/1000).toFixed(1) + 'k';
+                return lbl + ': ' + abs.toFixed(0);
+              },
+            },
+          },
+          annotation: {
+            annotations: {
+              zeroLine: {
+                type: 'line',
+                scaleID: 'x',
+                value: 0,
+                borderColor: 'rgba(150,150,150,0.45)',
+                borderWidth: 1,
+              },
+              spotLine: {
+                type: 'line',
+                scaleID: 'y',
+                value: 182.2,
+                borderColor: 'rgba(255, 215, 0, 0.85)',
+                borderWidth: 2,
+                borderDash: [6, 4],
+                label: {
+                  display: true,
+                  content: 'Spot 182.20',
+                  position: 'end',
+                  color: '#ffd700',
+                  font: { size: 11, weight: '600' }
+                }
+              }
+            },
+          },
+        },
+        scales: {
+          x: {
+            stacked: false,
+            grid: { color: 'rgba(150,150,150,0.15)' },
+            ticks: {
+              color: chartTextColor(),
+              callback: function(value) {
+                var abs = Math.abs(value);
+                if (abs >= 1000000) return (abs/1000000).toFixed(1) + 'M';
+                if (abs >= 1000)    return (abs/1000).toFixed(0) + 'k';
+                return abs.toFixed(0);
+              },
+            },
+          },
+          y: {
+            stacked: false,
+            grid: { color: 'rgba(150,150,150,0.15)' },
+            ticks: { color: chartTextColor(), font: { size: 11 } },
+          },
+        },
+      },
+    });
+  })();
+
+  // ── Chart 2: 10 abr W2 ──
+  (function() {
+    var ctx = document.getElementById('chart_2').getContext('2d');
+    var strikes  = [174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0, 188.0, 189.0, 190.0];
+    var callVals = [-491.12, -8400.0, -17160.0, -8860.0, -181350.0, -34770.0, -25100.0, -12030.0, -23370.0, -44240.0, -10400.0, -93030.0, -9270.0, -2450.0, -53130.0, -13240.0, -2430.0];
+    var putVals  = [121850.0, 51500.0, 6440.0, 23800.0, 278780.0, 1140.0, 128639.99999999999, 89970.0, 17780.0, 451940.0, 986940.0, 381630.0, 447380.0, 315880.0, 175000.0, 475820.0, 59.92];
+
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: strikes,
+        datasets: [
+          {
+            label: 'Calls',
+            data: callVals,
+            backgroundColor: 'rgba(46, 107, 191, 0.75)',
+            borderColor: 'rgba(46, 107, 191, 1)',
+            borderWidth: 1,
+          },
+          {
+            label: 'Puts',
+            data: putVals,
+            backgroundColor: 'rgba(179, 53, 48, 0.75)',
+            borderColor: 'rgba(179, 53, 48, 1)',
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: { color: chartTextColor(), font: { size: 12 } },
+          },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                var raw = ctx.raw;
+                var abs = Math.abs(raw);
+                var lbl = ctx.dataset.label;
+                if (abs >= 1000000) return lbl + ': ' + (abs/1000000).toFixed(2) + 'M';
+                if (abs >= 1000)    return lbl + ': ' + (abs/1000).toFixed(1) + 'k';
+                return lbl + ': ' + abs.toFixed(0);
+              },
+            },
+          },
+          annotation: {
+            annotations: {
+              zeroLine: {
+                type: 'line',
+                scaleID: 'x',
+                value: 0,
+                borderColor: 'rgba(150,150,150,0.45)',
+                borderWidth: 1,
+              },
+              spotLine: {
+                type: 'line',
+                scaleID: 'y',
+                value: 182.2,
+                borderColor: 'rgba(255, 215, 0, 0.85)',
+                borderWidth: 2,
+                borderDash: [6, 4],
+                label: {
+                  display: true,
+                  content: 'Spot 182.20',
+                  position: 'end',
+                  color: '#ffd700',
+                  font: { size: 11, weight: '600' }
+                }
+              }
+            },
+          },
+        },
+        scales: {
+          x: {
+            stacked: false,
+            grid: { color: 'rgba(150,150,150,0.15)' },
+            ticks: {
+              color: chartTextColor(),
+              callback: function(value) {
+                var abs = Math.abs(value);
+                if (abs >= 1000000) return (abs/1000000).toFixed(1) + 'M';
+                if (abs >= 1000)    return (abs/1000).toFixed(0) + 'k';
+                return abs.toFixed(0);
+              },
+            },
+          },
+          y: {
+            stacked: false,
+            grid: { color: 'rgba(150,150,150,0.15)' },
+            ticks: { color: chartTextColor(), font: { size: 11 } },
+          },
+        },
+      },
+    });
+  })();
+
+  // ── Chart 3: 17 abr Mensal ──
+  (function() {
+    var ctx = document.getElementById('chart_3').getContext('2d');
+    var strikes  = [173.0, 174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0, 188.0, 189.0];
+    var callVals = [-621510.0, -2040000.0, -19430000.0, -3150000.0, -2430000.0, -2740000.0, -3500000.0, -4560000.0, -6850000.0, -12980000.0, -8430000.0, -3340000.0, -9810000.0, -6070000.0, -10170000.0, -12470000.0, -778040.0];
+    var putVals  = [2140000.0, 2370000.0, 2970000.0, 3190000.0, 3750000.0, 2300000.0, 3020000.0, 5810000.0, 2440000.0, 3850000.0, 2870000.0, 2980000.0, 2640000.0, 1330000.0, 1320000.0, 902100.0, 1230000.0];
+
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: strikes,
+        datasets: [
+          {
+            label: 'Calls',
+            data: callVals,
+            backgroundColor: 'rgba(46, 107, 191, 0.75)',
+            borderColor: 'rgba(46, 107, 191, 1)',
+            borderWidth: 1,
+          },
+          {
+            label: 'Puts',
+            data: putVals,
+            backgroundColor: 'rgba(179, 53, 48, 0.75)',
+            borderColor: 'rgba(179, 53, 48, 1)',
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: { color: chartTextColor(), font: { size: 12 } },
+          },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                var raw = ctx.raw;
+                var abs = Math.abs(raw);
+                var lbl = ctx.dataset.label;
+                if (abs >= 1000000) return lbl + ': ' + (abs/1000000).toFixed(2) + 'M';
+                if (abs >= 1000)    return lbl + ': ' + (abs/1000).toFixed(1) + 'k';
+                return lbl + ': ' + abs.toFixed(0);
+              },
+            },
+          },
+          annotation: {
+            annotations: {
+              zeroLine: {
+                type: 'line',
+                scaleID: 'x',
+                value: 0,
+                borderColor: 'rgba(150,150,150,0.45)',
+                borderWidth: 1,
+              },
+              spotLine: {
+                type: 'line',
+                scaleID: 'y',
+                value: 182.2,
+                borderColor: 'rgba(255, 215, 0, 0.85)',
+                borderWidth: 2,
+                borderDash: [6, 4],
+                label: {
+                  display: true,
+                  content: 'Spot 182.20',
+                  position: 'end',
+                  color: '#ffd700',
+                  font: { size: 11, weight: '600' }
+                }
+              }
+            },
+          },
+        },
+        scales: {
+          x: {
+            stacked: false,
+            grid: { color: 'rgba(150,150,150,0.15)' },
+            ticks: {
+              color: chartTextColor(),
+              callback: function(value) {
+                var abs = Math.abs(value);
+                if (abs >= 1000000) return (abs/1000000).toFixed(1) + 'M';
+                if (abs >= 1000)    return (abs/1000).toFixed(0) + 'k';
+                return abs.toFixed(0);
+              },
+            },
+          },
+          y: {
+            stacked: false,
+            grid: { color: 'rgba(150,150,150,0.15)' },
+            ticks: { color: chartTextColor(), font: { size: 11 } },
+          },
+        },
+      },
+    });
+  })();
+
+  // ── Chart 4: 15 mai Mensal ──
+  (function() {
+    var ctx = document.getElementById('chart_4').getContext('2d');
+    var strikes  = [174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0, 188.0, 189.0, 190.0];
+    var callVals = [-1000000.0, -1710000.0, -860280.0, -3740000.0, -2560000.0, -2500000.0, -3660000.0, -1290000.0, -1450000.0, -2040000.0, -543220.0, -5640000.0, -330110.0, -336460.0, -610020.0, -309740.0, -1620000.0];
+    var putVals  = [1240000.0, 628940.0, 424650.0, 1580000.0, 1360000.0, 903590.0, 1770000.0, 1110000.0, 1390000.0, 534360.0, 1010000.0, 773910.0, 109220.0, 295610.0, 211160.0, 137250.0, 709720.0];
+
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: strikes,
+        datasets: [
+          {
+            label: 'Calls',
+            data: callVals,
+            backgroundColor: 'rgba(46, 107, 191, 0.75)',
+            borderColor: 'rgba(46, 107, 191, 1)',
+            borderWidth: 1,
+          },
+          {
+            label: 'Puts',
+            data: putVals,
+            backgroundColor: 'rgba(179, 53, 48, 0.75)',
+            borderColor: 'rgba(179, 53, 48, 1)',
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: { color: chartTextColor(), font: { size: 12 } },
+          },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                var raw = ctx.raw;
+                var abs = Math.abs(raw);
+                var lbl = ctx.dataset.label;
+                if (abs >= 1000000) return lbl + ': ' + (abs/1000000).toFixed(2) + 'M';
+                if (abs >= 1000)    return lbl + ': ' + (abs/1000).toFixed(1) + 'k';
+                return lbl + ': ' + abs.toFixed(0);
+              },
+            },
+          },
+          annotation: {
+            annotations: {
+              zeroLine: {
+                type: 'line',
+                scaleID: 'x',
+                value: 0,
+                borderColor: 'rgba(150,150,150,0.45)',
+                borderWidth: 1,
+              },
+              spotLine: {
+                type: 'line',
+                scaleID: 'y',
+                value: 182.2,
+                borderColor: 'rgba(255, 215, 0, 0.85)',
+                borderWidth: 2,
+                borderDash: [6, 4],
+                label: {
+                  display: true,
+                  content: 'Spot 182.20',
+                  position: 'end',
+                  color: '#ffd700',
+                  font: { size: 11, weight: '600' }
+                }
+              }
+            },
+          },
+        },
+        scales: {
+          x: {
+            stacked: false,
+            grid: { color: 'rgba(150,150,150,0.15)' },
+            ticks: {
+              color: chartTextColor(),
+              callback: function(value) {
+                var abs = Math.abs(value);
+                if (abs >= 1000000) return (abs/1000000).toFixed(1) + 'M';
+                if (abs >= 1000)    return (abs/1000).toFixed(0) + 'k';
+                return abs.toFixed(0);
+              },
+            },
+          },
+          y: {
+            stacked: false,
+            grid: { color: 'rgba(150,150,150,0.15)' },
+            ticks: { color: chartTextColor(), font: { size: 11 } },
+          },
+        },
+      },
+    });
+  })();
+
+</script>
+
+</body>
+</html>

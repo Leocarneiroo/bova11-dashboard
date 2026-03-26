@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BOVA11 Diagnóstico 4D — 2026-03-25</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg:#FAFAF8; --bg2:#F2F1EE; --bg3:#E8E7E3; --card:#FFFFFF;
+    --border:rgba(0,0,0,0.08); --border2:rgba(0,0,0,0.14);
+    --t1:#1A1A18; --t2:#6B6960; --t3:#9C9A91;
+    --green:#148A63; --amber:#B8720A; --red:#B33530; --blue:#2E6BBF;
+    --font:'Instrument Sans',system-ui,sans-serif;
+    --mono:'JetBrains Mono',monospace;
+  }
+  [data-theme="dark"] {
+    --bg:#0d1117; --bg2:#161b22; --bg3:#21262d; --card:#21262d;
+    --border:rgba(255,255,255,0.1); --border2:rgba(255,255,255,0.16);
+    --t1:#c9d1d9; --t2:#8b949e; --t3:#636c76;
+    --green:#3fb950; --amber:#d29922; --red:#f85149; --blue:#58a6ff;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--t1);
+    min-height: 100vh;
+    padding-bottom: 60px;
+  }
+
+  /* ── Header ── */
+  .page-header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border2);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-left h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--t1);
+    letter-spacing: -0.02em;
+  }
+  .header-left .subtitle {
+    font-size: 0.8rem;
+    color: var(--t3);
+    font-family: var(--mono);
+    margin-top: 2px;
+  }
+  .theme-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 0.82rem;
+    color: var(--t2);
+    cursor: pointer;
+    font-family: var(--font);
+    transition: all 0.2s;
+  }
+  .theme-btn:hover { color: var(--t1); border-color: var(--blue); }
+
+  /* ── Container ── */
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 32px;
+  }
+
+  /* ── Stat strip ── */
+  .stats-strip {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 1100px) { .stats-strip { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 600px)  { .stats-strip { grid-template-columns: repeat(2, 1fr); } }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .stat-card .label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--t3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+  .stat-card .value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    font-family: var(--mono);
+    color: var(--t1);
+    line-height: 1.1;
+  }
+  .stat-card .value.green { color: var(--green); }
+  .stat-card .value.red   { color: var(--red); }
+  .stat-card .value.amber { color: var(--amber); }
+  .stat-card .value.blue  { color: var(--blue); }
+  .stat-card .sub {
+    font-size: 0.72rem;
+    color: var(--t3);
+    margin-top: 3px;
+    font-family: var(--mono);
+  }
+
+  /* ── Main row ── */
+  .main-row {
+    display: grid;
+    grid-template-columns: 60fr 40fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 900px) { .main-row { grid-template-columns: 1fr; } }
+
+  /* ── Card ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 24px;
+  }
+  .card-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--t3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 16px;
+  }
+
+  /* ── Scenario heading ── */
+  .scenario-name-large {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: var(--t1);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+  .scenario-num {
+    font-size: 0.8rem;
+    font-family: var(--mono);
+    color: var(--t3);
+    margin-bottom: 20px;
+  }
+
+  /* ── Signal 2x2 grid ── */
+  .signals-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .signal-block {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .signal-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--t3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── Badges ── */
+  .badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    font-family: var(--mono);
+  }
+  .badge.green { background: rgba(63,185,80,0.15);  color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+  .badge.red   { background: rgba(248,81,73,0.15);   color: var(--red);   border: 1px solid rgba(248,81,73,0.3); }
+  .badge.amber { background: rgba(210,153,34,0.15);  color: var(--amber); border: 1px solid rgba(210,153,34,0.3); }
+  .badge.blue  { background: rgba(88,166,255,0.15);  color: var(--blue);  border: 1px solid rgba(88,166,255,0.3); }
+
+  .badge-sm {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    font-family: var(--mono);
+  }
+  .badge-sm.green { background: rgba(63,185,80,0.15);  color: var(--green); }
+  .badge-sm.red   { background: rgba(248,81,73,0.15);   color: var(--red); }
+  .badge-sm.amber { background: rgba(210,153,34,0.15);  color: var(--amber); }
+  .badge-sm.blue  { background: rgba(88,166,255,0.15);  color: var(--blue); }
+
+  /* ── Interpretation ── */
+  .interpretacao {
+    font-size: 0.9rem;
+    color: var(--t2);
+    line-height: 1.6;
+    margin-bottom: 18px;
+    padding: 12px 14px;
+    background: var(--bg2);
+    border-left: 3px solid var(--blue);
+    border-radius: 0 8px 8px 0;
+  }
+
+  .force-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .label-small {
+    font-size: 0.74rem;
+    color: var(--t3);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── Strategies ── */
+  .strategy-section { margin-bottom: 16px; }
+  .strategy-section:last-child { margin-bottom: 0; }
+  .strategy-heading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .strategy-text {
+    font-size: 0.93rem;
+    color: var(--t1);
+    font-weight: 500;
+    line-height: 1.5;
+  }
+  .red-text { color: var(--red) !important; }
+
+  /* ── Alert card ── */
+  .alert-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+  .alert-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-top: 14px;
+  }
+  @media (max-width: 800px) { .alert-grid { grid-template-columns: 1fr; } }
+  .al-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--t3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+  .al-text {
+    font-size: 0.87rem;
+    color: var(--t2);
+    line-height: 1.55;
+  }
+
+  /* ── Charts 2x2 ── */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 800px) { .charts-grid { grid-template-columns: 1fr; } }
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+  }
+  .chart-card .chart-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--t3);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 14px;
+  }
+  .chart-wrap { position: relative; height: 200px; }
+
+  /* ── Matrix table ── */
+  .matrix-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    overflow-x: auto;
+  }
+  .matrix-card .card-title { margin-bottom: 14px; }
+  table.matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.83rem;
+  }
+  table.matrix th {
+    text-align: left;
+    padding: 8px 10px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--t3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border2);
+    white-space: nowrap;
+  }
+  table.matrix td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+    color: var(--t2);
+  }
+  table.matrix tr:last-child td { border-bottom: none; }
+  table.matrix tr.active-row td {
+    background: rgba(88,166,255,0.07);
+    color: var(--t1);
+  }
+  table.matrix tr.active-row .scenario-name {
+    color: var(--blue);
+    font-weight: 700;
+  }
+  table.matrix .mono { font-family: var(--mono); color: var(--t3); font-size: 0.75rem; }
+  table.matrix .scenario-name { font-weight: 600; white-space: nowrap; }
+  table.matrix .small-text { font-size: 0.78rem; max-width: 200px; }
+  table.matrix tr:hover td { background: var(--bg2); }
+  table.matrix tr.active-row:hover td { background: rgba(88,166,255,0.12); }
+
+  /* ── Section title ── */
+  .section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--t3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+    margin-top: 28px;
+  }
+  hr.divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 18px 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="page-header">
+  <div class="header-left">
+    <h1>BOVA11 Diagnóstico 4D</h1>
+    <div class="subtitle">GEX &middot; DEX &middot; VEX &middot; TEX &nbsp;|&nbsp; Ref: 2026-03-25 (25posmar)</div>
+  </div>
+  <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">&#9728; Modo Claro</button>
+</header>
+
+<div class="container">
+
+  <!-- ── Stat Cards ── -->
+  <div class="stats-strip">
+    <div class="stat-card">
+      <div class="label">Spot D</div>
+      <div class="value mono">R$ 182.20</div>
+      <div class="sub" style="color:var(--green);">+1.68% vs D-1</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Gamma Flip</div>
+      <div class="value mono">180</div>
+      <div class="sub">Strike de inversão GEX</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">GEX Total</div>
+      <div class="value mono green">46.44M</div>
+      <div class="sub">Long Gamma</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">DEX Total</div>
+      <div class="value mono green">1.73B</div>
+      <div class="sub">Pressão Compradora</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">VEX Total</div>
+      <div class="value mono amber">267.88B</div>
+      <div class="sub">IV Elevada</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">TEX Total</div>
+      <div class="value mono amber">-2.64B</div>
+      <div class="sub">Decay Alto</div>
+    </div>
+  </div>
+
+  <!-- ── Main Row: Diagnostic + Strategy ── -->
+  <div class="main-row">
+
+    <!-- Diagnostic card -->
+    <div class="card">
+      <div class="card-title">Cenário Identificado</div>
+      <div class="scenario-name-large">Alta com IV Elevada</div>
+      <div class="scenario-num">Cenário #9 &mdash; Matriz 4D de 16 Cenários</div>
+
+      <div class="signals-grid">
+        <div class="signal-block">
+          <span class="signal-label">GEX</span>
+          <span class="badge green">LONG</span>
+        </div>
+        <div class="signal-block">
+          <span class="signal-label">DEX</span>
+          <span class="badge green">POS</span>
+        </div>
+        <div class="signal-block">
+          <span class="signal-label">VEX</span>
+          <span class="badge amber">ALTO</span>
+        </div>
+        <div class="signal-block">
+          <span class="signal-label">TEX</span>
+          <span class="badge amber">ALTO</span>
+        </div>
+      </div>
+
+      <div class="interpretacao">Dealers long gamma com pressão compradora e IV elevada. Mercado estabilizado mas com custo alto de opções. Foco em estruturas de spread.</div>
+
+      <div class="force-row">
+        <span class="label-small">Força do Sinal:</span>
+        <span class="badge green">FORTE</span>
+        <span class="label-small" style="margin-left:8px;">Direção Provável:</span>
+        <span class="badge green">ALTA</span>
+      </div>
+    </div>
+
+    <!-- Strategy card -->
+    <div class="card">
+      <div class="card-title">Estratégias</div>
+
+      <div class="strategy-section">
+        <div class="strategy-heading">
+          <span class="label-small">Estrutura Ideal</span>
+          <span class="badge green">PRINCIPAL</span>
+        </div>
+        <div class="strategy-text">Box de 3 Pontas, Broken Wing Butterfly</div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="strategy-section">
+        <div class="strategy-heading">
+          <span class="label-small">O Que Evitar</span>
+          <span class="badge red">RISCO</span>
+        </div>
+        <div class="strategy-text red-text">Compra de volatilidade, Long Straddles</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Alertas ── -->
+  <div class="alert-card">
+    <div class="card-title">Alertas de Mudança de Cenário</div>
+    <div class="alert-grid">
+      <div>
+        <div class="al-title">Regime Atual</div>
+        <div class="al-text">Dealers estão em long gamma — amortecem movimentos e tendem a estabilizar o mercado.</div>
+      </div>
+      <div>
+        <div class="al-title">Gatilho de Mudança</div>
+        <div class="al-text">Mudança para SHORT gamma ocorre quando há aumento de OI em calls fora do dinheiro ou aumento de put selling institucional.</div>
+      </div>
+      <div>
+        <div class="al-title">Fluxo de Hedge</div>
+        <div class="al-text">Pressão <strong>compradora</strong> líquida identificada. DEX positivo indica dealers com viés de compra no spot para hedge.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Charts 2x2 ── -->
+  <div class="section-title">Gráficos Principais</div>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">GEX por Strike (M)</div>
+      <div class="chart-wrap"><canvas id="chartGex"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">DEX Momentum (M)</div>
+      <div class="chart-wrap"><canvas id="chartDex"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">VEX por Strike (M)</div>
+      <div class="chart-wrap"><canvas id="chartVex"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">TEX Cumulativo (M)</div>
+      <div class="chart-wrap"><canvas id="chartTex"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ── Decision Matrix ── -->
+  <div class="section-title">Matriz de Decisão 4D &mdash; 16 Cenários</div>
+  <div class="matrix-card">
+    <table class="matrix">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>GEX</th>
+          <th>DEX</th>
+          <th>VEX</th>
+          <th>TEX</th>
+          <th>Cenário</th>
+          <th>Estrutura Ideal</th>
+          <th>Evitar</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="mono">#1</td><td><span class="badge-sm red">SHORT</span></td><td><span class="badge-sm green">POS</span></td><td><span class="badge-sm amber">ALTO</span></td><td><span class="badge-sm amber">ALTO</span></td><td class="scenario-name">Gamma Squeeze Iminente</td><td class="small-text">Compra de Call, Broken Wing Butterfly</td><td class="small-text red-text">Venda descoberta, Posições vendidas</td></tr>
+<tr><td class="mono">#2</td><td><span class="badge-sm red">SHORT</span></td><td><span class="badge-sm green">POS</span></td><td><span class="badge-sm amber">ALTO</span></td><td><span class="badge-sm blue">BAIXO</span></td><td class="scenario-name">Rally Explosivo</td><td class="small-text">Compra de Call, Compra de Straddle</td><td class="small-text red-text">Venda de volatilidade</td></tr>
+<tr><td class="mono">#3</td><td><span class="badge-sm red">SHORT</span></td><td><span class="badge-sm green">POS</span></td><td><span class="badge-sm blue">BAIXO</span></td><td><span class="badge-sm amber">ALTO</span></td><td class="scenario-name">Squeeze Técnico</td><td class="small-text">Compra de Call</td><td class="small-text red-text">Compra de volatilidade</td></tr>
+<tr><td class="mono">#4</td><td><span class="badge-sm red">SHORT</span></td><td><span class="badge-sm green">POS</span></td><td><span class="badge-sm blue">BAIXO</span></td><td><span class="badge-sm blue">BAIXO</span></td><td class="scenario-name">Alta Técnica</td><td class="small-text">Compra de Call</td><td class="small-text red-text">Posições de volatilidade</td></tr>
+<tr><td class="mono">#5</td><td><span class="badge-sm red">SHORT</span></td><td><span class="badge-sm red">NEG</span></td><td><span class="badge-sm amber">ALTO</span></td><td><span class="badge-sm amber">ALTO</span></td><td class="scenario-name">Crash Iminente</td><td class="small-text">Compra de Put, Broken Wing Butterfly</td><td class="small-text red-text">Posições compradas, Venda de Put</td></tr>
+<tr><td class="mono">#6</td><td><span class="badge-sm red">SHORT</span></td><td><span class="badge-sm red">NEG</span></td><td><span class="badge-sm amber">ALTO</span></td><td><span class="badge-sm blue">BAIXO</span></td><td class="scenario-name">Queda Explosiva</td><td class="small-text">Compra de Put, Compra de Straddle</td><td class="small-text red-text">Calls, Posições de alta</td></tr>
+<tr><td class="mono">#7</td><td><span class="badge-sm red">SHORT</span></td><td><span class="badge-sm red">NEG</span></td><td><span class="badge-sm blue">BAIXO</span></td><td><span class="badge-sm amber">ALTO</span></td><td class="scenario-name">Correção Rápida</td><td class="small-text">Compra de Put</td><td class="small-text red-text">Posições de alta</td></tr>
+<tr><td class="mono">#8</td><td><span class="badge-sm red">SHORT</span></td><td><span class="badge-sm red">NEG</span></td><td><span class="badge-sm blue">BAIXO</span></td><td><span class="badge-sm blue">BAIXO</span></td><td class="scenario-name">Correção Lenta</td><td class="small-text">Compra de Put</td><td class="small-text red-text">Posições agressivas</td></tr>
+<tr class="active-row"><td class="mono">#9</td><td><span class="badge-sm green">LONG</span></td><td><span class="badge-sm green">POS</span></td><td><span class="badge-sm amber">ALTO</span></td><td><span class="badge-sm amber">ALTO</span></td><td class="scenario-name">&#9654; Alta com IV Elevada</td><td class="small-text">Box de 3 Pontas, Broken Wing Butterfly</td><td class="small-text red-text">Compra de volatilidade, Long Straddles</td></tr>
+<tr><td class="mono">#10</td><td><span class="badge-sm green">LONG</span></td><td><span class="badge-sm green">POS</span></td><td><span class="badge-sm amber">ALTO</span></td><td><span class="badge-sm blue">BAIXO</span></td><td class="scenario-name">Alta Sustentada</td><td class="small-text">Box de 3 Pontas, Venda de Put</td><td class="small-text red-text">Compra de volatilidade</td></tr>
+<tr><td class="mono">#11</td><td><span class="badge-sm green">LONG</span></td><td><span class="badge-sm green">POS</span></td><td><span class="badge-sm blue">BAIXO</span></td><td><span class="badge-sm amber">ALTO</span></td><td class="scenario-name">Alta Acelerada</td><td class="small-text">Venda de Put, Collar de Alta</td><td class="small-text red-text">Compra de opções caras</td></tr>
+<tr><td class="mono">#12</td><td><span class="badge-sm green">LONG</span></td><td><span class="badge-sm green">POS</span></td><td><span class="badge-sm blue">BAIXO</span></td><td><span class="badge-sm blue">BAIXO</span></td><td class="scenario-name">Tendência de Alta</td><td class="small-text">Venda de Put, Venda Coberta</td><td class="small-text red-text">Posições de volatilidade</td></tr>
+<tr><td class="mono">#13</td><td><span class="badge-sm green">LONG</span></td><td><span class="badge-sm red">NEG</span></td><td><span class="badge-sm amber">ALTO</span></td><td><span class="badge-sm amber">ALTO</span></td><td class="scenario-name">Correção com IV Elevada</td><td class="small-text">Broken Wing Butterfly, Collar de Baixa</td><td class="small-text red-text">Posições de alta, Calls descobertas</td></tr>
+<tr><td class="mono">#14</td><td><span class="badge-sm green">LONG</span></td><td><span class="badge-sm red">NEG</span></td><td><span class="badge-sm amber">ALTO</span></td><td><span class="badge-sm blue">BAIXO</span></td><td class="scenario-name">Recuo Controlado</td><td class="small-text">Collar de Baixa</td><td class="small-text red-text">Calls</td></tr>
+<tr><td class="mono">#15</td><td><span class="badge-sm green">LONG</span></td><td><span class="badge-sm red">NEG</span></td><td><span class="badge-sm blue">BAIXO</span></td><td><span class="badge-sm amber">ALTO</span></td><td class="scenario-name">Queda Acelerada</td><td class="small-text">Collar de Baixa</td><td class="small-text red-text">Posições de alta</td></tr>
+<tr><td class="mono">#16</td><td><span class="badge-sm green">LONG</span></td><td><span class="badge-sm red">NEG</span></td><td><span class="badge-sm blue">BAIXO</span></td><td><span class="badge-sm blue">BAIXO</span></td><td class="scenario-name">Tendência de Baixa</td><td class="small-text">Collar de Baixa</td><td class="small-text red-text">Posições agressivas</td></tr>
+
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+  // ── Theme ──
+  (function() {
+    try {
+      var t = localStorage.getItem('bova11-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+      document.getElementById('theme-btn').textContent = t === 'dark' ? '☀ Modo Claro' : '☾ Modo Escuro';
+    } catch(e) {}
+  })();
+
+  function toggleTheme() {
+    var html = document.documentElement;
+    var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    document.getElementById('theme-btn').textContent = next === 'dark' ? '☀ Modo Claro' : '☾ Modo Escuro';
+    try { localStorage.setItem('bova11-theme', next); } catch(e) {}
+    initCharts();
+  }
+
+  // ── Chart data ──
+  var labels   = [173.0, 174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0, 188.0, 189.0, 190.0, 191.0];
+  var gexNet   = [-0.9636, -1.8863, -3.8591, -2.4012, 2.3352, -4.8465, 2.4141, 12.0631, 2.4983, 4.1363, 6.6032, 8.7298, 4.6823, 2.7737, 4.4307, 3.544, 2.2601, 3.5979, 0.3235];
+  var dexNet   = [75.2, 139.0202, 154.4189, 137.1612, 163.1264, 52.0107, 606.9229, 876.626, 131.8202, 57.008, 68.7426, 71.5377, -69.3857, -63.5373, -669.6543, 3.5203, -31.8002, 27.9477, -1.1832];
+  var vexNet   = [2809.026, 6867.9406, 7442.4945, 8772.2408, 5793.1975, 8496.7345, 41211.2265, 74719.7972, 14473.3541, 14707.0116, 6363.5238, 11030.7605, 28470.2351, 12446.0865, 12283.9064, 5685.2547, 3702.0835, 2585.9631, 20.4492];
+  var texNet   = [-26.8878, -51.478, -70.8896, -72.7091, -66.7272, -74.7439, -471.8027, -756.4837, -127.8223, -148.4911, -70.0802, -104.5979, -206.7459, -93.3699, -221.5053, -37.1584, -24.7493, -16.8195, -1.0102];
+
+  function isDark() { return document.documentElement.getAttribute('data-theme') === 'dark'; }
+
+  function palette() {
+    var d = isDark();
+    return {
+      grid:  d ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+      tick:  d ? '#636c76' : '#9C9A91',
+      green: d ? '#3fb950' : '#148A63',
+      red:   d ? '#f85149' : '#B33530',
+      blue:  d ? '#58a6ff' : '#2E6BBF',
+      amber: d ? '#d29922' : '#B8720A',
+      gold:  '#f0c040',
+    };
+  }
+
+  var charts = {};
+
+  function makeOpts() {
+    var p = palette();
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 300 },
+      plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+      scales: {
+        x: { ticks: { color: p.tick, font: { size: 10 } }, grid: { color: p.grid } },
+        y: { ticks: { color: p.tick, font: { size: 10 } }, grid: { color: p.grid } }
+      }
+    };
+  }
+
+  function buildChart(id, cfg) {
+    if (charts[id]) { charts[id].destroy(); }
+    charts[id] = new Chart(document.getElementById(id).getContext('2d'), cfg);
+  }
+
+  function initCharts() {
+    var p = palette();
+
+    // GEX
+    buildChart('chartGex', {
+      type: 'bar',
+      data: { labels: labels, datasets: [{
+        label: 'GEX Net',
+        data: gexNet,
+        backgroundColor: gexNet.map(function(v) { return v >= 0 ? 'rgba(63,185,80,0.7)' : 'rgba(248,81,73,0.7)'; }),
+        borderColor:     gexNet.map(function(v) { return v >= 0 ? p.green : p.red; }),
+        borderWidth: 1
+      }] },
+      options: makeOpts()
+    });
+
+    // DEX
+    buildChart('chartDex', {
+      type: 'bar',
+      data: { labels: labels, datasets: [{
+        label: 'DEX Net',
+        data: dexNet,
+        backgroundColor: dexNet.map(function(v) { return v >= 0 ? 'rgba(63,185,80,0.6)' : 'rgba(248,81,73,0.6)'; }),
+        borderColor:     dexNet.map(function(v) { return v >= 0 ? p.green : p.red; }),
+        borderWidth: 1
+      }] },
+      options: makeOpts()
+    });
+
+    // VEX
+    buildChart('chartVex', {
+      type: 'bar',
+      data: { labels: labels, datasets: [{
+        label: 'VEX Net',
+        data: vexNet,
+        backgroundColor: vexNet.map(function(v) { return v >= 0 ? 'rgba(88,166,255,0.6)' : 'rgba(210,153,34,0.6)'; }),
+        borderColor:     vexNet.map(function(v) { return v >= 0 ? p.blue : p.amber; }),
+        borderWidth: 1
+      }] },
+      options: makeOpts()
+    });
+
+    // TEX cumulative line
+    var acc = 0;
+    var texCum = texNet.map(function(v) { acc += v; return Math.round(acc * 100) / 100; });
+    buildChart('chartTex', {
+      type: 'line',
+      data: { labels: labels, datasets: [{
+        label: 'TEX Acumulado',
+        data: texCum,
+        borderColor: p.gold,
+        backgroundColor: 'rgba(240,192,64,0.1)',
+        borderWidth: 2,
+        pointRadius: 2,
+        fill: true,
+        tension: 0.35
+      }] },
+      options: makeOpts()
+    });
+  }
+
+  initCharts();
+</script>
+</body>
+</html>
