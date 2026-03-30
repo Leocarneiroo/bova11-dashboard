@@ -15,8 +15,8 @@
         .content pre { background: var(--bg2); padding: 15px; border-radius: 8px; overflow-x: auto; border: 1px solid var(--border); }
         .content code { font-family: Monaco, monospace; font-size: 0.9em; }
         h1, h2, h3 { color: white; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-top: 30px; }
-        h1 { border: none; font-size: 2em; }
-        .btn { display: inline-block; padding: 8px 16px; background: var(--blue); color: black; font-weight: bold; border-radius: 6px; text-decoration: none; cursor: pointer; margin-bottom: 20px; }
+        h1 { border: none; font-size: 2em; margin-top: 0; }
+        .btn { display: inline-block; padding: 8px 16px; background: var(--blue); color: black; font-weight: bold; border-radius: 6px; text-decoration: none; cursor: pointer; margin-bottom: 20px; border: none; }
     </style>
 </head>
 <body>
@@ -24,15 +24,25 @@
         <div class="header">📁 Arquivos Diários (IA)</div>
     </div>
     <div class="content">
-        <button class="btn" id="btn-copy">📋 Copiar Conteúdo para ChatGPT/Claude</button>
-        <button class="btn" id="btn-dl" style="background:#238636;color:white;margin-left:10px;">💾 Download Markdown</button>
-        <div id="viewer">Carregando...</div>
+        <h1>Arquivo de Dados (IA)</h1>
+        <p style="color:#8b949e; margin-bottom: 20px; font-size: 0.95em;">
+           Este arquivo contém todos os fundamentos matemáticos e um extrato completo de todos os JSONs gerados hoje.<br>
+           Use os botões para extrair facilmente.
+        </p>
+
+        <button class="btn" id="btn-copy">📋 Copiar Conteúdo para IA</button>
+        <button class="btn" id="btn-dl" style="background:#238636;color:white;margin-left:10px;">💾 Download MD</button>
+        <button class="btn" id="btn-toggle" style="background:#21262d;color:#c9d1d9;border:1px solid #30363d;margin-left:10px;">👁 Mostrar/Esconder Dados Gerados</button>
+        
+        <div id="viewer-container" style="display: none; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 20px;">
+            <div id="viewer">Carregando...</div>
+        </div>
     </div>
     
     <script>
         const files = ["bova11_2026-03-30", "bova11_2026-03-27"];
         const defaultText = `# Arquivo de Conhecimento BOVA11 — 2026-03-27
-**Gerado em:** 2026-03-30 02:05:02
+**Gerado em:** 2026-03-30 02:33:34
 **Preço D:** 177.74 | **Preço D-1:** 179.45
 ---
 Este arquivo é projetado primariamente como input para IA.
@@ -19123,6 +19133,15 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
             a.href = URL.createObjectURL(new Blob([defaultText], {type: "text/markdown"}));
             a.download = files[0] + ".md";
             a.click();
+        };
+        
+        document.getElementById('btn-toggle').onclick = () => {
+            const vc = document.getElementById('viewer-container');
+            if (vc.style.display === 'none') {
+                vc.style.display = 'block';
+            } else {
+                vc.style.display = 'none';
+            }
         };
     </script>
 </body>
