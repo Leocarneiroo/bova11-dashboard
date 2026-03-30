@@ -9,6 +9,24 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 :root {
+  --bg: #FAFAF8;
+  --bg2: #F0EFEC;
+  --bg3: #E5E4E0;
+  --card: #FFFFFF;
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.12);
+  --t1: #1A1A18;
+  --t2: #5A5A58;
+  --t3: #8A8A88;
+  --green: #1D9E75;
+  --lime: #6B9E1D;
+  --amber: #D4870E;
+  --red: #C9403B;
+  --blue: #3B7DD8;
+  --font: 'Instrument Sans', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+[data-theme="dark"] {
   --bg: #08090C;
   --bg2: #0F1116;
   --bg3: #161921;
@@ -18,13 +36,6 @@
   --t1: #E4E2DB;
   --t2: #8A877F;
   --t3: #4E4C47;
-  --green: #1D9E75;
-  --lime: #6B9E1D;
-  --amber: #D4870E;
-  --red: #C9403B;
-  --blue: #3B7DD8;
-  --font: 'Instrument Sans', system-ui, sans-serif;
-  --mono: 'JetBrains Mono', monospace;
 }
 *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
 html { scroll-behavior: smooth; }
@@ -147,6 +158,18 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
 .gi { background: var(--bg2); padding: 13px 17px; font-size: 12px; color: var(--t2); line-height: 1.6; }
 .gi b { color: var(--t1); display: block; margin-bottom: 3px; }
 
+/* ── Theme toggle ── */
+.theme-toggle {
+  position: fixed; top: 20px; right: 20px; z-index: 999;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 12px; cursor: pointer;
+  font-size: 14px; font-weight: 600; color: var(--t2);
+  transition: all 0.2s; user-select: none;
+}
+.theme-toggle:hover {
+  border-color: var(--blue); color: var(--blue); background: var(--bg2);
+}
+
 /* ── Footer ── */
 .footer {
   text-align:center; padding:32px 0 0; margin-top:16px;
@@ -156,16 +179,13 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
 </style>
 </head>
 <body>
+<button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">🌙 Escuro</button>
+
 <div class="shell">
 
   <div class="top-bar">
     <div>
       <h1>BOVA11 <span>Max Pain Relevance</span></h1>
-    </div>
-    <div class="meta">
-      Referência: 24/Mar/2026<br>
-      Spot ≈ R$ 185.00<br>
-      Gerado: 30/03/2026 00:38
     </div>
   </div>
 
@@ -208,9 +228,9 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
                   fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
             <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   fill="none" stroke="#6B9E1D" stroke-width="3"
-                  stroke-dasharray="59, 100" stroke-linecap="round"/>
+                  stroke-dasharray="67, 100" stroke-linecap="round"/>
             <text x="18" y="20.5" text-anchor="middle" fill="#6B9E1D"
-                  font-size="9" font-weight="600" font-family="var(--mono)">59%</text>
+                  font-size="9" font-weight="600" font-family="var(--mono)">67%</text>
           </svg>
           <span class="verdict-label">Atração moderada</span>
         </div>
@@ -218,9 +238,9 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
 
       <div class="key-metrics">
         <div class="km"><span class="km-l">Max Pain</span><span class="km-v">R$ 179</span></div>
-        <div class="km"><span class="km-l">Spot</span><span class="km-v">R$ 185</span></div>
-        <div class="km"><span class="km-l">Distância</span><span class="km-v" style="color:#6B9E1D">+3.24%</span></div>
-        <div class="km"><span class="km-l">Direção</span><span class="km-v">↓ para baixo</span></div>
+        <div class="km"><span class="km-l">Spot</span><span class="km-v">R$ 178</span></div>
+        <div class="km"><span class="km-l">Distância</span><span class="km-v" style="color:#6B9E1D">-0.71%</span></div>
+        <div class="km"><span class="km-l">Direção</span><span class="km-v">↑ para cima</span></div>
         <div class="km"><span class="km-l">PCR (OI)</span><span class="km-v">1.38</span></div>
         <div class="km"><span class="km-l">GEX Líq.</span><span class="km-v">0</span></div>
       </div>
@@ -230,9 +250,9 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
         
         <div class="cr">
           <span class="cr-name">Distância spot → max pain</span>
-          <span class="cr-det">3.24%</span>
-          <div class="bar-track"><div class="bar-fill" style="width:20.0%;background:#C9403B"></div></div>
-          <span class="cr-sc" style="color:#C9403B">2/10</span>
+          <span class="cr-det">0.71%</span>
+          <div class="bar-track"><div class="bar-fill" style="width:80.0%;background:#1D9E75"></div></div>
+          <span class="cr-sc" style="color:#1D9E75">8/10</span>
         </div>
         <div class="cr">
           <span class="cr-name">Dias até expiração (DTE)</span>
@@ -288,7 +308,7 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
         const MP = [{"strike": 169.0, "call_loss": 0.0, "put_loss": 49607680.0, "total_loss": 49607680.0}, {"strike": 170.0, "call_loss": 62190.0, "put_loss": 42644790.0, "total_loss": 42706980.0}, {"strike": 171.0, "call_loss": 360510.0, "put_loss": 36576280.0, "total_loss": 36936790.0}, {"strike": 172.0, "call_loss": 719230.0, "put_loss": 30922730.0, "total_loss": 31641960.0}, {"strike": 173.0, "call_loss": 1216410.0, "put_loss": 25613500.0, "total_loss": 26829910.0}, {"strike": 174.0, "call_loss": 1897470.0, "put_loss": 20776720.0, "total_loss": 22674190.0}, {"strike": 175.0, "call_loss": 2689380.0, "put_loss": 16434930.0, "total_loss": 19124310.0}, {"strike": 176.0, "call_loss": 3862080.0, "put_loss": 12774910.0, "total_loss": 16636990.0}, {"strike": 177.0, "call_loss": 5185850.0, "put_loss": 9627910.0, "total_loss": 14813760.0}, {"strike": 178.0, "call_loss": 6938550.0, "put_loss": 7049220.0, "total_loss": 13987770.0}, {"strike": 179.0, "call_loss": 8986130.0, "put_loss": 4776570.0, "total_loss": 13762700.0}, {"strike": 180.0, "call_loss": 11382210.0, "put_loss": 2894540.0, "total_loss": 14276750.0}, {"strike": 181.0, "call_loss": 14145980.0, "put_loss": 1671470.0, "total_loss": 15817450.0}, {"strike": 182.0, "call_loss": 17303810.0, "put_loss": 850790.0, "total_loss": 18154600.0}, {"strike": 183.0, "call_loss": 20974020.0, "put_loss": 337300.0, "total_loss": 21311320.0}, {"strike": 184.0, "call_loss": 25118630.0, "put_loss": 24360.0, "total_loss": 25142990.0}, {"strike": 185.0, "call_loss": 29645430.0, "put_loss": 0.0, "total_loss": 29645430.0}];
         const GEX = [{"strike": 169.0, "call_gex": 0.0, "put_gex": -0.0, "net_gex": 0.0}, {"strike": 170.0, "call_gex": 0.0, "put_gex": -0.0, "net_gex": 0.0}, {"strike": 171.0, "call_gex": 0.0, "put_gex": -0.0, "net_gex": 0.0}, {"strike": 172.0, "call_gex": 0.0, "put_gex": -0.0, "net_gex": 0.0}, {"strike": 173.0, "call_gex": 0.0, "put_gex": -0.0, "net_gex": 0.0}, {"strike": 174.0, "call_gex": 0.0, "put_gex": -0.0, "net_gex": 0.0}, {"strike": 175.0, "call_gex": 0.0, "put_gex": -0.0, "net_gex": 0.0}, {"strike": 176.0, "call_gex": 0.0, "put_gex": -0.0, "net_gex": 0.0}, {"strike": 177.0, "call_gex": 0.0, "put_gex": -0.0, "net_gex": 0.0}, {"strike": 178.0, "call_gex": 0.0, "put_gex": -0.0, "net_gex": 0.0}, {"strike": 179.0, "call_gex": 0.0, "put_gex": -0.0, "net_gex": 0.0}, {"strike": 180.0, "call_gex": 0.0, "put_gex": -0.0, "net_gex": 0.0}, {"strike": 181.0, "call_gex": 0.0, "put_gex": -0.0, "net_gex": 0.0}, {"strike": 182.0, "call_gex": 0.0, "put_gex": -0.0, "net_gex": 0.0}, {"strike": 183.0, "call_gex": 0.0, "put_gex": -0.0, "net_gex": 0.0}, {"strike": 184.0, "call_gex": 0.0, "put_gex": -0.0, "net_gex": 0.0}, {"strike": 185.0, "call_gex": 0.0, "put_gex": -0.0, "net_gex": 0.0}];
         const MP_S = 179.0;
-        const SPOT = 185.0;
+        const SPOT = 177.74;
         const VC = '#6B9E1D';
 
         // Max pain chart
@@ -380,9 +400,9 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
                   fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
             <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   fill="none" stroke="#6B9E1D" stroke-width="3"
-                  stroke-dasharray="71, 100" stroke-linecap="round"/>
+                  stroke-dasharray="69, 100" stroke-linecap="round"/>
             <text x="18" y="20.5" text-anchor="middle" fill="#6B9E1D"
-                  font-size="9" font-weight="600" font-family="var(--mono)">71%</text>
+                  font-size="9" font-weight="600" font-family="var(--mono)">69%</text>
           </svg>
           <span class="verdict-label">Atração moderada</span>
         </div>
@@ -390,9 +410,9 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
 
       <div class="key-metrics">
         <div class="km"><span class="km-l">Max Pain</span><span class="km-v">R$ 179</span></div>
-        <div class="km"><span class="km-l">Spot</span><span class="km-v">R$ 179</span></div>
-        <div class="km"><span class="km-l">Distância</span><span class="km-v" style="color:#6B9E1D">+0.00%</span></div>
-        <div class="km"><span class="km-l">Direção</span><span class="km-v">— neutro</span></div>
+        <div class="km"><span class="km-l">Spot</span><span class="km-v">R$ 178</span></div>
+        <div class="km"><span class="km-l">Distância</span><span class="km-v" style="color:#6B9E1D">-0.71%</span></div>
+        <div class="km"><span class="km-l">Direção</span><span class="km-v">↑ para cima</span></div>
         <div class="km"><span class="km-l">PCR (OI)</span><span class="km-v">1.20</span></div>
         <div class="km"><span class="km-l">GEX Líq.</span><span class="km-v">1.3M</span></div>
       </div>
@@ -402,9 +422,9 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
         
         <div class="cr">
           <span class="cr-name">Distância spot → max pain</span>
-          <span class="cr-det">0.00%</span>
-          <div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#1D9E75"></div></div>
-          <span class="cr-sc" style="color:#1D9E75">10/10</span>
+          <span class="cr-det">0.71%</span>
+          <div class="bar-track"><div class="bar-fill" style="width:80.0%;background:#1D9E75"></div></div>
+          <span class="cr-sc" style="color:#1D9E75">8/10</span>
         </div>
         <div class="cr">
           <span class="cr-name">Dias até expiração (DTE)</span>
@@ -458,9 +478,9 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
       <script>
       (function() {
         const MP = [{"strike": 170.0, "call_loss": 0.0, "put_loss": 37503840.0, "total_loss": 37503840.0}, {"strike": 171.0, "call_loss": 222220.0, "put_loss": 32979760.0, "total_loss": 33201980.0}, {"strike": 172.0, "call_loss": 670080.0, "put_loss": 28681700.0, "total_loss": 29351780.0}, {"strike": 173.0, "call_loss": 1285510.0, "put_loss": 24660550.0, "total_loss": 25946060.0}, {"strike": 174.0, "call_loss": 2081840.0, "put_loss": 20865180.0, "total_loss": 22947020.0}, {"strike": 175.0, "call_loss": 3021790.0, "put_loss": 17269160.0, "total_loss": 20290950.0}, {"strike": 176.0, "call_loss": 4249590.0, "put_loss": 14012140.0, "total_loss": 18261730.0}, {"strike": 177.0, "call_loss": 5626470.0, "put_loss": 11175000.0, "total_loss": 16801470.0}, {"strike": 178.0, "call_loss": 7300600.0, "put_loss": 8626780.0, "total_loss": 15927380.0}, {"strike": 179.0, "call_loss": 9132000.0, "put_loss": 6312040.0, "total_loss": 15444040.0}, {"strike": 180.0, "call_loss": 11257350.0, "put_loss": 4460900.0, "total_loss": 15718250.0}, {"strike": 181.0, "call_loss": 14672700.0, "put_loss": 3001980.0, "total_loss": 17674680.0}, {"strike": 182.0, "call_loss": 18376240.0, "put_loss": 1854700.0, "total_loss": 20230940.0}, {"strike": 183.0, "call_loss": 22387630.0, "put_loss": 1052940.0, "total_loss": 23440570.0}, {"strike": 184.0, "call_loss": 26793340.0, "put_loss": 474100.0, "total_loss": 27267440.0}, {"strike": 185.0, "call_loss": 31396300.0, "put_loss": 142410.0, "total_loss": 31538710.0}, {"strike": 186.0, "call_loss": 36310280.0, "put_loss": 0.0, "total_loss": 36310280.0}];
-        const GEX = [{"strike": 170.0, "call_gex": 1246026.4285000002, "put_gex": -9090672.520000001, "net_gex": -7844646.091500001}, {"strike": 171.0, "call_gex": 1778513.88504, "put_gex": -1767025.26408, "net_gex": 11488.620959999971}, {"strike": 172.0, "call_gex": 1777175.5324700002, "put_gex": -2936788.66561, "net_gex": -1159613.1331399998}, {"strike": 173.0, "call_gex": 2469188.3994000005, "put_gex": -3060073.78254, "net_gex": -590885.3831399996}, {"strike": 174.0, "call_gex": 2397500.5068200002, "put_gex": -3346983.6354000005, "net_gex": -949483.1285800003}, {"strike": 175.0, "call_gex": 5709038.145149999, "put_gex": -6690929.784000001, "net_gex": -981891.6388500016}, {"strike": 176.0, "call_gex": 3343670.5960000004, "put_gex": -9417362.556000002, "net_gex": -6073691.960000001}, {"strike": 177.0, "call_gex": 7238382.3100000005, "put_gex": -7035537.1472, "net_gex": 202845.16280000098}, {"strike": 178.0, "call_gex": 3990957.7514400007, "put_gex": -5924898.6825600015, "net_gex": -1933940.9311200008}, {"strike": 179.0, "call_gex": 7468832.39635, "put_gex": -11779386.626799999, "net_gex": -4310554.230449999}, {"strike": 180.0, "call_gex": 31536995.070000008, "put_gex": -9588713.33826, "net_gex": 21948281.731740005}, {"strike": 181.0, "call_gex": 6528364.323530001, "put_gex": -7059576.86868, "net_gex": -531212.5451499997}, {"strike": 182.0, "call_gex": 6243799.2310500005, "put_gex": -6985678.787920001, "net_gex": -741879.5568700004}, {"strike": 183.0, "call_gex": 6873117.47328, "put_gex": -3871278.20824, "net_gex": 3001839.2650399995}, {"strike": 184.0, "call_gex": 2837719.1752500003, "put_gex": -3555600.98435, "net_gex": -717881.8090999997}, {"strike": 185.0, "call_gex": 3567610.2715600003, "put_gex": -2171169.93184, "net_gex": 1396440.33972}, {"strike": 186.0, "call_gex": 1808192.8225200002, "put_gex": -1259376.6315600001, "net_gex": 548816.19096}];
+        const GEX = [{"strike": 170.0, "call_gex": 1228546.3433026003, "put_gex": -8963142.536272002, "net_gex": -7734596.192969402}, {"strike": 171.0, "call_gex": 1753563.7126165442, "put_gex": -1742236.2616514883, "net_gex": 11327.450965055963}, {"strike": 172.0, "call_gex": 1752244.1353440923, "put_gex": -2895589.4463097965, "net_gex": -1143345.3109657043}, {"strike": 173.0, "call_gex": 2434548.9867818407, "put_gex": -3017145.037847544, "net_gex": -582596.0510657034}, {"strike": 174.0, "call_gex": 2363866.7795077525, "put_gex": -3300029.9289914407, "net_gex": -936163.1494836882}, {"strike": 175.0, "call_gex": 5628947.97138654, "put_gex": -6597064.983062401, "net_gex": -968117.0116758617}, {"strike": 176.0, "call_gex": 3296763.367105601, "put_gex": -9285249.547761602, "net_gex": -5988486.180656001}, {"strike": 177.0, "call_gex": 7136837.481916001, "put_gex": -6936837.965601921, "net_gex": 199999.51631407999}, {"strike": 178.0, "call_gex": 3934969.948999585, "put_gex": -5841780.274002817, "net_gex": -1906810.3250032323}, {"strike": 179.0, "call_gex": 7364054.66160286, "put_gex": -11614137.57822448, "net_gex": -4250082.91662162}, {"strike": 180.0, "call_gex": 31094573.18545201, "put_gex": -9454196.507595338, "net_gex": 21640376.677856673}, {"strike": 181.0, "call_gex": 6436780.098697509, "put_gex": -6960540.4419240495, "net_gex": -523760.34322654083}, {"strike": 182.0, "call_gex": 6156207.074079781, "put_gex": -6887679.052455714, "net_gex": -731471.9783759331}, {"strike": 183.0, "call_gex": 6776696.822596609, "put_gex": -3816969.3498120643, "net_gex": 2959727.4727845443}, {"strike": 184.0, "call_gex": 2797909.7684709006, "put_gex": -3505720.6553996606, "net_gex": -707810.88692876}, {"strike": 185.0, "call_gex": 3517561.4683632166, "put_gex": -2140711.3199530244, "net_gex": 1376850.1484101922}, {"strike": 186.0, "call_gex": 1782826.2942762724, "put_gex": -1241709.2608592163, "net_gex": 541117.0334170561}];
         const MP_S = 179.0;
-        const SPOT = 179.0;
+        const SPOT = 177.74;
         const VC = '#6B9E1D';
 
         // Max pain chart
@@ -552,9 +572,9 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
                   fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
             <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   fill="none" stroke="#6B9E1D" stroke-width="3"
-                  stroke-dasharray="73, 100" stroke-linecap="round"/>
+                  stroke-dasharray="70, 100" stroke-linecap="round"/>
             <text x="18" y="20.5" text-anchor="middle" fill="#6B9E1D"
-                  font-size="9" font-weight="600" font-family="var(--mono)">73%</text>
+                  font-size="9" font-weight="600" font-family="var(--mono)">70%</text>
           </svg>
           <span class="verdict-label">Atração moderada</span>
         </div>
@@ -562,11 +582,11 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
 
       <div class="key-metrics">
         <div class="km"><span class="km-l">Max Pain</span><span class="km-v">R$ 179</span></div>
-        <div class="km"><span class="km-l">Spot</span><span class="km-v">R$ 179</span></div>
-        <div class="km"><span class="km-l">Distância</span><span class="km-v" style="color:#6B9E1D">+0.00%</span></div>
-        <div class="km"><span class="km-l">Direção</span><span class="km-v">— neutro</span></div>
+        <div class="km"><span class="km-l">Spot</span><span class="km-v">R$ 178</span></div>
+        <div class="km"><span class="km-l">Distância</span><span class="km-v" style="color:#6B9E1D">-0.71%</span></div>
+        <div class="km"><span class="km-l">Direção</span><span class="km-v">↑ para cima</span></div>
         <div class="km"><span class="km-l">PCR (OI)</span><span class="km-v">0.96</span></div>
-        <div class="km"><span class="km-l">GEX Líq.</span><span class="km-v">16.7M</span></div>
+        <div class="km"><span class="km-l">GEX Líq.</span><span class="km-v">16.4M</span></div>
       </div>
 
       <div class="criteria-box">
@@ -574,9 +594,9 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
         
         <div class="cr">
           <span class="cr-name">Distância spot → max pain</span>
-          <span class="cr-det">0.00%</span>
-          <div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#1D9E75"></div></div>
-          <span class="cr-sc" style="color:#1D9E75">10/10</span>
+          <span class="cr-det">0.71%</span>
+          <div class="bar-track"><div class="bar-fill" style="width:80.0%;background:#1D9E75"></div></div>
+          <span class="cr-sc" style="color:#1D9E75">8/10</span>
         </div>
         <div class="cr">
           <span class="cr-name">Dias até expiração (DTE)</span>
@@ -630,9 +650,9 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
       <script>
       (function() {
         const MP = [{"strike": 170.0, "call_loss": 0.0, "put_loss": 235952370.0, "total_loss": 235952370.0}, {"strike": 171.0, "call_loss": 71470.0, "put_loss": 210839530.0, "total_loss": 210911000.0}, {"strike": 172.0, "call_loss": 164340.0, "put_loss": 185816540.0, "total_loss": 185980880.0}, {"strike": 173.0, "call_loss": 440760.0, "put_loss": 160862890.0, "total_loss": 161303650.0}, {"strike": 174.0, "call_loss": 787380.0, "put_loss": 135974160.0, "total_loss": 136761540.0}, {"strike": 175.0, "call_loss": 1213000.0, "put_loss": 111218980.0, "total_loss": 112431980.0}, {"strike": 176.0, "call_loss": 1740020.0, "put_loss": 86705350.0, "total_loss": 88445370.0}, {"strike": 177.0, "call_loss": 2283790.0, "put_loss": 62246350.0, "total_loss": 64530140.0}, {"strike": 178.0, "call_loss": 2951070.0, "put_loss": 37891700.0, "total_loss": 40842770.0}, {"strike": 179.0, "call_loss": 3794710.0, "put_loss": 13709560.0, "total_loss": 17504270.0}, {"strike": 180.0, "call_loss": 17198350.0, "put_loss": 2097420.0, "total_loss": 19295770.0}, {"strike": 181.0, "call_loss": 41881990.0, "put_loss": 1535280.0, "total_loss": 43417270.0}, {"strike": 182.0, "call_loss": 66810990.0, "put_loss": 1029340.0, "total_loss": 67840330.0}, {"strike": 183.0, "call_loss": 91900260.0, "put_loss": 573360.0, "total_loss": 92473620.0}, {"strike": 184.0, "call_loss": 117250800.0, "put_loss": 263770.0, "total_loss": 117514570.0}, {"strike": 185.0, "call_loss": 142878680.0, "put_loss": 91980.0, "total_loss": 142970660.0}, {"strike": 186.0, "call_loss": 169026460.0, "put_loss": 0.0, "total_loss": 169026460.0}];
-        const GEX = [{"strike": 170.0, "call_gex": 558752.7458800001, "put_gex": -1187436.2559000002, "net_gex": -628683.5100200002}, {"strike": 171.0, "call_gex": 196789.4138, "put_gex": -831997.4326500001, "net_gex": -635208.0188500001}, {"strike": 172.0, "call_gex": 1952533.6826, "put_gex": -737612.0160800001, "net_gex": 1214921.66652}, {"strike": 173.0, "call_gex": 843479.3250000001, "put_gex": -780038.145, "net_gex": 63441.18000000005}, {"strike": 174.0, "call_gex": 1055526.6630000002, "put_gex": -1784374.50435, "net_gex": -728847.8413499999}, {"strike": 175.0, "call_gex": 1475026.6596000001, "put_gex": -3513734.6117000007, "net_gex": -2038707.9521000006}, {"strike": 176.0, "call_gex": 260293.07375, "put_gex": -848943.9175500001, "net_gex": -588650.8438000001}, {"strike": 177.0, "call_gex": 2014308.41019, "put_gex": -1701830.4801500002, "net_gex": 312477.9300399998}, {"strike": 178.0, "call_gex": 2960993.3982400005, "put_gex": -2896353.8848400004, "net_gex": 64639.513400000054}, {"strike": 179.0, "call_gex": 213692963.76000002, "put_gex": -213863101.47000003, "net_gex": -170137.71000000834}, {"strike": 180.0, "call_gex": 190831069.44000003, "put_gex": -186940010.4, "net_gex": 3891059.0400000215}, {"strike": 181.0, "call_gex": 4056575.1561600002, "put_gex": -929163.3672000001, "net_gex": 3127411.78896}, {"strike": 182.0, "call_gex": 2547064.6907200003, "put_gex": -793981.1065600001, "net_gex": 1753083.58416}, {"strike": 183.0, "call_gex": 3926164.12083, "put_gex": -2199836.0533100003, "net_gex": 1726328.0675199996}, {"strike": 184.0, "call_gex": 3874405.4098400003, "put_gex": -1925048.9128, "net_gex": 1949356.4970400003}, {"strike": 185.0, "call_gex": 6613272.0123000005, "put_gex": -1020319.6917900001, "net_gex": 5592952.32051}, {"strike": 186.0, "call_gex": 2823169.9979700004, "put_gex": -1058020.0936200002, "net_gex": 1765149.9043500002}];
+        const GEX = [{"strike": 170.0, "call_gex": 550914.1917539681, "put_gex": -1170778.1125052404, "net_gex": -619863.9207512722}, {"strike": 171.0, "call_gex": 194028.72137768002, "put_gex": -820325.6208215401, "net_gex": -626296.8994438602}, {"strike": 172.0, "call_gex": 1925142.2450333603, "put_gex": -727264.3054786882, "net_gex": 1197877.9395546722}, {"strike": 173.0, "call_gex": 831646.4375700002, "put_gex": -769095.2525220001, "net_gex": 62551.18504800007}, {"strike": 174.0, "call_gex": 1040719.0348668003, "put_gex": -1759342.1152716603, "net_gex": -718623.08040486}, {"strike": 175.0, "call_gex": 1454334.0072705604, "put_gex": -3464441.6119941208, "net_gex": -2010107.6047235604}, {"strike": 176.0, "call_gex": 256641.50986550003, "put_gex": -837034.3691911802, "net_gex": -580392.8593256802}, {"strike": 177.0, "call_gex": 1986050.3557710843, "put_gex": -1677956.0733925402, "net_gex": 308094.2823785441}, {"strike": 178.0, "call_gex": 2919454.618896065, "put_gex": -2855721.911463825, "net_gex": 63732.70743223978}, {"strike": 179.0, "call_gex": 210695137.12713605, "put_gex": -210862888.03249204, "net_gex": -167750.90535598993}, {"strike": 180.0, "call_gex": 188153964.62438405, "put_gex": -184317491.94144005, "net_gex": 3836472.682944}, {"strike": 181.0, "call_gex": 3999666.8292437764, "put_gex": -916128.4471939201, "net_gex": 3083538.3820498562}, {"strike": 182.0, "call_gex": 2511332.7778337924, "put_gex": -782842.6129692162, "net_gex": 1728490.1648645762}, {"strike": 183.0, "call_gex": 3871085.2864157883, "put_gex": -2168975.2940575164, "net_gex": 1702109.992358272}, {"strike": 184.0, "call_gex": 3820052.6809538244, "put_gex": -1898043.0498140804, "net_gex": 1922009.631139744}, {"strike": 185.0, "call_gex": 6520496.646092281, "put_gex": -1006005.9704008441, "net_gex": 5514490.675691437}, {"strike": 186.0, "call_gex": 2783564.6966998926, "put_gex": -1043177.4859882323, "net_gex": 1740387.2107116603}];
         const MP_S = 179.0;
-        const SPOT = 179.0;
+        const SPOT = 177.74;
         const VC = '#6B9E1D';
 
         // Max pain chart
@@ -718,27 +738,27 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
           <span class="exp-type-badge monthly">Mensal</span>
           <span class="dte-badge">21 DTE</span>
         </div>
-        <div class="exp-score" style="--sc-color:#6B9E1D">
+        <div class="exp-score" style="--sc-color:#D4870E">
           <svg viewBox="0 0 36 36" width="56" height="56">
             <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
             <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  fill="none" stroke="#6B9E1D" stroke-width="3"
-                  stroke-dasharray="59, 100" stroke-linecap="round"/>
-            <text x="18" y="20.5" text-anchor="middle" fill="#6B9E1D"
-                  font-size="9" font-weight="600" font-family="var(--mono)">59%</text>
+                  fill="none" stroke="#D4870E" stroke-width="3"
+                  stroke-dasharray="53, 100" stroke-linecap="round"/>
+            <text x="18" y="20.5" text-anchor="middle" fill="#D4870E"
+                  font-size="9" font-weight="600" font-family="var(--mono)">53%</text>
           </svg>
-          <span class="verdict-label">Atração moderada</span>
+          <span class="verdict-label">Atração fraca</span>
         </div>
       </div>
 
       <div class="key-metrics">
         <div class="km"><span class="km-l">Max Pain</span><span class="km-v">R$ 180</span></div>
-        <div class="km"><span class="km-l">Spot</span><span class="km-v">R$ 180</span></div>
-        <div class="km"><span class="km-l">Distância</span><span class="km-v" style="color:#6B9E1D">+0.00%</span></div>
-        <div class="km"><span class="km-l">Direção</span><span class="km-v">— neutro</span></div>
+        <div class="km"><span class="km-l">Spot</span><span class="km-v">R$ 178</span></div>
+        <div class="km"><span class="km-l">Distância</span><span class="km-v" style="color:#D4870E">-1.27%</span></div>
+        <div class="km"><span class="km-l">Direção</span><span class="km-v">↑ para cima</span></div>
         <div class="km"><span class="km-l">PCR (OI)</span><span class="km-v">1.16</span></div>
-        <div class="km"><span class="km-l">GEX Líq.</span><span class="km-v">-68.8M</span></div>
+        <div class="km"><span class="km-l">GEX Líq.</span><span class="km-v">-67.1M</span></div>
       </div>
 
       <div class="criteria-box">
@@ -746,9 +766,9 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
         
         <div class="cr">
           <span class="cr-name">Distância spot → max pain</span>
-          <span class="cr-det">0.00%</span>
-          <div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#1D9E75"></div></div>
-          <span class="cr-sc" style="color:#1D9E75">10/10</span>
+          <span class="cr-det">1.27%</span>
+          <div class="bar-track"><div class="bar-fill" style="width:60.0%;background:#D4870E"></div></div>
+          <span class="cr-sc" style="color:#D4870E">6/10</span>
         </div>
         <div class="cr">
           <span class="cr-name">Dias até expiração (DTE)</span>
@@ -802,10 +822,10 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
       <script>
       (function() {
         const MP = [{"strike": 170.0, "call_loss": 0.0, "put_loss": 466904140.0, "total_loss": 466904140.0}, {"strike": 171.0, "call_loss": 1730000.0, "put_loss": 417855360.0, "total_loss": 419585360.0}, {"strike": 172.0, "call_loss": 4398870.0, "put_loss": 370676580.0, "total_loss": 375075450.0}, {"strike": 173.0, "call_loss": 7814750.0, "put_loss": 326377800.0, "total_loss": 334192550.0}, {"strike": 174.0, "call_loss": 12330630.0, "put_loss": 283569020.0, "total_loss": 295899650.0}, {"strike": 175.0, "call_loss": 17886510.0, "put_loss": 242390240.0, "total_loss": 260276750.0}, {"strike": 176.0, "call_loss": 24992390.0, "put_loss": 205041460.0, "total_loss": 230033850.0}, {"strike": 177.0, "call_loss": 34188270.0, "put_loss": 169822680.0, "total_loss": 204010950.0}, {"strike": 178.0, "call_loss": 44694150.0, "put_loss": 135853900.0, "total_loss": 180548050.0}, {"strike": 179.0, "call_loss": 56430030.0, "put_loss": 104455120.0, "total_loss": 160885150.0}, {"strike": 180.0, "call_loss": 69975910.0, "put_loss": 74676340.0, "total_loss": 144652250.0}, {"strike": 181.0, "call_loss": 95421790.0, "put_loss": 54817560.0, "total_loss": 150239350.0}, {"strike": 182.0, "call_loss": 124107670.0, "put_loss": 38138780.0, "total_loss": 162246450.0}, {"strike": 183.0, "call_loss": 155793550.0, "put_loss": 25150000.0, "total_loss": 180943550.0}, {"strike": 184.0, "call_loss": 189119430.0, "put_loss": 13090000.0, "total_loss": 202209430.0}, {"strike": 185.0, "call_loss": 225415310.0, "put_loss": 3050000.0, "total_loss": 228465310.0}, {"strike": 186.0, "call_loss": 268161190.0, "put_loss": 0.0, "total_loss": 268161190.0}];
-        const GEX = [{"strike": 170.0, "call_gex": 13508532.0, "put_gex": -30374676.0, "net_gex": -16866144.0}, {"strike": 171.0, "call_gex": 8213234.76, "put_gex": -16358760.0, "net_gex": -8145525.24}, {"strike": 172.0, "call_gex": 7212530.9520000005, "put_gex": -27806976.0, "net_gex": -20594445.048}, {"strike": 173.0, "call_gex": 11583000.0, "put_gex": -15689700.0, "net_gex": -4106700.0}, {"strike": 174.0, "call_gex": 11793600.0, "put_gex": -18484200.000000004, "net_gex": -6690600.000000004}, {"strike": 175.0, "call_gex": 18732060.0, "put_gex": -46286316.0, "net_gex": -27554256.0}, {"strike": 176.0, "call_gex": 26544671.999999996, "put_gex": -27052704.0, "net_gex": -508032.0000000037}, {"strike": 177.0, "call_gex": 17274708.0, "put_gex": -16483500.0, "net_gex": 791208.0}, {"strike": 178.0, "call_gex": 16658135.999999998, "put_gex": -34806023.99999999, "net_gex": -18147887.999999993}, {"strike": 179.0, "call_gex": 24865056.0, "put_gex": -22254912.0, "net_gex": 2610144.0}, {"strike": 180.0, "call_gex": 164248560.0, "put_gex": -136919808.0, "net_gex": 27328752.0}, {"strike": 181.0, "call_gex": 44299872.0, "put_gex": -43479504.0, "net_gex": 820368.0}, {"strike": 182.0, "call_gex": 40338000.0, "put_gex": -49615740.0, "net_gex": -9277740.0}, {"strike": 183.0, "call_gex": 21413808.0, "put_gex": -12127266.216, "net_gex": 9286541.784}, {"strike": 184.0, "call_gex": 37240236.0, "put_gex": -25328376.0, "net_gex": 11911860.0}, {"strike": 185.0, "call_gex": 76904640.0, "put_gex": -83343168.0, "net_gex": -6438528.0}, {"strike": 186.0, "call_gex": 30940704.0, "put_gex": -34191720.0, "net_gex": -3251016.0}];
+        const GEX = [{"strike": 170.0, "call_gex": 13171447.263668003, "put_gex": -29616722.459924005, "net_gex": -16445275.196256002}, {"strike": 171.0, "call_gex": 8008286.059911241, "put_gex": -15950552.187240003, "net_gex": -7942266.127328762}, {"strike": 172.0, "call_gex": 7032553.28349825, "put_gex": -27113095.482624006, "net_gex": -20080542.199125756}, {"strike": 173.0, "call_gex": 11293963.967000002, "put_gex": -15298187.555300003, "net_gex": -4004223.588300001}, {"strike": 174.0, "call_gex": 11499308.766400002, "put_gex": -18022955.085800007, "net_gex": -6523646.319400005}, {"strike": 175.0, "call_gex": 18264630.118940003, "put_gex": -45131311.84228401, "net_gex": -26866681.723344006}, {"strike": 176.0, "call_gex": 25882290.346528, "put_gex": -26377645.185696006, "net_gex": -495354.8391680047}, {"strike": 177.0, "call_gex": 16843644.107092004, "put_gex": -16072179.491500003, "net_gex": 771464.615592001}, {"strike": 178.0, "call_gex": 16242457.717464, "put_gex": -33937492.954376005, "net_gex": -17695035.236912005}, {"strike": 179.0, "call_gex": 24244586.592544004, "put_gex": -21699574.740288004, "net_gex": 2545011.852256}, {"strike": 180.0, "call_gex": 160149988.62744004, "put_gex": -133503183.79699202, "net_gex": 26646804.830448017}, {"strike": 181.0, "call_gex": 43194436.511328004, "put_gex": -42394539.53889601, "net_gex": 799896.972431995}, {"strike": 182.0, "call_gex": 39331426.962000005, "put_gex": -48377655.163260005, "net_gex": -9046228.20126}, {"strike": 183.0, "call_gex": 20879459.202992003, "put_gex": -11824648.852777386, "net_gex": 9054810.350214617}, {"strike": 184.0, "call_gex": 36310962.92036401, "put_gex": -24696345.151224006, "net_gex": 11614617.769140001}, {"strike": 185.0, "call_gex": 74985602.43936001, "put_gex": -81263466.82963201, "net_gex": -6277864.390272006}, {"strike": 186.0, "call_gex": 30168626.097696006, "put_gex": -33338517.970280007, "net_gex": -3169891.872584}];
         const MP_S = 180.0;
-        const SPOT = 180.0;
-        const VC = '#6B9E1D';
+        const SPOT = 177.74;
+        const VC = '#D4870E';
 
         // Max pain chart
         new Chart(document.getElementById('mp_3'), {
@@ -896,9 +916,9 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
                   fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
             <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   fill="none" stroke="#6B9E1D" stroke-width="3"
-                  stroke-dasharray="70, 100" stroke-linecap="round"/>
+                  stroke-dasharray="64, 100" stroke-linecap="round"/>
             <text x="18" y="20.5" text-anchor="middle" fill="#6B9E1D"
-                  font-size="9" font-weight="600" font-family="var(--mono)">70%</text>
+                  font-size="9" font-weight="600" font-family="var(--mono)">64%</text>
           </svg>
           <span class="verdict-label">Atração moderada</span>
         </div>
@@ -906,11 +926,11 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
 
       <div class="key-metrics">
         <div class="km"><span class="km-l">Max Pain</span><span class="km-v">R$ 180</span></div>
-        <div class="km"><span class="km-l">Spot</span><span class="km-v">R$ 180</span></div>
-        <div class="km"><span class="km-l">Distância</span><span class="km-v" style="color:#6B9E1D">+0.00%</span></div>
-        <div class="km"><span class="km-l">Direção</span><span class="km-v">— neutro</span></div>
+        <div class="km"><span class="km-l">Spot</span><span class="km-v">R$ 178</span></div>
+        <div class="km"><span class="km-l">Distância</span><span class="km-v" style="color:#6B9E1D">-1.27%</span></div>
+        <div class="km"><span class="km-l">Direção</span><span class="km-v">↑ para cima</span></div>
         <div class="km"><span class="km-l">PCR (OI)</span><span class="km-v">1.17</span></div>
-        <div class="km"><span class="km-l">GEX Líq.</span><span class="km-v">114k</span></div>
+        <div class="km"><span class="km-l">GEX Líq.</span><span class="km-v">111k</span></div>
       </div>
 
       <div class="criteria-box">
@@ -918,9 +938,9 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
         
         <div class="cr">
           <span class="cr-name">Distância spot → max pain</span>
-          <span class="cr-det">0.00%</span>
-          <div class="bar-track"><div class="bar-fill" style="width:100.0%;background:#1D9E75"></div></div>
-          <span class="cr-sc" style="color:#1D9E75">10/10</span>
+          <span class="cr-det">1.27%</span>
+          <div class="bar-track"><div class="bar-fill" style="width:60.0%;background:#D4870E"></div></div>
+          <span class="cr-sc" style="color:#D4870E">6/10</span>
         </div>
         <div class="cr">
           <span class="cr-name">Dias até expiração (DTE)</span>
@@ -974,9 +994,9 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
       <script>
       (function() {
         const MP = [{"strike": 162.0, "call_loss": 0.0, "put_loss": 1230036.0, "total_loss": 1230036.0}, {"strike": 164.0, "call_loss": 0.0, "put_loss": 1098976.0, "total_loss": 1098976.0}, {"strike": 166.0, "call_loss": 0.0, "put_loss": 992016.0, "total_loss": 992016.0}, {"strike": 168.0, "call_loss": 0.0, "put_loss": 886952.0, "total_loss": 886952.0}, {"strike": 170.0, "call_loss": 0.0, "put_loss": 783288.0, "total_loss": 783288.0}, {"strike": 172.0, "call_loss": 0.0, "put_loss": 684404.0, "total_loss": 684404.0}, {"strike": 174.0, "call_loss": 28.0, "put_loss": 587520.0, "total_loss": 587548.0}, {"strike": 176.0, "call_loss": 56.0, "put_loss": 491280.0, "total_loss": 491336.0}, {"strike": 178.0, "call_loss": 284.0, "put_loss": 403840.0, "total_loss": 404124.0}, {"strike": 180.0, "call_loss": 512.0, "put_loss": 319800.0, "total_loss": 320312.0}, {"strike": 182.0, "call_loss": 101140.0, "put_loss": 240400.0, "total_loss": 341540.0}, {"strike": 184.0, "call_loss": 201770.0, "put_loss": 163600.0, "total_loss": 365370.0}, {"strike": 186.0, "call_loss": 302800.0, "put_loss": 88800.0, "total_loss": 391600.0}, {"strike": 188.0, "call_loss": 411230.0, "put_loss": 44400.0, "total_loss": 455630.0}, {"strike": 190.0, "call_loss": 519660.0, "put_loss": 0.0, "total_loss": 519660.0}, {"strike": 192.0, "call_loss": 628530.0, "put_loss": 0.0, "total_loss": 628530.0}, {"strike": 194.0, "call_loss": 737806.0, "put_loss": 0.0, "total_loss": 737806.0}];
-        const GEX = [{"strike": 162.0, "call_gex": 0.0, "put_gex": -515.16, "net_gex": -515.16}, {"strike": 164.0, "call_gex": 0.0, "put_gex": -41384.520000000004, "net_gex": -41384.520000000004}, {"strike": 166.0, "call_gex": 0.0, "put_gex": -4422.9888, "net_gex": -4422.9888}, {"strike": 168.0, "call_gex": 0.0, "put_gex": -4218.48, "net_gex": -4218.48}, {"strike": 170.0, "call_gex": 0.0, "put_gex": -17887.716, "net_gex": -17887.716}, {"strike": 172.0, "call_gex": 124.2864, "put_gex": -8877.6, "net_gex": -8753.3136}, {"strike": 174.0, "call_gex": 0.0, "put_gex": -3275.8992, "net_gex": -3275.8992}, {"strike": 176.0, "call_gex": 1121.04, "put_gex": -49325.759999999995, "net_gex": -48204.719999999994}, {"strike": 178.0, "call_gex": 0.0, "put_gex": -20214.360000000004, "net_gex": -20214.360000000004}, {"strike": 180.0, "call_gex": 609930.0, "put_gex": -28188.0, "net_gex": 581742.0}, {"strike": 182.0, "call_gex": 12.0204, "put_gex": -15626.52, "net_gex": -15614.499600000001}, {"strike": 184.0, "call_gex": 2293.92, "put_gex": -11469.6, "net_gex": -9175.68}, {"strike": 186.0, "call_gex": 39320.64000000001, "put_gex": -161533.44000000003, "net_gex": -122212.80000000002}, {"strike": 188.0, "call_gex": 0.0, "put_gex": -0.0, "net_gex": 0.0}, {"strike": 190.0, "call_gex": 1824.7680000000003, "put_gex": -184135.68000000002, "net_gex": -182310.912}, {"strike": 192.0, "call_gex": 1420.6752000000001, "put_gex": -0.0, "net_gex": 1420.6752000000001}, {"strike": 194.0, "call_gex": 8659.548, "put_gex": -0.0, "net_gex": 8659.548}];
+        const GEX = [{"strike": 162.0, "call_gex": 0.0, "put_gex": -502.30497084000007, "net_gex": -502.30497084000007}, {"strike": 164.0, "call_gex": 0.0, "put_gex": -40351.83265748001, "net_gex": -40351.83265748001}, {"strike": 166.0, "call_gex": 0.0, "put_gex": -4312.619885491201, "net_gex": -4312.619885491201}, {"strike": 168.0, "call_gex": 0.0, "put_gex": -4113.21428952, "net_gex": -4113.21428952}, {"strike": 170.0, "call_gex": 0.0, "put_gex": -17441.355430884003, "net_gex": -17441.355430884003}, {"strike": 172.0, "call_gex": 121.18502315360001, "put_gex": -8656.073082400002, "net_gex": -8534.888059246401}, {"strike": 174.0, "call_gex": 0.0, "put_gex": -3194.1541504208003, "net_gex": -3194.1541504208003}, {"strike": 176.0, "call_gex": 1093.0661629600002, "put_gex": -48094.911170240004, "net_gex": -47001.845007280004}, {"strike": 178.0, "call_gex": 0.0, "put_gex": -19709.941591640007, "net_gex": -19709.941591640007}, {"strike": 180.0, "call_gex": 594710.1305700002, "put_gex": -27484.611612000004, "net_gex": 567225.5189580001}, {"strike": 182.0, "call_gex": 11.720449319600002, "put_gex": -15236.584115480004, "net_gex": -15224.863666160403}, {"strike": 184.0, "call_gex": 2236.6787380800006, "put_gex": -11183.393690400002, "net_gex": -8946.714952320002}, {"strike": 186.0, "call_gex": 38339.45362336001, "put_gex": -157502.62029056004, "net_gex": -119163.16666720003}, {"strike": 188.0, "call_gex": 0.0, "put_gex": -0.0, "net_gex": 0.0}, {"strike": 190.0, "call_gex": 1779.2337080320005, "put_gex": -179540.85599232005, "net_gex": -177761.62228428805}, {"strike": 192.0, "call_gex": 1385.2244252448004, "put_gex": -0.0, "net_gex": 1385.2244252448004}, {"strike": 194.0, "call_gex": 8443.462236252002, "put_gex": -0.0, "net_gex": 8443.462236252002}];
         const MP_S = 180.0;
-        const SPOT = 180.0;
+        const SPOT = 177.74;
         const VC = '#6B9E1D';
 
         // Max pain chart
@@ -1068,9 +1088,9 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
                   fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
             <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   fill="none" stroke="#D4870E" stroke-width="3"
-                  stroke-dasharray="44, 100" stroke-linecap="round"/>
+                  stroke-dasharray="53, 100" stroke-linecap="round"/>
             <text x="18" y="20.5" text-anchor="middle" fill="#D4870E"
-                  font-size="9" font-weight="600" font-family="var(--mono)">44%</text>
+                  font-size="9" font-weight="600" font-family="var(--mono)">53%</text>
           </svg>
           <span class="verdict-label">Atração fraca</span>
         </div>
@@ -1078,11 +1098,11 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
 
       <div class="key-metrics">
         <div class="km"><span class="km-l">Max Pain</span><span class="km-v">R$ 176</span></div>
-        <div class="km"><span class="km-l">Spot</span><span class="km-v">R$ 182</span></div>
-        <div class="km"><span class="km-l">Distância</span><span class="km-v" style="color:#D4870E">+3.30%</span></div>
+        <div class="km"><span class="km-l">Spot</span><span class="km-v">R$ 178</span></div>
+        <div class="km"><span class="km-l">Distância</span><span class="km-v" style="color:#D4870E">+0.98%</span></div>
         <div class="km"><span class="km-l">Direção</span><span class="km-v">↓ para baixo</span></div>
         <div class="km"><span class="km-l">PCR (OI)</span><span class="km-v">1.10</span></div>
-        <div class="km"><span class="km-l">GEX Líq.</span><span class="km-v">-5.0M</span></div>
+        <div class="km"><span class="km-l">GEX Líq.</span><span class="km-v">-4.8M</span></div>
       </div>
 
       <div class="criteria-box">
@@ -1090,9 +1110,9 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
         
         <div class="cr">
           <span class="cr-name">Distância spot → max pain</span>
-          <span class="cr-det">3.30%</span>
-          <div class="bar-track"><div class="bar-fill" style="width:20.0%;background:#C9403B"></div></div>
-          <span class="cr-sc" style="color:#C9403B">2/10</span>
+          <span class="cr-det">0.98%</span>
+          <div class="bar-track"><div class="bar-fill" style="width:80.0%;background:#1D9E75"></div></div>
+          <span class="cr-sc" style="color:#1D9E75">8/10</span>
         </div>
         <div class="cr">
           <span class="cr-name">Dias até expiração (DTE)</span>
@@ -1146,9 +1166,9 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
       <script>
       (function() {
         const MP = [{"strike": 170.0, "call_loss": 0.0, "put_loss": 51559890.0, "total_loss": 51559890.0}, {"strike": 171.0, "call_loss": 427170.0, "put_loss": 43713220.0, "total_loss": 44140390.0}, {"strike": 172.0, "call_loss": 1336340.0, "put_loss": 36451390.0, "total_loss": 37787730.0}, {"strike": 173.0, "call_loss": 2553360.0, "put_loss": 29671690.0, "total_loss": 32225050.0}, {"strike": 174.0, "call_loss": 4940380.0, "put_loss": 24111990.0, "total_loss": 29052370.0}, {"strike": 175.0, "call_loss": 8200880.0, "put_loss": 19612290.0, "total_loss": 27813170.0}, {"strike": 176.0, "call_loss": 11710270.0, "put_loss": 15521400.0, "total_loss": 27231670.0}, {"strike": 177.0, "call_loss": 15427290.0, "put_loss": 12386980.0, "total_loss": 27814270.0}, {"strike": 178.0, "call_loss": 19582230.0, "put_loss": 9607000.0, "total_loss": 29189230.0}, {"strike": 179.0, "call_loss": 24000500.0, "put_loss": 7451280.0, "total_loss": 31451780.0}, {"strike": 180.0, "call_loss": 28769640.0, "put_loss": 5540680.0, "total_loss": 34310320.0}, {"strike": 181.0, "call_loss": 34475160.0, "put_loss": 4107090.0, "total_loss": 38582250.0}, {"strike": 182.0, "call_loss": 40868120.0, "put_loss": 2844630.0, "total_loss": 43712750.0}, {"strike": 183.0, "call_loss": 47435430.0, "put_loss": 1810830.0, "total_loss": 49246260.0}, {"strike": 184.0, "call_loss": 54140950.0, "put_loss": 902610.0, "total_loss": 55043560.0}, {"strike": 185.0, "call_loss": 61040700.0, "put_loss": 165540.0, "total_loss": 61206240.0}, {"strike": 186.0, "call_loss": 68443830.0, "put_loss": 0.0, "total_loss": 68443830.0}];
-        const GEX = [{"strike": 170.0, "call_gex": 2759167.9206000003, "put_gex": -3265721.6592, "net_gex": -506553.7385999998}, {"strike": 171.0, "call_gex": 3304913.976, "put_gex": -4010053.71312, "net_gex": -705139.7371200002}, {"strike": 172.0, "call_gex": 2222994.7012, "put_gex": -3481476.1581599996, "net_gex": -1258481.4569599996}, {"strike": 173.0, "call_gex": 8874913.32, "put_gex": -9294594.4, "net_gex": -419681.0800000001}, {"strike": 174.0, "call_gex": 6943956.364800001, "put_gex": -8426745.6, "net_gex": -1482789.235199999}, {"strike": 175.0, "call_gex": 2052813.85764, "put_gex": -3371814.1875599995, "net_gex": -1319000.3299199995}, {"strike": 176.0, "call_gex": 1767526.7828400002, "put_gex": -8142302.855960001, "net_gex": -6374776.073120001}, {"strike": 177.0, "call_gex": 3844000.4512, "put_gex": -3111224.6984, "net_gex": 732775.7527999999}, {"strike": 178.0, "call_gex": 2363809.1313199997, "put_gex": -5603734.81304, "net_gex": -3239925.6817200007}, {"strike": 179.0, "call_gex": 3196109.917, "put_gex": -2232822.592, "net_gex": 963287.3249999997}, {"strike": 180.0, "call_gex": 8653645.66248, "put_gex": -4408333.70796, "net_gex": 4245311.95452}, {"strike": 181.0, "call_gex": 6398584.27936, "put_gex": -1592851.34372, "net_gex": 4805732.93564}, {"strike": 182.0, "call_gex": 1622822.6014, "put_gex": -2128331.60904, "net_gex": -505509.00763999997}, {"strike": 183.0, "call_gex": 1286437.1192400001, "put_gex": -1168879.04952, "net_gex": 117558.06972000026}, {"strike": 184.0, "call_gex": 1794995.19108, "put_gex": -1581699.1554, "net_gex": 213296.03567999997}, {"strike": 185.0, "call_gex": 4602012.71712, "put_gex": -5225055.28272, "net_gex": -623042.5655999994}, {"strike": 186.0, "call_gex": 1830509.08768, "put_gex": -1485987.0261600001, "net_gex": 344522.06152}];
+        const GEX = [{"strike": 170.0, "call_gex": 2631514.1387909404, "put_gex": -3114632.0074900803, "net_gex": -483117.8686991399}, {"strike": 171.0, "call_gex": 3152011.0792824007, "put_gex": -3824527.3020902886, "net_gex": -672516.2228078879}, {"strike": 172.0, "call_gex": 2120147.1439958806, "put_gex": -3320404.5559029845, "net_gex": -1200257.4119071038}, {"strike": 173.0, "call_gex": 8464312.631268002, "put_gex": -8864577.032560002, "net_gex": -400264.40129199997}, {"strike": 174.0, "call_gex": 6622692.014027521, "put_gex": -8036879.533440001, "net_gex": -1414187.5194124803}, {"strike": 175.0, "call_gex": 1957839.7713144363, "put_gex": -3215816.131267044, "net_gex": -1257976.359952608}, {"strike": 176.0, "call_gex": 1685751.5938079164, "put_gex": -7765596.623462206, "net_gex": -6079845.02965429}, {"strike": 177.0, "call_gex": 3666156.5471708803, "put_gex": -2967282.8977421606, "net_gex": 698873.6494287197}, {"strike": 178.0, "call_gex": 2254446.7496994683, "put_gex": -5344476.238815897, "net_gex": -3090029.489116429}, {"strike": 179.0, "call_gex": 3048240.8746933, "put_gex": -2129520.3443008005, "net_gex": 918720.5303924996}, {"strike": 180.0, "call_gex": 8253281.9923301535, "put_gex": -4204380.746237005, "net_gex": 4048901.2460931484}, {"strike": 181.0, "call_gex": 6102551.741656865, "put_gex": -1519157.569460228, "net_gex": 4583394.172196637}, {"strike": 182.0, "call_gex": 1547742.1973668602, "put_gex": -2029863.6699162961, "net_gex": -482121.4725494359}, {"strike": 183.0, "call_gex": 1226919.6965762763, "put_gex": -1114800.488358648, "net_gex": 112119.2082176283}, {"strike": 184.0, "call_gex": 1711949.1674002924, "put_gex": -1508521.3406814602, "net_gex": 203427.82671883213}, {"strike": 185.0, "call_gex": 4389099.134409889, "put_gex": -4983316.437461329, "net_gex": -594217.30305144}, {"strike": 186.0, "call_gex": 1745820.0022736322, "put_gex": -1417237.3635561843, "net_gex": 328582.6387174479}];
         const MP_S = 176.0;
-        const SPOT = 182.0;
+        const SPOT = 177.74;
         const VC = '#D4870E';
 
         // Max pain chart
@@ -1235,7 +1255,7 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
 
 <script>
 // Summary chips
-const SUM = [{"label": "27 Mar \u2014 W4", "mp": 179.0, "spot": 185.0, "dist": 3.24, "dte": 0, "score": 59, "verdict": "Atra\u00e7\u00e3o moderada", "color": "#6B9E1D", "direction": "para baixo"}, {"label": "2 Abr \u2014 W1", "mp": 179.0, "spot": 179.0, "dist": 0.0, "dte": 6, "score": 71, "verdict": "Atra\u00e7\u00e3o moderada", "color": "#6B9E1D", "direction": "neutro"}, {"label": "10 Abr \u2014 W2", "mp": 179.0, "spot": 179.0, "dist": 0.0, "dte": 14, "score": 73, "verdict": "Atra\u00e7\u00e3o moderada", "color": "#6B9E1D", "direction": "neutro"}, {"label": "17 Abr \u2014 Mensal", "mp": 180.0, "spot": 180.0, "dist": 0.0, "dte": 21, "score": 59, "verdict": "Atra\u00e7\u00e3o moderada", "color": "#6B9E1D", "direction": "neutro"}, {"label": "24 Abr \u2014 W2", "mp": 180.0, "spot": 180.0, "dist": 0.0, "dte": 28, "score": 70, "verdict": "Atra\u00e7\u00e3o moderada", "color": "#6B9E1D", "direction": "neutro"}, {"label": "15 Mai \u2014 Mensal", "mp": 176.0, "spot": 182.0, "dist": 3.3, "dte": 49, "score": 44, "verdict": "Atra\u00e7\u00e3o fraca", "color": "#D4870E", "direction": "para baixo"}];
+const SUM = [{"label": "27 Mar \u2014 W4", "mp": 179.0, "spot": 177.74, "dist": -0.71, "dte": 0, "score": 67, "verdict": "Atra\u00e7\u00e3o moderada", "color": "#6B9E1D", "direction": "para cima"}, {"label": "2 Abr \u2014 W1", "mp": 179.0, "spot": 177.74, "dist": -0.71, "dte": 6, "score": 69, "verdict": "Atra\u00e7\u00e3o moderada", "color": "#6B9E1D", "direction": "para cima"}, {"label": "10 Abr \u2014 W2", "mp": 179.0, "spot": 177.74, "dist": -0.71, "dte": 14, "score": 70, "verdict": "Atra\u00e7\u00e3o moderada", "color": "#6B9E1D", "direction": "para cima"}, {"label": "17 Abr \u2014 Mensal", "mp": 180.0, "spot": 177.74, "dist": -1.27, "dte": 21, "score": 53, "verdict": "Atra\u00e7\u00e3o fraca", "color": "#D4870E", "direction": "para cima"}, {"label": "24 Abr \u2014 W2", "mp": 180.0, "spot": 177.74, "dist": -1.27, "dte": 28, "score": 64, "verdict": "Atra\u00e7\u00e3o moderada", "color": "#6B9E1D", "direction": "para cima"}, {"label": "15 Mai \u2014 Mensal", "mp": 176.0, "spot": 177.74, "dist": 0.98, "dte": 49, "score": 53, "verdict": "Atra\u00e7\u00e3o fraca", "color": "#D4870E", "direction": "para baixo"}];
 const strip = document.getElementById('summaryStrip');
 SUM.forEach((s,i) => {
   const chip = document.createElement('a');
@@ -1255,9 +1275,27 @@ SUM.forEach((s,i) => {
   strip.appendChild(chip);
 });
 
+// Theme toggle
+function toggleTheme() {
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const next = dark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  const btn = document.getElementById('theme-toggle');
+  btn.textContent = next === 'dark' ? '☀️ Claro' : '🌙 Escuro';
+  try { localStorage.setItem('bova11_maxpain_theme', next); } catch(e) {}
+}
+(function() {
+  const saved = localStorage.getItem('bova11_maxpain_theme');
+  if (saved === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    const btn = document.getElementById('theme-toggle');
+    if (btn) btn.textContent = '☀️ Claro';
+  }
+})();
+
 // Chart.js defaults
-Chart.defaults.color = '#4E4C47';
-Chart.defaults.borderColor = 'rgba(255,255,255,0.03)';
+Chart.defaults.color = 'var(--t3)';
+Chart.defaults.borderColor = 'var(--border)';
 Chart.defaults.font.family = "'Instrument Sans', sans-serif";
 Chart.defaults.font.size = 10;
 </script>
