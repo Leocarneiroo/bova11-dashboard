@@ -111,7 +111,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
 <div class="shell">
   <div class="hdr">
     <div><h1>BOVA11 <span>Mapa gravitacional</span></h1></div>
-    <div class="meta">Referência: 30/Mar/2026<br>Spot ≈ R$ 179.27<br>Gerado: 30/03/2026 17:11</div>
+    <div class="meta">Referência: 30/Mar/2026<br>Spot ≈ R$ 179.27<br>Gerado: 30/03/2026 17:52</div>
   </div>
   <div class="nav-strip">
         <a class="nav-chip" href="#" onclick="event.preventDefault();
@@ -295,10 +295,10 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
         function vline(ctx,xs,ys,val,arr,color,lbl){
           const i=arr.reduce((a,v,j)=>Math.abs(v-val)<Math.abs(arr[a]-val)?j:a,0);
           const x=xs.getPixelForValue(i);
-          ctx.save();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.setLineDash([4,3]);
+          ctx.save();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.setLineDash([5,4]);
           ctx.beginPath();ctx.moveTo(x,ys.top);ctx.lineTo(x,ys.bottom);ctx.stroke();
-          ctx.fillStyle=color;ctx.font="600 8px var(--mono)";ctx.textAlign='center';
-          ctx.fillText(lbl,x,ys.top-4);ctx.restore();
+          ctx.fillStyle=color;ctx.font="600 9px var(--mono)";ctx.textAlign='center';
+          ctx.textBaseline='bottom';ctx.fillText(lbl,x,ys.top+8);ctx.restore();
         }
         function yfmt(v){
           const a=Math.abs(v);
@@ -307,7 +307,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
           return Math.round(v);
         }
         const tOpt={font:{size:9,family:'var(--mono)'}};
-        const gOpt={color:'rgba(0,0,0,0.05)'};
+        const gOpt={color:'rgba(100,100,100,0.1)'};
 
         // OI + Normal + Centers
         new Chart(document.getElementById('oi_0'),{
@@ -321,6 +321,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
           options:{responsive:true,maintainAspectRatio:false,
             interaction:{mode:'index',intersect:false},
             plugins:{legend:{position:'top',labels:{boxWidth:8,padding:10,font:{size:9}}}},
+            layout:{padding:{top:16}},
             scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
           },
           plugins:[{afterDraw(c){
@@ -343,6 +344,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
           ]},
           options:{responsive:true,maintainAspectRatio:false,
             plugins:{legend:{display:false}},
+            layout:{padding:{top:16}},
             scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
           },
           plugins:[{afterDraw(c){
@@ -362,6 +364,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
           ]},
           options:{responsive:true,maintainAspectRatio:false,
             plugins:{legend:{display:false}},
+            layout:{padding:{top:16}},
             scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
           },
           plugins:[{afterDraw(c){
@@ -505,10 +508,10 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
         function vline(ctx,xs,ys,val,arr,color,lbl){
           const i=arr.reduce((a,v,j)=>Math.abs(v-val)<Math.abs(arr[a]-val)?j:a,0);
           const x=xs.getPixelForValue(i);
-          ctx.save();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.setLineDash([4,3]);
+          ctx.save();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.setLineDash([5,4]);
           ctx.beginPath();ctx.moveTo(x,ys.top);ctx.lineTo(x,ys.bottom);ctx.stroke();
-          ctx.fillStyle=color;ctx.font="600 8px var(--mono)";ctx.textAlign='center';
-          ctx.fillText(lbl,x,ys.top-4);ctx.restore();
+          ctx.fillStyle=color;ctx.font="600 9px var(--mono)";ctx.textAlign='center';
+          ctx.textBaseline='bottom';ctx.fillText(lbl,x,ys.top+8);ctx.restore();
         }
         function yfmt(v){
           const a=Math.abs(v);
@@ -517,7 +520,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
           return Math.round(v);
         }
         const tOpt={font:{size:9,family:'var(--mono)'}};
-        const gOpt={color:'rgba(0,0,0,0.05)'};
+        const gOpt={color:'rgba(100,100,100,0.1)'};
 
         // OI + Normal + Centers
         new Chart(document.getElementById('oi_1'),{
@@ -531,6 +534,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
           options:{responsive:true,maintainAspectRatio:false,
             interaction:{mode:'index',intersect:false},
             plugins:{legend:{position:'top',labels:{boxWidth:8,padding:10,font:{size:9}}}},
+            layout:{padding:{top:16}},
             scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
           },
           plugins:[{afterDraw(c){
@@ -553,6 +557,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
           ]},
           options:{responsive:true,maintainAspectRatio:false,
             plugins:{legend:{display:false}},
+            layout:{padding:{top:16}},
             scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
           },
           plugins:[{afterDraw(c){
@@ -572,6 +577,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
           ]},
           options:{responsive:true,maintainAspectRatio:false,
             plugins:{legend:{display:false}},
+            layout:{padding:{top:16}},
             scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
           },
           plugins:[{afterDraw(c){
@@ -715,10 +721,10 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
         function vline(ctx,xs,ys,val,arr,color,lbl){
           const i=arr.reduce((a,v,j)=>Math.abs(v-val)<Math.abs(arr[a]-val)?j:a,0);
           const x=xs.getPixelForValue(i);
-          ctx.save();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.setLineDash([4,3]);
+          ctx.save();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.setLineDash([5,4]);
           ctx.beginPath();ctx.moveTo(x,ys.top);ctx.lineTo(x,ys.bottom);ctx.stroke();
-          ctx.fillStyle=color;ctx.font="600 8px var(--mono)";ctx.textAlign='center';
-          ctx.fillText(lbl,x,ys.top-4);ctx.restore();
+          ctx.fillStyle=color;ctx.font="600 9px var(--mono)";ctx.textAlign='center';
+          ctx.textBaseline='bottom';ctx.fillText(lbl,x,ys.top+8);ctx.restore();
         }
         function yfmt(v){
           const a=Math.abs(v);
@@ -727,7 +733,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
           return Math.round(v);
         }
         const tOpt={font:{size:9,family:'var(--mono)'}};
-        const gOpt={color:'rgba(0,0,0,0.05)'};
+        const gOpt={color:'rgba(100,100,100,0.1)'};
 
         // OI + Normal + Centers
         new Chart(document.getElementById('oi_2'),{
@@ -741,6 +747,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
           options:{responsive:true,maintainAspectRatio:false,
             interaction:{mode:'index',intersect:false},
             plugins:{legend:{position:'top',labels:{boxWidth:8,padding:10,font:{size:9}}}},
+            layout:{padding:{top:16}},
             scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
           },
           plugins:[{afterDraw(c){
@@ -763,6 +770,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
           ]},
           options:{responsive:true,maintainAspectRatio:false,
             plugins:{legend:{display:false}},
+            layout:{padding:{top:16}},
             scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
           },
           plugins:[{afterDraw(c){
@@ -782,6 +790,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
           ]},
           options:{responsive:true,maintainAspectRatio:false,
             plugins:{legend:{display:false}},
+            layout:{padding:{top:16}},
             scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
           },
           plugins:[{afterDraw(c){
@@ -925,10 +934,10 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
         function vline(ctx,xs,ys,val,arr,color,lbl){
           const i=arr.reduce((a,v,j)=>Math.abs(v-val)<Math.abs(arr[a]-val)?j:a,0);
           const x=xs.getPixelForValue(i);
-          ctx.save();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.setLineDash([4,3]);
+          ctx.save();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.setLineDash([5,4]);
           ctx.beginPath();ctx.moveTo(x,ys.top);ctx.lineTo(x,ys.bottom);ctx.stroke();
-          ctx.fillStyle=color;ctx.font="600 8px var(--mono)";ctx.textAlign='center';
-          ctx.fillText(lbl,x,ys.top-4);ctx.restore();
+          ctx.fillStyle=color;ctx.font="600 9px var(--mono)";ctx.textAlign='center';
+          ctx.textBaseline='bottom';ctx.fillText(lbl,x,ys.top+8);ctx.restore();
         }
         function yfmt(v){
           const a=Math.abs(v);
@@ -937,7 +946,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
           return Math.round(v);
         }
         const tOpt={font:{size:9,family:'var(--mono)'}};
-        const gOpt={color:'rgba(0,0,0,0.05)'};
+        const gOpt={color:'rgba(100,100,100,0.1)'};
 
         // OI + Normal + Centers
         new Chart(document.getElementById('oi_3'),{
@@ -951,6 +960,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
           options:{responsive:true,maintainAspectRatio:false,
             interaction:{mode:'index',intersect:false},
             plugins:{legend:{position:'top',labels:{boxWidth:8,padding:10,font:{size:9}}}},
+            layout:{padding:{top:16}},
             scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
           },
           plugins:[{afterDraw(c){
@@ -973,6 +983,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
           ]},
           options:{responsive:true,maintainAspectRatio:false,
             plugins:{legend:{display:false}},
+            layout:{padding:{top:16}},
             scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
           },
           plugins:[{afterDraw(c){
@@ -992,6 +1003,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
           ]},
           options:{responsive:true,maintainAspectRatio:false,
             plugins:{legend:{display:false}},
+            layout:{padding:{top:16}},
             scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
           },
           plugins:[{afterDraw(c){
@@ -1135,10 +1147,10 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
         function vline(ctx,xs,ys,val,arr,color,lbl){
           const i=arr.reduce((a,v,j)=>Math.abs(v-val)<Math.abs(arr[a]-val)?j:a,0);
           const x=xs.getPixelForValue(i);
-          ctx.save();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.setLineDash([4,3]);
+          ctx.save();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.setLineDash([5,4]);
           ctx.beginPath();ctx.moveTo(x,ys.top);ctx.lineTo(x,ys.bottom);ctx.stroke();
-          ctx.fillStyle=color;ctx.font="600 8px var(--mono)";ctx.textAlign='center';
-          ctx.fillText(lbl,x,ys.top-4);ctx.restore();
+          ctx.fillStyle=color;ctx.font="600 9px var(--mono)";ctx.textAlign='center';
+          ctx.textBaseline='bottom';ctx.fillText(lbl,x,ys.top+8);ctx.restore();
         }
         function yfmt(v){
           const a=Math.abs(v);
@@ -1147,7 +1159,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
           return Math.round(v);
         }
         const tOpt={font:{size:9,family:'var(--mono)'}};
-        const gOpt={color:'rgba(0,0,0,0.05)'};
+        const gOpt={color:'rgba(100,100,100,0.1)'};
 
         // OI + Normal + Centers
         new Chart(document.getElementById('oi_4'),{
@@ -1161,6 +1173,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
           options:{responsive:true,maintainAspectRatio:false,
             interaction:{mode:'index',intersect:false},
             plugins:{legend:{position:'top',labels:{boxWidth:8,padding:10,font:{size:9}}}},
+            layout:{padding:{top:16}},
             scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
           },
           plugins:[{afterDraw(c){
@@ -1183,6 +1196,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
           ]},
           options:{responsive:true,maintainAspectRatio:false,
             plugins:{legend:{display:false}},
+            layout:{padding:{top:16}},
             scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
           },
           plugins:[{afterDraw(c){
@@ -1202,6 +1216,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);-webkit-font-s
           ]},
           options:{responsive:true,maintainAspectRatio:false,
             plugins:{legend:{display:false}},
+            layout:{padding:{top:16}},
             scales:{x:{ticks:tOpt,grid:{display:false}},y:{ticks:{callback:yfmt,...tOpt},grid:gOpt}}
           },
           plugins:[{afterDraw(c){
