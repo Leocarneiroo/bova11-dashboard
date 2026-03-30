@@ -2,48 +2,109 @@
 <html lang="pt-BR" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <title>BOVA11 - IA Knowledge Base</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOVA11 - Arquivos (IA)</title>
     <style>
-        :root { --bg: #0d1117; --bg2: #161b22; --border: #30363d; --text: #c9d1d9; --blue: #58a6ff; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; margin: 0; }
-        .sidebar { width: 250px; background: var(--bg2); border-right: 1px solid var(--border); overflow-y: auto; padding-top: 20px; }
-        .item { padding: 12px 16px; cursor: pointer; color: #8b949e; border-left: 3px solid transparent; }
-        .item:hover { color: var(--text); background: var(--bg); }
-        .item.active { color: var(--text); font-weight: bold; border-color: var(--blue); }
-        .header { padding: 0 16px 20px; font-weight: bold; font-size: 1.1em; color: white; border-bottom: 1px solid var(--border); }
-        .content { flex: 1; padding: 40px; overflow-y: auto; line-height: 1.6; max-width: 900px; margin: 0 auto; }
-        .content pre { background: var(--bg2); padding: 15px; border-radius: 8px; overflow-x: auto; border: 1px solid var(--border); }
-        .content code { font-family: Monaco, monospace; font-size: 0.9em; }
-        h1, h2, h3 { color: white; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-top: 30px; }
-        h1 { border: none; font-size: 2em; margin-top: 0; }
-        .btn { display: inline-block; padding: 8px 16px; background: var(--blue); color: black; font-weight: bold; border-radius: 6px; text-decoration: none; cursor: pointer; margin-bottom: 20px; border: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --bg: #0d1117; --bg2: #161b22; --border: #30363d; --text: #c9d1d9; --blue: #58a6ff; --green: #238636; }
+
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); }
+
+        .shell { display: flex; flex-direction: column; height: 100vh; }
+        .hdr { background: var(--bg2); padding: 20px; border-bottom: 1px solid var(--border); }
+        .hdr h1 { font-size: 1.5em; margin-bottom: 8px; }
+        .hdr p { color: #8b949e; font-size: 0.9em; }
+
+        .content-wrapper { display: flex; flex: 1; overflow: hidden; gap: 1px; background: var(--border); }
+
+        .sidebar { background: var(--bg2); width: 280px; padding: 16px; overflow-y: auto; border-right: 1px solid var(--border); }
+        .sidebar-title { font-weight: bold; font-size: 0.95em; color: white; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+
+        .file-item { padding: 10px 12px; margin-bottom: 6px; border-radius: 6px; cursor: pointer; color: #8b949e; transition: all 0.2s; }
+        .file-item:hover { background: var(--bg); color: var(--text); }
+        .file-item.active { background: var(--blue); color: black; font-weight: bold; }
+
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
+
+        .toolbar { padding: 16px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn { display: inline-block; padding: 8px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; border: none; font-size: 0.85em; transition: all 0.2s; white-space: nowrap; }
+        .btn-primary { background: var(--blue); color: black; }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-secondary { background: var(--green); color: white; }
+        .btn-secondary:hover { opacity: 0.9; }
+        .btn-tertiary { background: var(--bg2); color: var(--text); border: 1px solid var(--border); }
+        .btn-tertiary:hover { background: var(--border); }
+
+        .viewer-wrapper { flex: 1; overflow-y: auto; padding: 24px; line-height: 1.6; }
+        .viewer-wrapper h1 { font-size: 1.8em; margin-bottom: 12px; color: white; }
+        .viewer-wrapper h2 { font-size: 1.3em; margin-top: 24px; margin-bottom: 12px; color: white; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+        .viewer-wrapper h3 { font-size: 1.1em; margin-top: 16px; margin-bottom: 8px; color: var(--blue); }
+        .viewer-wrapper p { margin-bottom: 12px; color: #c9d1d9; }
+        .viewer-wrapper strong { color: white; }
+        .viewer-wrapper code { background: var(--bg2); padding: 2px 6px; border-radius: 3px; font-family: Monaco, monospace; font-size: 0.9em; }
+        .viewer-wrapper pre { background: var(--bg2); padding: 12px; border-radius: 6px; overflow-x: auto; border: 1px solid var(--border); margin: 12px 0; }
+        .viewer-wrapper pre code { background: none; padding: 0; }
+        .viewer-wrapper hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+        .viewer-wrapper ul, .viewer-wrapper ol { margin-left: 20px; margin-bottom: 12px; }
+        .viewer-wrapper li { margin-bottom: 6px; }
+
+        .status-msg { padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; font-size: 0.9em; }
+        .status-info { background: rgba(88, 166, 255, 0.1); color: var(--blue); border: 1px solid var(--blue); }
+
+        @media (max-width: 768px) {
+            .content-wrapper { flex-direction: column; }
+            .sidebar { width: 100%; max-height: 140px; border-right: none; border-bottom: 1px solid var(--border); }
+            .main-content { width: 100%; }
+
+            .toolbar { flex-direction: column; }
+            .btn { width: 100%; }
+
+            .viewer-wrapper { padding: 16px; }
+            .viewer-wrapper h1 { font-size: 1.3em; }
+            .viewer-wrapper h2 { font-size: 1.1em; }
+
+            .hdr { padding: 16px; }
+            .hdr h1 { font-size: 1.2em; margin-bottom: 6px; }
+            .hdr p { font-size: 0.85em; }
+
+            .sidebar-title { margin-bottom: 10px; padding-bottom: 8px; font-size: 0.9em; }
+            .file-item { padding: 8px 10px; margin-bottom: 4px; font-size: 0.9em; }
+        }
     </style>
 </head>
 <body>
-    <div class="sidebar" id="sidebar">
-        <div class="header">📁 Arquivos Diários (IA)</div>
-    </div>
-    <div class="content">
-        <h1>Arquivo de Dados (IA)</h1>
-        <p style="color:#8b949e; margin-bottom: 20px; font-size: 0.95em;">
-           Este arquivo contém todos os fundamentos matemáticos e um extrato completo de todos os JSONs gerados hoje.<br>
-           Use os botões para extrair facilmente.
-        </p>
+    <div class="shell">
+        <div class="hdr">
+            <h1>📁 Arquivos BOVA11 (IA)</h1>
+            <p>Histórico consolidado de análises para uso com assistentes de IA</p>
+        </div>
 
-        <button class="btn" id="btn-copy">📋 Copiar Conteúdo para IA</button>
-        <button class="btn" id="btn-dl" style="background:#238636;color:white;margin-left:10px;">💾 Download MD</button>
-        <button class="btn" id="btn-toggle" style="background:#21262d;color:#c9d1d9;border:1px solid #30363d;margin-left:10px;">👁 Mostrar/Esconder Dados Gerados</button>
-        
-        <div id="viewer-container" style="display: none; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 20px;">
-            <div id="viewer">Carregando...</div>
+        <div class="content-wrapper">
+            <div class="sidebar" id="sidebar">
+                <div class="sidebar-title">📅 Datas Disponíveis</div>
+                <div id="file-list"></div>
+            </div>
+
+            <div class="main-content">
+                <div class="toolbar">
+                    <button class="btn btn-primary" id="btn-copy">📋 Copiar para IA</button>
+                    <button class="btn btn-secondary" id="btn-dl">💾 Download MD</button>
+                    <button class="btn btn-tertiary" id="btn-toggle">👁 Ver Dados Completos</button>
+                </div>
+
+                <div class="viewer-wrapper">
+                    <div id="status-container"></div>
+                    <div id="viewer">Carregando...</div>
+                </div>
+            </div>
         </div>
     </div>
-    
+
     <script>
         const files = ["bova11_2026-03-30", "bova11_2026-03-27"];
-        const defaultText = `# Arquivo de Conhecimento BOVA11 — 2026-03-30
-**Gerado em:** 2026-03-30 16:49:44
-**Preço D:** 178.74 | **Preço D-1:** 177.74
+        const fullText = `# Arquivo de Conhecimento BOVA11 — 2026-03-30
+**Gerado em:** 2026-03-30 17:11:15
+**Preço D:** 179.27 | **Preço D-1:** 177.74
 ---
 Este arquivo é projetado primariamente como input para IA.
 Ele contém os dados extraídos de todos os relatórios processados hoje, bem como os conceitos fundamentais do sistema BOVA11.
@@ -225,7 +286,7 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   182.2,
   179.45,
   177.74,
-  178.75
+  179.27
 ]
 \`\`\`
 
@@ -335,7 +396,7 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 \`\`\`json
 {
   "2 abr W1": {
-    "adi": -0.197058,
+    "adi": -0.199069,
     "pdi": 0.402933,
     "ids": 2.123349,
     "dfp_net_M": 129.2467,
@@ -343,8 +404,8 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "bias_ids": "Bear",
     "quadrant": "Compression",
     "atm_strike": 179.0,
-    "sps_d": -0.029814,
-    "sps_d1": -0.077386,
+    "sps_d": 0.019157,
+    "sps_d1": -0.023386,
     "iv_skew_d": 0.07658802177858438,
     "iv_atm_d": 27.549999999999997,
     "delta_iv_atm": -4.160000000000004,
@@ -475,7 +536,7 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     ]
   },
   "10 abr W2": {
-    "adi": -0.193647,
+    "adi": -0.212909,
     "pdi": 0.183483,
     "ids": 4.885827,
     "dfp_net_M": 146.6015,
@@ -483,8 +544,8 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "bias_ids": "Bear",
     "quadrant": "Compression",
     "atm_strike": 179.0,
-    "sps_d": -0.208018,
-    "sps_d1": -0.14567
+    "sps_d": -0.027962,
+    "sps_d1": 0.082533,
 ... [DADOS EXCESSIVOS TRUNCADOS]
 \`\`\`
 
@@ -7362,11 +7423,11 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "key": "V1",
     "name": "2 abr W1",
     "color": "red",
-    "gex": 16728546,
-    "iv_c_atm": 27.75,
-    "div_c_atm": -3.57,
-    "iv_p_atm": 27.78,
-    "div_p_atm": -3.91,
+    "gex": 16827900,
+    "iv_c_atm": 27.32,
+    "div_c_atm": -3.65,
+    "iv_p_atm": 27.38,
+    "div_p_atm": -3.95,
     "mp": 180.0,
     "pcr_oi": 0.93,
     "dpcr_oi": 0.02,
@@ -7386,11 +7447,11 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "key": "V2",
     "name": "10 abr W2",
     "color": "blu",
-    "gex": 20878194,
-    "iv_c_atm": 29.24,
-    "div_c_atm": -1.64,
-    "iv_p_atm": 29.44,
-    "div_p_atm": -2.6,
+    "gex": 21002193,
+    "iv_c_atm": 28.93,
+    "div_c_atm": -1.69,
+    "iv_p_atm": 29.13,
+    "div_p_atm": -2.64,
     "mp": 179.0,
     "pcr_oi": 0.95,
     "dpcr_oi": 0.0,
@@ -7410,11 +7471,11 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "key": "V3",
     "name": "17 abr Mensal",
     "color": "grn",
-    "gex": -31103715,
-    "iv_c_atm": 28.84,
-    "div_c_atm": -1.32,
-    "iv_p_atm": 29.6,
-    "div_p_atm": -1.6,
+    "gex": -31288446,
+    "iv_c_atm": 28.6,
+    "div_c_atm": -1.31,
+    "iv_p_atm": 29.35,
+    "div_p_atm": -1.59,
     "mp": 180.0,
     "pcr_oi": 1.09,
     "dpcr_oi": -0.01,
@@ -7458,10 +7519,10 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "key": "V5",
     "name": "15 mai Mensal",
     "color": "pur",
-    "gex": -4060148,
-    "iv_c_atm": 26.79,
-    "div_c_atm": -0.38,
-    "iv_p_atm": 28.6,
+    "gex": -4084262,
+    "iv_c_atm": 26.66,
+    "div_c_atm": -0.34,
+    "iv_p_atm": 28.45,
     "div_p_atm": -0.5,
     "mp": 176.0,
     "pcr_oi": 1.09,
@@ -7486,111 +7547,111 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 [
   {
     "s": 170.0,
-    "c": 2526674,
-    "p": -3139035,
-    "n": -612360
+    "c": 2541680,
+    "p": -3157678,
+    "n": -615997
   },
   {
     "s": 171.0,
-    "c": 11156155,
-    "p": -19917987,
-    "n": -8761832
+    "c": 11222414,
+    "p": -20036284,
+    "n": -8813870
   },
   {
     "s": 172.0,
-    "c": 10984064,
-    "p": -31395551,
-    "n": -20411487
+    "c": 11049301,
+    "p": -31582015,
+    "n": -20532714
   },
   {
     "s": 173.0,
-    "c": 22174183,
-    "p": -28438798,
-    "n": -6264615
+    "c": 22305880,
+    "p": -28607702,
+    "n": -6301822
   },
   {
     "s": 174.0,
-    "c": 23468104,
-    "p": -32718015,
-    "n": -9249910
+    "c": 23607486,
+    "p": -32912333,
+    "n": -9304847
   },
   {
     "s": 175.0,
-    "c": 27345549,
-    "p": -58172666,
-    "n": -30827117
+    "c": 27507960,
+    "p": -58518165,
+    "n": -31010206
   },
   {
     "s": 176.0,
-    "c": 30613545,
-    "p": -41883039,
-    "n": -11269494
+    "c": 30795365,
+    "p": -42131790,
+    "n": -11336425
   },
   {
     "s": 177.0,
-    "c": 27284676,
-    "p": -29030591,
-    "n": -1745915
+    "c": 27446725,
+    "p": -29203009,
+    "n": -1756284
   },
   {
     "s": 178.0,
-    "c": 28784297,
-    "p": -55837019,
-    "n": -27052722
+    "c": 28955252,
+    "p": -56168646,
+    "n": -27213393
   },
   {
     "s": 179.0,
-    "c": 263945151,
-    "p": -259980560,
-    "n": 3964591
+    "c": 265512773,
+    "p": -261524635,
+    "n": 3988138
   },
   {
     "s": 180.0,
-    "c": 420966492,
-    "p": -359507189,
-    "n": 61459304
+    "c": 423466694,
+    "p": -361642372,
+    "n": 61824323
   },
   {
     "s": 181.0,
-    "c": 68735822,
-    "p": -54356896,
-    "n": 14378927
+    "c": 69144058,
+    "p": -54679732,
+    "n": 14464326
   },
   {
     "s": 182.0,
-    "c": 55674245,
-    "p": -65086412,
-    "n": -9412167
+    "c": 56004905,
+    "p": -65472973,
+    "n": -9468068
   },
   {
     "s": 183.0,
-    "c": 42734032,
-    "p": -21019927,
-    "n": 21714105
+    "c": 42987838,
+    "p": -21144768,
+    "n": 21843070
   },
   {
     "s": 184.0,
-    "c": 50991139,
-    "p": -40076227,
-    "n": 10914912
+    "c": 51293985,
+    "p": -40314247,
+    "n": 10979738
   },
   {
     "s": 185.0,
-    "c": 102385285,
-    "p": -96811623,
-    "n": 5573661
+    "c": 102993371,
+    "p": -97386606,
+    "n": 5606764
   },
   {
     "s": 186.0,
-    "c": 40436085,
-    "p": -40374422,
-    "n": 61663
+    "c": 40676243,
+    "p": -40614214,
+    "n": 62029
   },
   {
     "s": 187.0,
-    "c": 22390937,
-    "p": -12407606,
-    "n": 9983331
+    "c": 22523921,
+    "p": -12481298,
+    "n": 10042624
   }
 ]
 \`\`\`
@@ -7602,177 +7663,177 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "strikes": [
       {
         "s": 171.0,
-        "c": 909322,
-        "p": -1085507,
-        "n": -176185
+        "c": 914722,
+        "p": -1091954,
+        "n": -177232
       },
       {
         "s": 172.0,
-        "c": 1193057,
-        "p": -2337057,
-        "n": -1144000
+        "c": 1200143,
+        "p": -2350938,
+        "n": -1150794
       },
       {
         "s": 173.0,
-        "c": 2594929,
-        "p": -4095259,
-        "n": -1500330
+        "c": 2610341,
+        "p": -4119582,
+        "n": -1509241
       },
       {
         "s": 174.0,
-        "c": 4636950,
-        "p": -4432831,
-        "n": 204119
+        "c": 4664490,
+        "p": -4459158,
+        "n": 205332
       },
       {
         "s": 175.0,
-        "c": 5976759,
-        "p": -6687126,
-        "n": -710367
+        "c": 6012256,
+        "p": -6726842,
+        "n": -714586
       },
       {
         "s": 176.0,
-        "c": 3246305,
-        "p": -6859281,
-        "n": -3612976
+        "c": 3265586,
+        "p": -6900019,
+        "n": -3634434
       },
       {
         "s": 177.0,
-        "c": 6126300,
-        "p": -8211732,
-        "n": -2085432
+        "c": 6162685,
+        "p": -8260503,
+        "n": -2097818
       },
       {
         "s": 178.0,
-        "c": 6681673,
-        "p": -11072916,
-        "n": -4391242
+        "c": 6721357,
+        "p": -11138680,
+        "n": -4417323
       },
       {
         "s": 179.0,
-        "c": 12054471,
-        "p": -11957048,
-        "n": 97423
+        "c": 12126065,
+        "p": -12028064,
+        "n": 98001
       },
       {
         "s": 180.0,
-        "c": 41283190,
-        "p": -17433135,
-        "n": 23850055
+        "c": 41528378,
+        "p": -17536674,
+        "n": 23991705
       },
       {
         "s": 181.0,
-        "c": 11271180,
-        "p": -8442326,
-        "n": 2828854
+        "c": 11338121,
+        "p": -8492467,
+        "n": 2845655
       },
       {
         "s": 182.0,
-        "c": 7850009,
-        "p": -13177647,
-        "n": -5327637
+        "c": 7896632,
+        "p": -13255911,
+        "n": -5359279
       },
       {
         "s": 183.0,
-        "c": 14036732,
-        "p": -4732046,
-        "n": 9304685
+        "c": 14120099,
+        "p": -4760151,
+        "n": 9359948
       },
       {
         "s": 184.0,
-        "c": 4341858,
-        "p": -10050661,
-        "n": -5708803
+        "c": 4367645,
+        "p": -10110353,
+        "n": -5742708
       },
       {
         "s": 185.0,
-        "c": 7160316,
-        "p": -3502343,
-        "n": 3657973
+        "c": 7202842,
+        "p": -3523144,
+        "n": 3679698
       },
       {
         "s": 186.0,
-        "c": 2693776,
-        "p": -1650790,
-        "n": 1042986
+        "c": 2709775,
+        "p": -1660594,
+        "n": 1049181
       },
       {
         "s": 187.0,
-        "c": 1037672,
-        "p": -638251,
-        "n": 399422
+        "c": 1043835,
+        "p": -642041,
+        "n": 401794
       }
     ],
-    "net": 16728546,
+    "net": 16827900,
     "flip": 173.9,
     "dom_s": 180.0,
-    "dom_n": 23850055
+    "dom_n": 23991705
   },
   "V2": {
     "strikes": [
       {
         "s": 171.0,
-        "c": 165452,
-        "p": -854398,
-        "n": -688946
+        "c": 166435,
+        "p": -859473,
+        "n": -693038
       },
       {
         "s": 172.0,
-        "c": 1705671,
-        "p": -804751,
-        "n": 900920
+        "c": 1715801,
+        "p": -809530,
+        "n": 906271
       },
       {
         "s": 173.0,
-        "c": 760292,
-        "p": -1103614,
-        "n": -343323
+        "c": 764807,
+        "p": -1110169,
+        "n": -345362
       },
       {
         "s": 174.0,
-        "c": 1055752,
-        "p": -2201250,
-        "n": -1145498
+        "c": 1062022,
+        "p": -2214323,
+        "n": -1152301
       },
       {
         "s": 175.0,
-        "c": 1477291,
-        "p": -4474955,
-        "n": -2997664
+        "c": 1486065,
+        "p": -4501532,
+        "n": -3015467
       },
       {
         "s": 176.0,
-        "c": 705727,
-        "p": -914809,
-        "n": -209082
+        "c": 709918,
+        "p": -920242,
+        "n": -210323
       },
       {
         "s": 177.0,
-        "c": 2030604,
-        "p": -1951107,
-        "n": 79497
+        "c": 2042664,
+        "p": -1962695,
+        "n": 79969
       },
       {
         "s": 178.0,
-        "c": 3123013,
-        "p": -4433624,
-        "n": -1310612
+        "c": 3141561,
+        "p": -4459957,
+        "n": -1318396
       },
       {
         "s": 179.0,
-        "c": 224347714,
-        "p": -223459560,
-        "n": 888154
+        "c": 225680159,
+        "p": -224786730,
+        "n": 893429
       },
       {
         "s": 180.0,
-        "c": 203068438,
-        "p": -198938841,
-        "n": 4129597
+        "c": 204274501,
+        "p": -200120377,
+        "n": 4154123
       },
       {
         "s": 181.0,
-        "c": 4866585,
+        "c": 4895488,
         
 ... [DADOS EXCESSIVOS TRUNCADOS]
 \`\`\`
@@ -9943,6 +10004,420 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 ... [DADOS EXCESSIVOS TRUNCADOS]
 \`\`\`
 
+### bova11_gravity_map_test.html
+**Variable:** \`D\`
+\`\`\`json
+{
+  "strikes": [
+    162.0,
+    164.0,
+    166.0,
+    168.0,
+    170.0,
+    172.0,
+    174.0,
+    176.0,
+    178.0,
+    180.0,
+    182.0,
+    184.0,
+    186.0,
+    188.0,
+    190.0,
+    192.0,
+    194.0,
+    170.0,
+    171.0,
+    172.0,
+    173.0,
+    174.0,
+    175.0,
+    176.0,
+    177.0,
+    178.0,
+    179.0,
+    180.0,
+    181.0,
+    182.0,
+    183.0,
+    184.0,
+    185.0,
+    186.0
+  ],
+  "call_oi": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    14.0,
+    0.0,
+    100.0,
+    0.0,
+    50250.0,
+    1.0,
+    200.0,
+    3710.0,
+    0.0,
+    220.0,
+    203.0,
+    1510.0,
+    432170.0,
+    443030.0,
+    311140.0,
+    1170000.0,
+    896490.0,
+    223380.0,
+    186860.0,
+    302820.0,
+    275330.0,
+    422040.0,
+    1000000.0,
+    751650.0,
+    182560.0,
+    214360.0,
+    194010.0,
+    555170.0,
+    205950.0
+  ],
+  "put_oi": [
+    212.0,
+    12050.0,
+    948.0,
+    700.0,
+    1390.0,
+    144.0,
+    322.0,
+    4400.0,
+    1700.0,
+    2320.0,
+    1300.0,
+    1000.0,
+    15200.0,
+    0.0,
+    18580.0,
+    0.0,
+    0.0,
+    536910.0,
+    546070.0,
+    480990.0,
+    1270000.0,
+    1050000.0,
+    379640.0,
+    1020000.0,
+    364970.0,
+    653990.0,
+    271800.0,
+    508450.0,
+    208570.0,
+    279820.0,
+    125860.0,
+    166680.0,
+    494490.0,
+    144360.0
+  ],
+  "total_oi": [
+    212.0,
+    12050.0,
+    948.0,
+    700.0,
+    1390.0,
+    158.0,
+    322.0,
+    4500.0,
+    1700.0,
+    52570.0,
+    1301.0,
+    1200.0,
+    18910.0,
+    0.0,
+    18800.0,
+    203.0,
+    1510.0,
+    969080.0,
+    989100.0,
+    792130.0,
+    2440000.0,
+    1946490.0,
+    603020.0,
+    1206860.0,
+    667790.0,
+    929320.0,
+    693840.0,
+    1508450.0,
+    960220.0,
+    462380.0,
+    340220.0,
+    360690.0,
+    1049660.0,
+    350310.0
+  ],
+  "fit": [
+    58332.1892210308,
+    123419.84512442678,
+    231244.25245886727,
+    383677.3186030809,
+    563729.2043299645,
+    733473.0669609542,
+    845097.9284035746,
+    862261.7713428906,
+    779077.1299776981,
+    623348.6286885488,
+    441662.7681044192,
+    277114.85082905606,
+    153970.6843765636,
+    75757.4780406641,
+    33008.22766125421,
+    12735.855775794005,
+    4351.543082695201,
+    563729.2043299645,
+    652869.2278017466,
+    733473.0669609542,
+    799363.7515072642,
+    845097.9284035746,
+    866706.2550835345,
+    862261.7713428906,
+    832163.4562513953,
+    779077.1299776981,
+    707545.8343832998,
+    623348.6286885488,
+    532733.1787715962,
+    441662.7681044192,
+    355200.9688719776,
+    277114.85082905606,
+    209723.8234927908,
+    153970.6843765636
+  ],
+  "residuals": [
+    -58120.1892210308,
+    -111369.84512442678,
+    -230296.25245886727,
+    -382977.3186030809,
+    -562339.2043299645,
+    -733315.0669609542,
+    -844775.9284035746,
+    -857761.7713428906,
+    -777377.1299776981,
+    -570778.6286885488,
+    -440361.7681044192,
+    -275914.85082905606,
+    -135060.6843765636,
+    -75757.4780406641,
+    -14208.227661254212,
+    -12532.855775794005,
+    -2841.5430826952006,
+    405350.7956700355,
+    3362
+... [DADOS EXCESSIVOS TRUNCADOS]
+\`\`\`
+
+### bova11_gravity_map_test2.html
+**Variable:** \`D\`
+\`\`\`json
+{
+  "strikes": [
+    162.0,
+    164.0,
+    166.0,
+    168.0,
+    170.0,
+    172.0,
+    174.0,
+    176.0,
+    178.0,
+    180.0,
+    182.0,
+    184.0,
+    186.0,
+    188.0,
+    190.0,
+    192.0,
+    194.0,
+    170.0,
+    171.0,
+    172.0,
+    173.0,
+    174.0,
+    175.0,
+    176.0,
+    177.0,
+    178.0,
+    179.0,
+    180.0,
+    181.0,
+    182.0,
+    183.0,
+    184.0,
+    185.0,
+    186.0
+  ],
+  "call_oi": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    14.0,
+    0.0,
+    100.0,
+    0.0,
+    50250.0,
+    1.0,
+    200.0,
+    3710.0,
+    0.0,
+    220.0,
+    203.0,
+    1510.0,
+    432170.0,
+    443030.0,
+    311140.0,
+    1170000.0,
+    896490.0,
+    223380.0,
+    186860.0,
+    302820.0,
+    275330.0,
+    422040.0,
+    1000000.0,
+    751650.0,
+    182560.0,
+    214360.0,
+    194010.0,
+    555170.0,
+    205950.0
+  ],
+  "put_oi": [
+    212.0,
+    12050.0,
+    948.0,
+    700.0,
+    1390.0,
+    144.0,
+    322.0,
+    4400.0,
+    1700.0,
+    2320.0,
+    1300.0,
+    1000.0,
+    15200.0,
+    0.0,
+    18580.0,
+    0.0,
+    0.0,
+    536910.0,
+    546070.0,
+    480990.0,
+    1270000.0,
+    1050000.0,
+    379640.0,
+    1020000.0,
+    364970.0,
+    653990.0,
+    271800.0,
+    508450.0,
+    208570.0,
+    279820.0,
+    125860.0,
+    166680.0,
+    494490.0,
+    144360.0
+  ],
+  "total_oi": [
+    212.0,
+    12050.0,
+    948.0,
+    700.0,
+    1390.0,
+    158.0,
+    322.0,
+    4500.0,
+    1700.0,
+    52570.0,
+    1301.0,
+    1200.0,
+    18910.0,
+    0.0,
+    18800.0,
+    203.0,
+    1510.0,
+    969080.0,
+    989100.0,
+    792130.0,
+    2440000.0,
+    1946490.0,
+    603020.0,
+    1206860.0,
+    667790.0,
+    929320.0,
+    693840.0,
+    1508450.0,
+    960220.0,
+    462380.0,
+    340220.0,
+    360690.0,
+    1049660.0,
+    350310.0
+  ],
+  "fit": [
+    58332.1892210308,
+    123419.84512442678,
+    231244.25245886727,
+    383677.3186030809,
+    563729.2043299645,
+    733473.0669609542,
+    845097.9284035746,
+    862261.7713428906,
+    779077.1299776981,
+    623348.6286885488,
+    441662.7681044192,
+    277114.85082905606,
+    153970.6843765636,
+    75757.4780406641,
+    33008.22766125421,
+    12735.855775794005,
+    4351.543082695201,
+    563729.2043299645,
+    652869.2278017466,
+    733473.0669609542,
+    799363.7515072642,
+    845097.9284035746,
+    866706.2550835345,
+    862261.7713428906,
+    832163.4562513953,
+    779077.1299776981,
+    707545.8343832998,
+    623348.6286885488,
+    532733.1787715962,
+    441662.7681044192,
+    355200.9688719776,
+    277114.85082905606,
+    209723.8234927908,
+    153970.6843765636
+  ],
+  "residuals": [
+    -58120.1892210308,
+    -111369.84512442678,
+    -230296.25245886727,
+    -382977.3186030809,
+    -562339.2043299645,
+    -733315.0669609542,
+    -844775.9284035746,
+    -857761.7713428906,
+    -777377.1299776981,
+    -570778.6286885488,
+    -440361.7681044192,
+    -275914.85082905606,
+    -135060.6843765636,
+    -75757.4780406641,
+    -14208.227661254212,
+    -12532.855775794005,
+    -2841.5430826952006,
+    405350.7956700355,
+    3362
+... [DADOS EXCESSIVOS TRUNCADOS]
+\`\`\`
+
 ### bova11_max_pain.html
 **Variable:** \`MP\`
 \`\`\`json
@@ -10057,105 +10532,105 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 [
   {
     "strike": 170.0,
-    "call_gex": 2526674.0095998365,
-    "put_gex": -3139034.5060838284,
-    "net_gex": -612360.4964839919
+    "call_gex": 2541680.417012919,
+    "put_gex": -3157677.841355037,
+    "net_gex": -615997.4243421177
   },
   {
     "strike": 171.0,
-    "call_gex": 2774167.721499888,
-    "put_gex": -3419384.1673914725,
-    "net_gex": -645216.4458915843
+    "call_gex": 2790644.0421106517,
+    "put_gex": -3439692.5537217883,
+    "net_gex": -649048.5116111366
   },
   {
     "strike": 172.0,
-    "call_gex": 2077522.044129576,
-    "put_gex": -3211632.4741463163,
-    "net_gex": -1134110.4300167402
+    "call_gex": 2089860.8508317538,
+    "put_gex": -3230706.9828423387,
+    "net_gex": -1140846.132010585
   },
   {
     "strike": 173.0,
-    "call_gex": 8260791.153732003,
-    "put_gex": -8966841.679692002,
-    "net_gex": -706050.5259599993
+    "call_gex": 8309853.595953002,
+    "put_gex": -9020097.493043002,
+    "net_gex": -710243.8970900001
   },
   {
     "strike": 174.0,
-    "call_gex": 6644723.925617569,
-    "put_gex": -7782529.779360001,
-    "net_gex": -1137805.8537424318
+    "call_gex": 6684188.230864872,
+    "put_gex": -7828751.734440001,
+    "net_gex": -1144563.5035751285
   },
   {
     "strike": 175.0,
-    "call_gex": 1734179.5772313843,
-    "put_gex": -2947282.3650287525,
-    "net_gex": -1213102.7877973681
+    "call_gex": 1744479.2063740862,
+    "put_gex": -2964786.8471119083,
+    "net_gex": -1220307.640737822
   },
   {
     "strike": 176.0,
-    "call_gex": 1504389.8426598723,
-    "put_gex": -8211910.7327040015,
-    "net_gex": -6707520.890044129
+    "call_gex": 1513324.7059628882,
+    "put_gex": -8260682.864616001,
+    "net_gex": -6747358.158653113
   },
   {
     "strike": 177.0,
-    "call_gex": 2525041.7869133526,
-    "put_gex": -3043274.8859710926,
-    "net_gex": -518233.09905774007
+    "call_gex": 2540038.5002390584,
+    "put_gex": -3061349.4862698936,
+    "net_gex": -521310.9860308352
   },
   {
     "strike": 178.0,
-    "call_gex": 2357392.1661433442,
-    "put_gex": -5599502.062020433,
-    "net_gex": -3242109.895877089
+    "call_gex": 2371393.1758276764,
+    "put_gex": -5632758.591724629,
+    "net_gex": -3261365.415896952
   },
   {
     "strike": 179.0,
-    "call_gex": 3694432.0601568967,
-    "put_gex": -2379268.8701323206,
-    "net_gex": 1315163.1900245761
+    "call_gex": 3716374.0093137845,
+    "put_gex": -2393399.8098082803,
+    "net_gex": 1322974.1995055042
   },
   {
     "strike": 180.0,
-    "call_gex": 8913488.540400002,
-    "put_gex": -4532063.248366381,
-    "net_gex": 4381425.292033621
+    "call_gex": 8966427.4791,
+    "put_gex": -4558980.051748396,
+    "net_gex": 4407447.427351604
   },
   {
     "strike": 181.0,
-    "call_gex": 6771864.776030281,
-    "put_gex": -1879076.4801924243,
-    "net_gex": 4892788.295837857
+    "call_gex": 6812084.19546837,
+    "put_gex": -1890236.6801687463,
+    "net_gex": 4921847.515299624
   },
   {
     "strike": 182.0,
-    "call_gex": 1656408.5910167044,
-    "put_gex": -2538870.792825889,
-    "net_gex": -882462.2018091844
+    "call_gex": 1666246.3231756163,
+    "put_gex": -2553949.6393021527,
+    "net_gex": -887703.3161265363
   },
   {
     "strike": 183.0,
-    "call_gex": 1951785.6272517603,
-    "put_gex": -1145977.5100107603,
-    "net_gex": 805808.117241
+    "call_gex": 1963377.6609665402,
+    "put_gex": -1152783.6928962902,
+    "net_gex": 810593.96807025
   },
   {
     "strike": 184.0,
-    "call_gex": 1760297.0570943842,
-    "put_gex": -1512325.7227797124,
-    "net_gex": 247971.3343146718
+    "call_gex": 1770751.803019836,
+    "put_gex": -1521307.7188152482,
+    "net_gex": 249444.08420458785
   },
   {
     "strike": 185.0,
-    "call_gex": 5001711.125801545,
-    "put_gex": -4455024.829507369,
-    "net_gex": 546686.296294176
+    "call_gex": 5031417.259094226,
+    "put_gex": -4481484.086765323,
+    "net_gex": 549933.1723289033
   },
   {
     "strike": 186.0,
-    "call_gex": 1835732.9648953802,
-    "put_gex": -1286751.2056921443,
-    "net_gex": 548981.7592032359
+    "call_gex": 1846635.739320645,
+    "put_gex": -1294393.4708828763,
+    "net_gex": 552242.2684377688
   }
 ]
 \`\`\`
@@ -10166,10 +10641,10 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   {
     "label": "2 Abr — W1",
     "mp": 178.0,
-    "spot": 178.74,
-    "dist": 0.41,
+    "spot": 179.27,
+    "dist": 0.71,
     "dte": 3,
-    "score": 74,
+    "score": 71,
     "verdict": "Atração moderada",
     "color": "#6B9E1D",
     "direction": "para baixo"
@@ -10177,21 +10652,21 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   {
     "label": "10 Abr — W2",
     "mp": 179.0,
-    "spot": 178.74,
-    "dist": -0.15,
+    "spot": 179.27,
+    "dist": 0.15,
     "dte": 11,
     "score": 73,
     "verdict": "Atração moderada",
     "color": "#6B9E1D",
-    "direction": "para cima"
+    "direction": "para baixo"
   },
   {
     "label": "17 Abr — Mensal",
     "mp": 180.0,
-    "spot": 178.74,
-    "dist": -0.7,
+    "spot": 179.27,
+    "dist": -0.41,
     "dte": 18,
-    "score": 56,
+    "score": 59,
     "verdict": "Atração moderada",
     "color": "#6B9E1D",
     "direction": "para cima"
@@ -10199,8 +10674,8 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   {
     "label": "24 Abr — W2",
     "mp": 176.0,
-    "spot": 178.74,
-    "dist": 1.53,
+    "spot": 179.27,
+    "dist": 1.82,
     "dte": 25,
     "score": 50,
     "verdict": "Atração fraca",
@@ -10210,8 +10685,8 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   {
     "label": "15 Mai — Mensal",
     "mp": 176.0,
-    "spot": 178.74,
-    "dist": 1.53,
+    "spot": 179.27,
+    "dist": 1.82,
     "dte": 46,
     "score": 50,
     "verdict": "Atração fraca",
@@ -20337,50 +20812,126 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 ]
 \`\`\`
 `;
-        
-        const sb = document.getElementById('sidebar');
-        files.forEach((f, i) => {
-            const div = document.createElement('div');
-            div.className = 'item' + (i === 0 ? ' active' : '');
-            div.textContent = f;
-            sb.appendChild(div);
-            // Em uma implementação real via server local leríamos o arquivo no click.
-            // Aqui estamos deixando static para o dia atual por simplicidade.
-        });
-        
+        const resumoText = `## CONCEITOS E FÓRMULAS VITAIS (Para entendimento da IA)
+
+### 1. Demanda Institucional e PDI (Módulo 17)
+- **ADI (Aggregate Demand Index)**: Mede o fluxo total (0.4*Skew + 0.3*Premium_Imbalance + 0.2*OI_Flow + 0.1*Vol_Imbalance). 
+  * > +0.02 = Puts demand, Hedging (Bearish/Proteção).
+  * < -0.02 = Calls demand, Risk-on (Bullish).
+- **PDI (Put Demand Index)**: \`ΔSkew * ΔIV_ATM\`. Avalia a aceleração na demanda por proteção.
+  * Hedge: Puts em demanda + IV subindo (medo agudo).
+  * Defensive: Puts em demanda mas IV caindo.
+- **IDS (Institutional Demand Score)**: Z-score integrado de 7 variáveis (Skew, Premium, OI, IV, GEX, Charm, Vanna). \`> +0.5 = Bear, < -0.5 = Bull\`.
+- **DFP (Delta Flow Proxy)**: Proxy do Delta-adjusted flow em Notional Net.
+
+### 2. Max Pain e Gravitação (Módulos 11 e 12)
+- **Max Pain**: Preço de máxima dor para lançadores de opções (onde menor \$ é pago em expiração). O preço tende a ser atraído pra cá perto do vencimento.
+- **Mapa Gravitacional (Convergência)**: Distância e alinhamento do Spot com 3 centros de gravidade:
+  * μOI = Ponto médio ponderado pelo Open Interest.
+  * μGEX = Ponto médio ponderado pelo Gamma Exposure.
+  * μDEX = Ponto médio ponderado pelo Delta Exposure.
+  * **Score de Convergência (0-100)**: Quanto mais alinhados os três, maior o poder gravitacional. > 75 = Risco centralizado e atração forte.
+
+### 3. Convexidade e Gregos (Módulos 4 e 7 - GEX, Vanna, Charm, TEX, DEX, VEX)
+- **GEX (Gamma Exposure)**: Exposição de Gamma líquida dos Dealers. 
+  * GEX Positivo (>0): Dealers vendem na alta, compram na baixa. Comprime a volatilidade e consolida o mercado.
+  * GEX Negativo (<0): Dealers compram na alta, vendem na baixa. Aumenta a volatilidade e gera "squeezes".
+  * **GEX Flip**: Preço exato onde o GEX muda de sinal (regime de volatilidade inverte).
+- **DEX (Delta Exposure)**: Exposição direcional por strike. Delta agrupado projeta "Walls".
+- **VEX (Vega Exposure)**: Exposição de volatilidade a variações de IV.
+- **TEX (Theta Exposure)**: Fluxo de dinheiro diário por decaimento de tempo.
+- **Vanna**: Mudança de Delta em função da Volatilidade. Mede risco não-linear direcional.
+- **Charm**: Mudança de Delta em função do Tempo. Causa o "Charm rally" em que puts expiram worthless. Vanna + Charm = Ventos favoráveis (Tailwinds) do Gamma.
+
+### 4. Trade Score Institucional (Módulo 5 e 6)
+- Avalia cada Opção listada em vários eixos (Liquidez, OI Edge, Vol Edge, GEX Imbalance, Delta/Teta, Distância do Max Pain).
+- Gera o **Quality Score (0-100)**. Opções com score alto representam melhores "plays" de mercado, pois têm suporte do Market Maker.
+- Institucional Bias analisa o net pressure (comprado em call vs put) nos block trades da B3.
+
+### 5. Prediction e Dinâmica de Skew (Módulos 8, 9, 10, 14, 16)
+- **Δ Skew Prediction**: Mudanças abruptas no Delta Skew geralmente antecedem em 1/2 pregões reversões no Spot. \`ΔSkew < -0.8 = Alta / > +0.8 = Queda\`.
+- **Hunter Walls**: Agregações severas de volume intradiário. Indica onde "Predadores" agem e travam book.
+- **Evolução do GEX History**: O crescimento repentino num strike vira imã de preço.
+- **OI Stats**: Distribuição Lognormal das probabililidades.
+- **Bandas Reais de Volatilidade**: Modelos GARCH aplicados contra a IV. Se o spot atinge a banda superior do Garch e a IV contrai = Topo.
+
+---`;
+
+        let currentFile = files[0];
+        let isFullView = false;
+
+        // Renderizar markdown para HTML
         function render(text) {
             let html = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
             html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
             html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
             html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
             html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            html = html.replace(/```(.*?)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
-            html = html.replace(/`(.*?)`/g, '<code>$1</code>');
-            html = html.replace(/^---$/gim, '<hr style="border:1px solid #30363d; margin: 30px 0;">');
+            html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            html = html.replace(/```([a-z]*)\n([\s\S]*?)```/g, '<pre><code class="lang-$1">$2</code></pre>');
+            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+            html = html.replace(/^---$/gim, '<hr>');
+            html = html.replace(/^- (.*$)/gim, '<li>$1</li>');
+            html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
             document.getElementById('viewer').innerHTML = html;
         }
-        
-        render(defaultText);
-        
+
+        function updateStatus() {
+            const statusDiv = document.getElementById('status-container');
+            const viewMode = isFullView ? 'Dados Completos' : 'Resumo (Conceitos)';
+            statusDiv.innerHTML = `<div class="status-msg status-info">📄 ${currentFile} — ${viewMode}</div>`;
+        }
+
+        function showContent() {
+            const content = isFullView ? fullText : resumoText;
+            render(content);
+            updateStatus();
+        }
+
+        // Preencher lista de datas
+        const fileList = document.getElementById('file-list');
+        files.forEach((f, i) => {
+            const div = document.createElement('div');
+            div.className = 'file-item' + (i === 0 ? ' active' : '');
+            div.textContent = f;
+            div.onclick = () => {
+                document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
+                div.classList.add('active');
+                currentFile = f;
+                isFullView = false;
+                document.getElementById('btn-toggle').textContent = '👁 Ver Dados Completos';
+                showContent();
+            };
+            fileList.appendChild(div);
+        });
+
+        // Exibir conteúdo inicial
+        showContent();
+
+        // Botão Copiar
         document.getElementById('btn-copy').onclick = () => {
-            navigator.clipboard.writeText(defaultText);
-            alert("Copiado com sucesso! Cole na aba do seu assistente de IA.");
+            navigator.clipboard.writeText(fullText).then(() => {
+                const btn = document.getElementById('btn-copy');
+                const oldText = btn.textContent;
+                btn.textContent = '✓ Copiado!';
+                setTimeout(() => { btn.textContent = oldText; }, 2000);
+            });
         };
-        
+
+        // Botão Download
         document.getElementById('btn-dl').onclick = () => {
             const a = document.createElement('a');
-            a.href = URL.createObjectURL(new Blob([defaultText], {type: "text/markdown"}));
-            a.download = files[0] + ".md";
+            a.href = URL.createObjectURL(new Blob([fullText], {type: "text/markdown"}));
+            a.download = currentFile + ".md";
             a.click();
         };
-        
+
+        // Botão Toggle
         document.getElementById('btn-toggle').onclick = () => {
-            const vc = document.getElementById('viewer-container');
-            if (vc.style.display === 'none') {
-                vc.style.display = 'block';
-            } else {
-                vc.style.display = 'none';
-            }
+            isFullView = !isFullView;
+            const btn = document.getElementById('btn-toggle');
+            btn.textContent = isFullView ? '👁 Ver Resumo' : '👁 Ver Dados Completos';
+            showContent();
         };
     </script>
 </body>
