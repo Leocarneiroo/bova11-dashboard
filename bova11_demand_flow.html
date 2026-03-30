@@ -95,6 +95,23 @@
   /* Note */
   .note{font-size:0.72rem;color:var(--t3);padding:10px 14px;
          border-top:1px solid var(--border);}
+  /* Explainer section */
+  .explainer{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;
+              margin-bottom:20px;overflow:hidden;}
+  .exp-hdr{background:var(--hdr-bg);border-bottom:1px solid var(--border);
+            padding:12px 16px;cursor:pointer;user-select:none;
+            display:flex;align-items:center;justify-content:space-between;}
+  .exp-hdr:hover{background:rgba(88,166,255,0.05);}
+  .exp-toggle{font-size:0.8rem;color:var(--t3);transition:transform 0.2s;}
+  .exp-toggle.open{transform:rotate(180deg);}
+  .exp-body{display:none;padding:14px 16px;font-size:0.85rem;line-height:1.5;color:var(--t2);}
+  .exp-body.open{display:block;}
+  .exp-section{margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+  .exp-section:last-child{border-bottom:none;margin-bottom:0;}
+  .exp-section strong{color:var(--t1);}
+  .exp-section em{color:var(--t3);}
+  .exp-section ul{list-style:disc inside;}
+  .exp-section li{margin:3px 0;}
 </style>
 </head>
 <body>
@@ -112,6 +129,53 @@
 </div>
 
 <div class="main">
+  <div id="explainer" class="explainer">
+    <div class="exp-hdr" onclick="toggleExplainer()">
+      <span style="font-weight:600;cursor:pointer">📚 O que significam estes dados?</span>
+      <span id="exp-toggle" style="float:right;cursor:pointer">▼</span>
+    </div>
+    <div id="exp-body" class="exp-body">
+      <div class="exp-section">
+        <strong>ADI — Aggregate Demand Index</strong><br>
+        <em>Mede o fluxo líquido de demanda por puts vs calls através de premium, OI e volume.</em><br>
+        💡 <strong>Importância:</strong> Indica a atitude geral do mercado (proteção vs ganho). ADI positivo = mercado comprando puts (defensivo); ADI negativo = vendendo puts (ofensivo).
+        Útil para detectar mudanças de regime e antecedência de movimentos de volatilidade.
+      </div>
+      <div class="exp-section">
+        <strong>PDI — Put Demand Index (ΔSkew × ΔIV)</strong><br>
+        <em>Combina a mudança na curvatura da volatilidade (skew) com variações de IV ATM.</em><br>
+        💡 <strong>Importância:</strong> Quadrante de regime (Hedge/Defensive/Risk-On/Compression) sinaliza intenção institucional:
+        <ul style="margin:4px 0 4px 20px;font-size:0.8rem">
+          <li><strong>Hedge</strong> (vermelho): Put demand + IV subindo → proteção ativa em mercado crescente</li>
+          <li><strong>Defensive</strong> (amarelo): Put demand + IV caindo → estrutura de proteção, mercado ajustando</li>
+          <li><strong>Risk-On</strong> (verde): Call demand + IV caindo → apetite de risco, compressão de vol</li>
+          <li><strong>Compression</strong> (azul): Call demand + IV subindo → unwind de proteção em stress</li>
+        </ul>
+      </div>
+      <div class="exp-section">
+        <strong>IDS — Institutional Demand Score</strong><br>
+        <em>Score agregado de 7 componentes (premium, OI, IV, GEX, charm, vanna, skew) normalizados.</em><br>
+        💡 <strong>Importância:</strong> Captura comportamento institucional além de simples volume. IDS extremo (+0.5/-0.5) indica posicionamento fortemente desbalanceado.
+        Útil para identificar crowding e reversal setups. Valores intermediários refletem mercado equilibrado.
+      </div>
+      <div class="exp-section">
+        <strong>DFP — Delta Flow Proxy</strong><br>
+        <em>Aproximação do fluxo de delta ponderado por volume: Σ(|Δ|×Vol×Mid) calls − puts.</em><br>
+        💡 <strong>Importância:</strong> Indica direção esperada do hedge dos dealers. DFP positivo = net call delta (dealers vendem calls, compram underlying); DFP negativo = net put delta (dealers compram puts, vendem underlying). Extremos refletem desequilíbrio de delta que pode gerar movimento.
+      </div>
+      <div class="exp-section">
+        <strong>🎨 Como usar em conjunto:</strong><br>
+        ADI + PDI + IDS formam um tripé:<br>
+        • <strong>ADI:</strong> breadth do fluxo (agregado)<br>
+        • <strong>PDI:</strong> regime/intenção (skew + IV)<br>
+        • <strong>IDS:</strong> intensidade institucional (gregas)<br>
+        • <strong>DFP:</strong> direção esperada de movimento<br>
+        <br>
+        <em>Exemplo:</em> ADI alto + PDI "Hedge" + IDS negativo = mercado defensivo mas calls fortemente compradas → setup de short call ou strangle.
+      </div>
+    </div>
+  </div>
+
   <div class="cards" id="cards"></div>
 
   <div class="two-col">
@@ -159,6 +223,14 @@ const PALETTE     = ["#f85149", "#58a6ff", "#3fb950", "#d2a8ff", "#e3b341", "#79
 let curExp    = EXP_KEYS[0] || 'AGG';
 let curMetric = 'adi';
 let histChart = null;
+
+// ── Explainer ──────────────────────────────────────
+function toggleExplainer() {
+  const body = document.getElementById('exp-body');
+  const toggle = document.getElementById('exp-toggle');
+  body.classList.toggle('open');
+  toggle.classList.toggle('open');
+}
 
 // ── Theme ──────────────────────────────────────────
 function toggleTheme() {
