@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>BOVA11 — GEX 31/Mar/2025</title>
+<script>
+(function(){
+  const t = localStorage.getItem('bova11-theme');
+  if(t === 'dark') document.documentElement.setAttribute('data-theme','dark');
+})();
+</script>
+<style>
+:root{--bg:#f0f4f8;--card:#ffffff;--brd:#d0d7de;--text:#1f2328;--mut:#636c76;--grn:#1a7f37;--red:#cf222e;--blu:#0969da;--yel:#9a6700;--pur:#8250df;--org:#bc4c00;--cyn:#0969da}
+[data-theme="dark"]{--bg:#080c15;--card:#0f1628;--brd:#1b2744;--text:#e0e7f5;--mut:#5a6b8a;--grn:#00e676;--red:#ff5252;--blu:#448aff;--yel:#ffca28;--pur:#b388ff;--org:#ff8a65;--cyn:#26c6da}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif}
+.hdr{padding:16px 24px;border-bottom:1px solid var(--brd);background:linear-gradient(135deg,#0f1628,#1a2550)}
+.h1{font-size:22px;font-weight:900} .sub{color:var(--mut);font-size:12px;margin-top:4px}
+.wrap{max-width:1400px;margin:0 auto;padding:16px 20px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tab{padding:8px 14px;border:1px solid var(--brd);background:var(--card);border-radius:8px;color:var(--mut);cursor:pointer;font-weight:700;font-size:12px;transition:all .15s}
+.tab:hover{border-color:var(--blu);color:var(--text)}
+.tab.on{color:#fff;border-color:transparent;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.tab.agg{background:linear-gradient(135deg,#1a237e,#283593);color:#fff;border-color:#3949ab}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--card);border:1px solid var(--brd);border-radius:10px;padding:12px 14px}
+.kpi .l{font-size:9px;color:var(--mut);font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+.kpi .v{font-size:20px;font-weight:900;margin-top:3px}
+.kpi .d{font-size:11px;margin-top:2px;color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--brd);border-radius:10px;padding:14px;margin-bottom:12px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:900px){.g2{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{padding:6px 8px;border-bottom:1px solid rgba(27,39,68,.45);text-align:right}
+th{color:var(--mut);font-size:9.5px;text-transform:uppercase;letter-spacing:.3px;position:sticky;top:0;background:var(--card)}
+th:first-child,td:first-child{text-align:left}
+.pos{color:var(--grn)} .neg{color:var(--red)}
+.small{font-size:10px;color:var(--mut)}
+.bar{height:14px;border-radius:3px;display:inline-block;vertical-align:middle;min-width:2px}
+.bar-wrap{display:flex;align-items:center;gap:0;height:14px}
+.bar-c{background:var(--grn);opacity:.7;height:14px;border-radius:3px 0 0 3px}
+.bar-p{background:var(--red);opacity:.7;height:14px;border-radius:0 3px 3px 0}
+tr.spot-row{background:rgba(68,138,255,.08)}
+.stitle{font-size:14px;font-weight:800;margin:18px 0 10px;padding-left:10px;border-left:3px solid var(--blu)}
+</style></head><body>
+<div class="hdr">
+  <div class="h1">📈 BOVA11 — GEX & Gamma Flip</div>
+  <div class="sub">30/Mar → 31/Mar/2025 · Spot ≈ <b>182.46</b> · Flip Agregado ≈ <b>178.9</b></div>
+</div>
+<div class="wrap">
+  <!-- Tabs: cada vencimento + AGREGADO -->
+  <div class="tabs" id="gexTabs"></div>
+
+  <!-- KPIs dinâmicos -->
+  <div class="kpis" id="gexKpis"></div>
+
+  <div class="g2">
+    <!-- Resumo por vencimento (sempre visível) -->
+    <div class="card">
+      <h3 style="margin-bottom:10px">GEX Resumo por Vencimento</h3>
+      <div style="max-height:400px;overflow:auto">
+        <table><thead><tr><th>Venc</th><th>Net GEX</th><th>Flip</th><th>Dominante</th><th>IV C ATM</th><th>ΔIV C</th><th>MaxPain</th><th>PCR OI</th></tr></thead>
+        <tbody id="expSummary"></tbody></table>
+      </div>
+    </div>
+
+    <!-- Tabela GEX por strike (muda com tab) -->
+    <div class="card">
+      <h3 style="margin-bottom:10px" id="strikeTitle">GEX por Strike — Agregado</h3>
+      <div style="max-height:560px;overflow:auto">
+        <table><thead><tr><th>Strike</th><th>Call GEX</th><th>Put GEX</th><th>Net</th><th style="width:120px"></th></tr></thead>
+        <tbody id="strikeBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const EXP=[{"key": "V1", "name": "2 abr W1", "color": "red", "gex": 49288384, "iv_c_atm": 29.24, "div_c_atm": 2.83, "iv_p_atm": 28.74, "div_p_atm": 2.26, "mp": 180.0, "pcr_oi": 0.68, "dpcr_oi": 0.0, "pcr_vol": 0.44, "dpcr_vol": -0.25, "coi": 7449240, "poi": 5046020, "dcoi": -111880, "dpoi": -121010, "cvol": 1849220, "pvol": 814533, "d_cvol": -17708540, "d_pvol": -12697087, "d_tvol": -30405627}, {"key": "V2", "name": "10 abr W2", "color": "blu", "gex": 38873437, "iv_c_atm": 28.52, "div_c_atm": 0.47, "iv_p_atm": 28.86, "div_p_atm": 0.62, "mp": 179.0, "pcr_oi": 0.93, "dpcr_oi": -0.01, "pcr_vol": 0.58, "dpcr_vol": -0.12, "coi": 27635690, "poi": 25729650, "dcoi": 760830, "dpoi": 440860, "cvol": 1256760, "pvol": 728335, "d_cvol": -18304610, "d_pvol": -13038725, "d_tvol": -31343335}, {"key": "V3", "name": "17 abr Mensal", "color": "grn", "gex": 43602311, "iv_c_atm": 27.88, "div_c_atm": -0.03, "iv_p_atm": 28.67, "div_p_atm": 0.02, "mp": 181.0, "pcr_oi": 0.96, "dpcr_oi": -0.01, "pcr_vol": 0.45, "dpcr_vol": -0.25, "coi": 48329999, "poi": 46221390, "dcoi": 149999, "dpoi": -392830, "cvol": 6574480, "pvol": 2986427, "d_cvol": -13986520, "d_pvol": -11428393, "d_tvol": -25414913}, {"key": "V4", "name": "24 abr W2", "color": "yel", "gex": 0, "iv_c_atm": 0.0, "div_c_atm": 0.0, "iv_p_atm": 0.0, "div_p_atm": 0.0, "mp": 0, "pcr_oi": 0.0, "dpcr_oi": 0.0, "pcr_vol": 0.0, "dpcr_vol": 0.0, "coi": 0, "poi": 0, "dcoi": 0, "dpoi": 0, "cvol": 0, "pvol": 0, "d_cvol": 0, "d_pvol": 0, "d_tvol": 0}, {"key": "V5", "name": "15 mai Mensal", "color": "pur", "gex": 8952151, "iv_c_atm": 26.11, "div_c_atm": -0.14, "iv_p_atm": 27.84, "div_p_atm": -0.16, "mp": 180.0, "pcr_oi": 0.91, "dpcr_oi": 0.02, "pcr_vol": 0.53, "dpcr_vol": -0.16, "coi": 7504000, "poi": 6822180, "dcoi": 156020, "dpoi": 288220, "cvol": 3711032, "pvol": 1955316, "d_cvol": -15769968, "d_pvol": -11489604, "d_tvol": -27259572}];
+const AGG=[{"s": 174.0, "c": 16464903, "p": -24527051, "n": -8062148}, {"s": 175.0, "c": 19073758, "p": -42923979, "n": -23850221}, {"s": 176.0, "c": 23332516, "p": -33385637, "n": -10053121}, {"s": 177.0, "c": 21371016, "p": -22315956, "n": -944940}, {"s": 178.0, "c": 26431349, "p": -49710353, "n": -23279004}, {"s": 179.0, "c": 241698732, "p": -239355198, "n": 2343534}, {"s": 180.0, "c": 412730254, "p": -349911729, "n": 62818525}, {"s": 181.0, "c": 63329963, "p": -48524033, "n": 14805930}, {"s": 182.0, "c": 63481703, "p": -70995086, "n": -7513383}, {"s": 183.0, "c": 52213887, "p": -28361995, "n": 23851892}, {"s": 184.0, "c": 66002800, "p": -47724561, "n": 18278239}, {"s": 185.0, "c": 131707458, "p": -116558639, "n": 15148819}, {"s": 186.0, "c": 53052359, "p": -49747817, "n": 3304542}, {"s": 187.0, "c": 41989626, "p": -20306311, "n": 21683315}, {"s": 188.0, "c": 34886541, "p": -15443881, "n": 19442660}, {"s": 189.0, "c": 18986806, "p": -11762285, "n": 7224520}, {"s": 190.0, "c": 45060762, "p": -19543638, "n": 25517124}];
+const GEX_EXP={"V1": {"strikes": [{"s": 174.0, "c": 806251, "p": -826932, "n": -20680}, {"s": 175.0, "c": 1405912, "p": -1813250, "n": -407338}, {"s": 176.0, "c": 1051012, "p": -2784723, "n": -1733711}, {"s": 177.0, "c": 2550449, "p": -4002005, "n": -1451557}, {"s": 178.0, "c": 5713638, "p": -8635898, "n": -2922260}, {"s": 179.0, "c": 7833618, "p": -8027990, "n": -194372}, {"s": 180.0, "c": 38363968, "p": -14075226, "n": 24288742}, {"s": 181.0, "c": 11852615, "p": -10776574, "n": 1076042}, {"s": 182.0, "c": 11352249, "p": -16328084, "n": -4975834}, {"s": 183.0, "c": 18401418, "p": -7633463, "n": 10767956}, {"s": 184.0, "c": 11724509, "p": -12888703, "n": -1164194}, {"s": 185.0, "c": 13867813, "p": -8335279, "n": 5532535}, {"s": 186.0, "c": 6597584, "p": -3816957, "n": 2780627}, {"s": 187.0, "c": 5260184, "p": -1527577, "n": 3732607}, {"s": 188.0, "c": 10465389, "p": -558544, "n": 9906845}, {"s": 189.0, "c": 1845509, "p": -505367, "n": 1340142}, {"s": 190.0, "c": 3186769, "p": -453933, "n": 2732836}], "net": 49288384, "flip": 179.0, "dom_s": 180.0, "dom_n": 24288742}, "V2": {"strikes": [{"s": 174.0, "c": 1189304, "p": -1628420, "n": -439116}, {"s": 175.0, "c": 1372669, "p": -3247569, "n": -1874900}, {"s": 176.0, "c": 549021, "p": -1219367, "n": -670346}, {"s": 177.0, "c": 1924395, "p": -1565503, "n": 358891}, {"s": 178.0, "c": 3716622, "p": -4015103, "n": -298481}, {"s": 179.0, "c": 208442360, "p": -207621721, "n": 820639}, {"s": 180.0, "c": 201375874, "p": -197353577, "n": 4022297}, {"s": 181.0, "c": 5374196, "p": -1182230, "n": 4191967}, {"s": 182.0, "c": 7244449, "p": -2841263, "n": 4403186}, {"s": 183.0, "c": 6783747, "p": -3354091, "n": 3429656}, {"s": 184.0, "c": 8007220, "p": -1640237, "n": 6366983}, {"s": 185.0, "c": 10302115, "p": -1839350, "n": 8462764}, {"s": 186.0, "c": 5982721, "p": -1516407, "n": 4466313}, {"s": 187.0, "c": 2619316, "p": -467764, "n": 2151552}, {"s": 188.0, "c": 1683656, "p": -125992, "n": 1557664}, {"s": 189.0, "c": 1403635, "p": -951013, "n": 452621}, {"s": 190.0, "c": 1568308, "p": -96562, "n": 1471747}], "net": 38873437, "flip": 176.7, "dom_s": 185.0, "dom_n": 8462764}, "V3": {"strikes": [{"s": 174.0, "c": 8366858, "p": -15190315, "n": -6823457}, {"s": 175.0, "c": 14517823, "p": -34640629, "n": -20122806}, {"s": 176.0, "c": 20543269, "p": -21871949, "n": -1328680}, {"s": 177.0, "c": 15370423, "p": -13687530, "n": 1682893}, {"s": 178.0, "c": 14824772, "p": -30986205, "n": -16161432}, {"s": 179.0, "c": 22202202, "p": -21423178, "n": 779025}, {"s": 180.0, "c": 164057597, "p": -133407971, "n": 30649626}, {"s": 181.0, "c": 38524100, "p": -34685906, "n": 3838195}, {"s": 182.0, "c": 43406654, "p": -49544969, "n": -6138315}, {"s": 183.0, "c": 24296247, "p": -16296263, "n": 7999984}, {"s": 184.0, "c": 44395749, "p": -31477922, "n": 12917827}, {"s": 185.0, "c": 102184064, "p": -101596799, "n": 587265}, {"s": 186.0, "c": 38454521, "p": -43476567, "n": -5022046}, {"s": 187.0, "c": 29431152, "p": -14299097, "n": 15132054}, {"s": 188.0, "c": 18815110, "p": -13250077, "n": 5565032}, {"s": 189.0, "c": 14019780, "p": -9280469, "n": 4739312}, {"s": 190.0, "c": 32835889, "p": -17528055, "n": 15307834}], "net": 43602311, "flip": 176.4, "dom_s": 180.0, "dom_n": 30649626}, "V4": {"strikes": [], "net": 0, "flip": null, "dom_s": 0, "dom_n": 0}, "V5": {"strikes": [{"s": 174.0, "c": 6102490, "p": -6881384, "n": -778895}, {"s": 175.0, "c": 1777353, "p": -3222531, "n": -1445177}, {"s": 176.0, "c": 1189214, "p": -7509598, "n": -6320384}, {"s": 177.0, "c": 1525750, "p": -3060918, "n": -1535168}, {"s": 178.0, "c": 2176317, "p": -6073148, "n": -3896831}, {"s": 179.0, "c": 3220551, "p": -2282309, "n": 938242}, {"s": 180.0, "c": 8932816, "p": -5074956, "n": 3857860}, {"s": 181.0, "c": 7579051, "p": -1879324, "n": 5699727}, {"s": 182.0, "c": 1478351, "p": -2280771, "n": -802420}, {"s": 183.0, "c": 2732475, "p": -1078178, "n": 1654297}, {"s": 184.0, "c": 1875322, "p": -1717698, "n": 157624}, {"s": 185.0, "c": 5353466, "p": -4787211, "n": 566255}, {"s": 186.0, "c": 2017534, "p": -937886, "n": 1079648}, {"s": 187.0, "c": 4678974, "p": -4011872, "n": 667102}, {"s": 188.0, "c": 3922386, "p": -1509267, "n": 2413119}, {"s": 189.0, "c": 1717881, "p": -1025436, "n": 692445}, {"s": 190.0, "c": 7469796, "p": -1465089, "n": 6004707}], "net": 8952151, "flip": 178.8, "dom_s": 176.0, "dom_n": -6320384}};
+const KEYS=["V1", "V2", "V3", "V4", "V5"];
+const NAMES=["2 abr W1", "10 abr W2", "17 abr Mensal", "24 abr W2", "15 mai Mensal"];
+const SPOT=parseFloat('182.46');
+let gexCur='AGG';
+
+const cc=c=>({red:'var(--red)',blu:'var(--blu)',grn:'var(--grn)',yel:'var(--yel)',pur:'var(--pur)',org:'var(--org)',cyn:'var(--cyn)'}[c]||'var(--blu)');
+const pc=n=>n>=0?'pos':'neg';
+const sg=n=>n>=0?'+':'';
+const fI=n=>{if(n==null)return'–';const a=Math.abs(n);return a>=1e6?(n/1e6).toFixed(1)+'M':a>=1e3?(n/1e3).toFixed(0)+'k':String(Math.round(n))};
+const fG=n=>n>=0?'+'+fI(n):'−'+fI(Math.abs(n));
+
+function renderGexTabs(){
+  const el=document.getElementById('gexTabs');
+  let html=`<div class="tab agg ${gexCur==='AGG'?'on':''}" data-k="AGG">🔗 AGREGADO</div>`;
+  KEYS.forEach((k,i)=>{
+    const e=EXP.find(x=>x.key===k);
+    html+=`<div class="tab ${gexCur===k?'on':''}" style="${gexCur===k?'background:'+cc(e.color):''}" data-k="${k}">${NAMES[i]}</div>`;
+  });
+  el.innerHTML=html;
+  el.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{gexCur=t.dataset.k;renderGexAll()});
+}
+
+function renderGexKpis(){
+  const el=document.getElementById('gexKpis');
+  if(gexCur==='AGG'){
+    el.innerHTML=`
+      <div class="kpi"><div class="l">GEX Agregado</div><div class="v" style="color:var(--grn)">+140.7M</div><div class="d">Dominante: K180 (+62.8M)</div></div>
+      <div class="kpi"><div class="l">Regime</div><div class="v" style="color:var(--grn)">Spot acima do flip → Long Gamma</div><div class="d">Range: 160–200</div></div>
+      <div class="kpi"><div class="l">Flip Agregado</div><div class="v" style="color:var(--yel)">178.9</div><div class="d">Spot: 182.46</div></div>
+      <div class="kpi"><div class="l">Vencimentos</div><div class="v" style="color:var(--blu)">${KEYS.length}</div></div>`;
+  } else {
+    const g=GEX_EXP[gexCur];
+    const e=EXP.find(x=>x.key===gexCur);
+    const netCol=g.net>=0?'var(--grn)':'var(--red)';
+    const regime=g.flip==null||(SPOT>=g.flip)?'Long Gamma':'Short Gamma';
+    const regCol=g.flip==null||(SPOT>=g.flip)?'var(--grn)':'var(--red)';
+    el.innerHTML=`
+      <div class="kpi"><div class="l">Vencimento</div><div class="v" style="color:${cc(e.color)}">${e.name}</div></div>
+      <div class="kpi"><div class="l">Net GEX</div><div class="v" style="color:${netCol}">${fG(g.net)}</div><div class="d">Dominante: K${g.dom_s} (${fG(g.dom_n)})</div></div>
+      <div class="kpi"><div class="l">Flip</div><div class="v" style="color:var(--yel)">${g.flip!=null?g.flip:'–'}</div><div class="d">${regime}</div></div>
+      <div class="kpi"><div class="l">Regime</div><div class="v" style="color:${regCol}">${regime}</div><div class="d">Spot: 182.46</div></div>
+      <div class="kpi"><div class="l">IV C ATM</div><div class="v" style="color:var(--cyn)">${e.iv_c_atm}%</div><div class="d ${pc(e.div_c_atm)}">${sg(e.div_c_atm)}${e.div_c_atm.toFixed(2)}pp</div></div>
+      <div class="kpi"><div class="l">MaxPain</div><div class="v">K${e.mp}</div></div>`;
+  }
+}
+
+function renderExpSummary(){
+  document.getElementById('expSummary').innerHTML=EXP.map(e=>{
+    const g=GEX_EXP[e.key];
+    return`<tr>
+      <td style="color:${cc(e.color)}">${e.name}</td>
+      <td class="${pc(e.gex)}"><b>${fI(e.gex)}</b></td>
+      <td>${g.flip!=null?g.flip:'–'}</td>
+      <td>K${g.dom_s} (${fI(g.dom_n)})</td>
+      <td>${e.iv_c_atm}%</td>
+      <td class="${pc(e.div_c_atm)}">${sg(e.div_c_atm)}${e.div_c_atm.toFixed(2)}pp</td>
+      <td>${e.mp}</td>
+      <td>${e.pcr_oi}</td>
+    </tr>`}).join('');
+}
+
+function renderStrikeTable(){
+  const titleEl=document.getElementById('strikeTitle');
+  const bodyEl=document.getElementById('strikeBody');
+  let data;
+  if(gexCur==='AGG'){
+    titleEl.textContent='GEX por Strike — Agregado (todos os vencimentos)';
+    data=AGG;
+  } else {
+    const e=EXP.find(x=>x.key===gexCur);
+    titleEl.textContent='GEX por Strike — '+e.name;
+    data=GEX_EXP[gexCur].strikes;
+  }
+  const maxAbs=Math.max(...data.map(r=>Math.abs(r.n)),1);
+  const maxC=Math.max(...data.map(r=>Math.abs(r.c)),1);
+  const maxP=Math.max(...data.map(r=>Math.abs(r.p)),1);
+  const maxCP=Math.max(maxC,maxP,1);
+  bodyEl.innerHTML=data.map(r=>{
+    const wN=Math.round(Math.abs(r.n)/maxAbs*90);
+    const colN=r.n>=0?'var(--grn)':'var(--red)';
+    const wC=Math.round(Math.abs(r.c)/maxCP*45);
+    const wP=Math.round(Math.abs(r.p)/maxCP*45);
+    const isSpot=Math.abs(r.s-SPOT)<1.5;
+    return`<tr${isSpot?' class="spot-row"':''}>
+      <td>K${r.s}</td>
+      <td class="${pc(r.c)}">${fI(r.c)}</td>
+      <td class="${pc(r.p)}">${fI(r.p)}</td>
+      <td class="${pc(r.n)}"><b>${fI(r.n)}</b></td>
+      <td style="text-align:left">
+        <span class="bar" style="width:${wN}px;background:${colN}"></span>
+      </td>
+    </tr>`}).join('');
+}
+
+function renderGexAll(){
+  renderGexTabs();
+  renderGexKpis();
+  renderExpSummary();
+  renderStrikeTable();
+}
+renderGexAll();
+</script></body></html>
