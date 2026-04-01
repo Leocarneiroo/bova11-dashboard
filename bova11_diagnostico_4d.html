@@ -257,6 +257,101 @@
   }
   .red-text { color: var(--red) !important; }
 
+  /* ── Strike Suggestions ── */
+  .suggestions-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 900px) { .suggestions-grid { grid-template-columns: 1fr; } }
+  .suggest-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+  }
+  .suggest-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .suggest-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--t1);
+  }
+  .suggest-meta {
+    font-size: 0.75rem;
+    color: var(--t3);
+    font-family: var(--mono);
+    margin-top: 3px;
+  }
+  .suggest-model,
+  .suggest-why,
+  .suggest-risk {
+    font-size: 0.84rem;
+    color: var(--t2);
+    line-height: 1.55;
+  }
+  .suggest-model {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+  }
+  .suggest-legs {
+    list-style: none;
+    display: grid;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .suggest-legs li {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 10px 12px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .suggest-legs li strong {
+    color: var(--t1);
+    font-size: 0.88rem;
+  }
+  .suggest-legs li span {
+    color: var(--t3);
+    font-size: 0.76rem;
+    font-family: var(--mono);
+    line-height: 1.5;
+    word-break: break-word;
+  }
+  .suggest-premium {
+    font-size: 0.86rem;
+    font-weight: 700;
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    border: 1px solid transparent;
+  }
+  .suggest-premium.credit {
+    color: var(--green);
+    background: rgba(63,185,80,0.10);
+    border-color: rgba(63,185,80,0.18);
+  }
+  .suggest-premium.debit {
+    color: var(--amber);
+    background: rgba(210,153,34,0.10);
+    border-color: rgba(210,153,34,0.18);
+  }
+  .suggest-risk {
+    margin-top: 8px;
+    color: var(--red);
+  }
+
   /* ── Alert card ── */
   .alert-card {
     background: var(--card);
@@ -390,8 +485,8 @@
   <div class="stats-strip">
     <div class="stat-card">
       <div class="label">Spot D</div>
-      <div class="value mono">R$ 184.18</div>
-      <div class="sub" style="color:var(--red);">-0.05% vs D-1</div>
+      <div class="value mono">R$ 185.04</div>
+      <div class="sub" style="color:var(--green);">+0.43% vs D-1</div>
     </div>
     <div class="stat-card">
       <div class="label">Gamma Flip</div>
@@ -481,6 +576,47 @@
       </div>
     </div>
   </div>
+
+  
+    <div class="section-title">Sugestão de Strikes</div>
+    <div class="suggestions-grid">
+      
+            <div class="suggest-card">
+              <div class="suggest-top">
+                <div>
+                  <div class="suggest-name">Box de 3 Pontas</div>
+                  <div class="suggest-meta">17 abr Mensal &middot; 16 DTE</div>
+                </div>
+                <span class="badge-sm blue">STRIKES</span>
+              </div>
+              <div class="suggest-model">Convenção do modelo: +1 Call ATM/OTM, -1 Call OTM e -1 Put OTM para baratear a alta.</div>
+              <ul class="suggest-legs">
+                <li><strong>Compra 1 Call 185</strong><span>@ R$ 4.02 | BOVAD185 | Δ +0.52 | OI 7.07M | Vol 2.25M</span></li><li><strong>Venda 1 Call 190</strong><span>@ R$ 1.90 | BOVAD190 | Δ +0.31 | OI 2.83M | Vol 2.11M</span></li><li><strong>Venda 1 Put 180</strong><span>@ R$ 1.94 | BOVAP180 | Δ -0.27 | OI 9.85M | Vol 1.13M</span></li>
+              </ul>
+              <div class="suggest-premium debit">Paga débito de R$ 0.18/cota (~R$ 18 por 100 cotas)</div>
+              <div class="suggest-why">Montada com base em delta-alvo, liquidez e strikes em torno do spot e do gamma flip.</div>
+              <div class="suggest-risk">Inclui put vendida descoberta; exige margem e controle de risco.</div>
+            </div>
+            
+            <div class="suggest-card">
+              <div class="suggest-top">
+                <div>
+                  <div class="suggest-name">Broken Wing Butterfly</div>
+                  <div class="suggest-meta">17 abr Mensal &middot; 16 DTE</div>
+                </div>
+                <span class="badge-sm blue">STRIKES</span>
+              </div>
+              <div class="suggest-model">Borboleta assimétrica montada com 1 compra, 2 vendas no miolo e 1 compra na asa longa.</div>
+              <ul class="suggest-legs">
+                <li><strong>Compra 1 Call 185</strong><span>@ R$ 4.02 | BOVAD185 | Δ +0.52 | OI 7.07M | Vol 2.25M</span></li><li><strong>Venda 2 Call 188</strong><span>@ R$ 2.60 | BOVAD188 | Δ +0.39 | OI 1.38M | Vol 1.24M</span></li><li><strong>Compra 1 Call 192</strong><span>@ R$ 1.39 | BOVAD192 | Δ +0.24 | OI 6.33M | Vol 595.3k</span></li>
+              </ul>
+              <div class="suggest-premium debit">Paga débito de R$ 0.21/cota (~R$ 21 por 100 cotas)</div>
+              <div class="suggest-why">Escolhida por delta-alvo, assimetria de asa e liquidez do miolo da borboleta.</div>
+              <div class="suggest-risk">Estrutura de alta com risco definido e custo reduzido pela venda dupla no strike central.</div>
+            </div>
+            
+    </div>
+    
 
   <!-- ── Alertas ── -->
   <div class="alert-card">
