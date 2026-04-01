@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Skew Prediction — BOVA11</title>
+    <title>IV Skew Signal — BOVA11</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         :root {
@@ -19,291 +19,301 @@
             --yel: #d29922;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                background: var(--bg); color: var(--text); padding: 30px; line-height: 1.6; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg); color: var(--text); padding: 30px; line-height: 1.5;
+        }
+        header { margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+        h1 { font-size: 1.8rem; margin-bottom: 6px; }
+        .meta { color: var(--text2); font-size: 0.92rem; }
 
-        header { margin-bottom: 32px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
-        h1 { font-size: 1.9rem; margin-bottom: 6px; color: #fff; }
-        .header-meta { font-size: 0.9rem; color: var(--text2); }
+        .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin-bottom:18px; }
+        .card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:14px; }
+        .card .label { color:var(--text2); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; }
+        .card .value { margin-top:6px; font-size:1.35rem; font-weight:700; }
+        .card .sub { margin-top:4px; color:var(--text2); font-size:0.78rem; }
 
-        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-                       gap: 16px; margin-bottom: 28px; }
-        .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
-                 padding: 18px; text-align: center; }
-        .card-label { font-size: 0.8rem; color: var(--text2); text-transform: uppercase;
-                       letter-spacing: 0.5px; margin-bottom: 8px; }
-        .card-value { font-size: 1.6rem; font-weight: bold; }
-        .card-sub { font-size: 0.8rem; color: var(--text2); margin-top: 4px; }
+        .box { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:18px; margin-bottom:16px; }
+        .box h2 { font-size:1.02rem; margin-bottom:12px; }
+        canvas { max-height:330px; }
 
-        .chart-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
-                      padding: 24px; margin-bottom: 28px; }
-        .chart-box h2 { font-size: 1.1rem; color: #fff; margin-bottom: 16px; }
-        canvas { max-height: 300px; }
+        .table-wrap { overflow-x:auto; }
+        table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+        th, td { padding:8px 10px; border-bottom:1px solid var(--border); text-align:left; white-space:nowrap; }
+        th { color:var(--text2); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; }
+        tr:hover td { background:rgba(88,166,255,0.06); }
 
-        .table-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
-                      padding: 24px; margin-bottom: 28px; overflow-x: auto; }
-        .table-box h2 { font-size: 1.1rem; color: #fff; margin-bottom: 16px; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        th { padding: 10px 12px; text-align: left; color: var(--text2); font-weight: 600;
-              border-bottom: 2px solid var(--border); font-size: 0.8rem; text-transform: uppercase; }
-        td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
-        tr:hover td { background: rgba(88,166,255,0.04); }
-        tr:last-child td { border-bottom: none; }
+        .dir-bear { color:var(--red); font-weight:700; }
+        .dir-bull { color:var(--grn); font-weight:700; }
+        .dir-neut { color:var(--text2); font-weight:700; }
 
-        .signal-alta  { color: var(--grn); font-weight: bold; }
-        .signal-queda { color: var(--red); font-weight: bold; }
-        .signal-neutro { color: var(--text2); }
+        .decomp-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; }
+        .metric { border:1px solid var(--border); border-radius:8px; background:var(--bg); padding:10px; }
+        .metric .k { color:var(--text2); font-size:0.78rem; }
+        .metric .v { margin-top:4px; font-size:1.1rem; font-weight:700; }
 
-        .result-ok  { color: var(--grn); font-weight: bold; }
-        .result-err { color: var(--red); font-weight: bold; }
-        .result-na  { color: var(--text2); }
-        .result-pend { color: var(--yel); }
-
+        .controls { margin-top:10px; text-align:center; }
+        .btn {
+            background:var(--bg3); color:var(--text); border:1px solid var(--border);
+            padding:8px 16px; border-radius:8px; cursor:pointer; font-size:0.84rem;
+        }
     </style>
 </head>
 <body>
     <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="position:fixed;top:12px;right:16px;z-index:9999;background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:1rem;line-height:1;transition:all 0.2s;">◐</button>
     <header>
-        <h1>🎯 Skew Prediction — BOVA11</h1>
-        <div class="header-meta">
-            40 datas analisadas
-        </div>
+        <h1>IV Skew Signal — BOVA11</h1>
+        <div class="meta">22 sessões | Última sessão: 01/04/2026 | Modelo v2 (M1+M2+M3)</div>
     </header>
 
-    <div class="cards-grid">
+    <section class="cards">
         <div class="card">
-            <div class="card-label">% Acerto</div>
-            <div class="card-value" id="card-accuracy"
-                 style="color: var(--grn)">
-                61.9%
-            </div>
-            <div class="card-sub">13 acertos / 8 erros</div>
+            <div class="label">Direção Atual</div>
+            <div class="value" style="color:var(--red)">↓ BEARISH</div>
+            <div class="sub">Força: FRACO</div>
         </div>
         <div class="card">
-            <div class="card-label">Último Sinal (01/abr)</div>
-            <div class="card-value" style="color: #3fb950">
-                ↑ ALTA
-            </div>
-            <div class="card-sub">ΔSkew = -6.33</div>
+            <div class="label">Sinal Ajustado</div>
+            <div class="value">+0.5658</div>
+            <div class="sub">Base: +0.3772</div>
         </div>
         <div class="card">
-            <div class="card-label">Dias com Sinal</div>
-            <div class="card-value">39</div>
-            <div class="card-sub">18 neutros excluídos</div>
+            <div class="label">Z-Score</div>
+            <div class="value">-0.38</div>
+            <div class="sub">Skew: +1.0805</div>
         </div>
         <div class="card">
-            <div class="card-label">Dias Totais</div>
-            <div class="card-value">40</div>
-            <div class="card-sub">desde o início do histórico</div>
+            <div class="label">VOL/OI Call vs Put</div>
+            <div class="value">2.26 | 2.10</div>
+            <div class="sub">Confiança: 1.50x</div>
         </div>
-    </div>
+        <div class="card">
+            <div class="label">IV ATM (Call / Put)</div>
+            <div class="value">24.58% | 25.66%</div>
+            <div class="sub">Skew = Put - Call</div>
+        </div>
+        <div class="card">
+            <div class="label">Vencimentos Usados</div>
+            <div class="value">4</div>
+            <div class="sub">Volume pond.: 123159</div>
+        </div>
+    </section>
 
-    <div class="chart-box">
-        <h2>ΔSkew ao longo do tempo + Fechamento BOVA11</h2>
-        <canvas id="chartPred" height="250"></canvas>
-    </div>
+    <section class="box">
+        <h2>Histórico: Skew x Sinal Base x Sinal Ajustado</h2>
+        <canvas id="mainChart"></canvas>
+    </section>
 
-    <div class="table-box">
-        <h2>Histórico de Previsões</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Data</th>
-                    <th>Fechamento</th>
-                    <th>ΔSkew</th>
-                    <th>Sinal p/ D+1</th>
-                    <th>Fech. D+1</th>
-                    <th>Variação %</th>
-                    <th>Resultado</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-        </table>
-        <div style="text-align:center; margin-top:16px;">
-            <button id="btnExpand" onclick="toggleExpand()"
-                style="background:var(--bg3); border:1px solid var(--border); color:var(--text2);
-                       padding:8px 20px; border-radius:8px; cursor:pointer; font-size:0.85rem;
-                       transition: all 0.2s;">
-            </button>
+    <section class="box">
+        <h2>Tabela Histórica Completa</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>IV Call</th>
+                        <th>IV Put</th>
+                        <th>Skew</th>
+                        <th>ΔSkew</th>
+                        <th>Z-Score</th>
+                        <th>Conf</th>
+                        <th>Sinal</th>
+                        <th>Sinal Ajustado</th>
+                        <th>Direção</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
         </div>
-    </div>
+        <div class="controls">
+            <button id="btnExpand" class="btn" onclick="toggleExpand()"></button>
+        </div>
+    </section>
+
+    <section class="box">
+        <h2>Decomposição (última sessão)</h2>
+        <div class="decomp-grid" id="decompGrid"></div>
+    </section>
 
     <script>
-        const AGG_ROWS = [{"date": "03/fev", "close": 182.19, "delta_skew": 0.5575, "signal": "NEUTRO", "next_close": 178.2, "variation_pct": -2.19, "result": "N/A"}, {"date": "04/fev", "close": 178.2, "delta_skew": -1.926, "signal": "ALTA", "next_close": 178.65, "variation_pct": 0.25, "result": "ACERTOU"}, {"date": "05/fev", "close": 178.65, "delta_skew": 1.76, "signal": "QUEDA", "next_close": 179.24, "variation_pct": 0.33, "result": "ERROU"}, {"date": "06/fev", "close": 179.24, "delta_skew": -1.285, "signal": "ALTA", "next_close": 182.79, "variation_pct": 1.98, "result": "ACERTOU"}, {"date": "09/fev", "close": 182.79, "delta_skew": 0.5175, "signal": "NEUTRO", "next_close": 182.4, "variation_pct": -0.21, "result": "N/A"}, {"date": "10/fev", "close": 182.4, "delta_skew": -1.0275, "signal": "ALTA", "next_close": 185.99, "variation_pct": 1.97, "result": "ACERTOU"}, {"date": "11/fev", "close": 185.99, "delta_skew": 0.1, "signal": "NEUTRO", "next_close": 184.28, "variation_pct": -0.92, "result": "N/A"}, {"date": "12/fev", "close": 184.28, "delta_skew": 0.0475, "signal": "NEUTRO", "next_close": 182.98, "variation_pct": -0.71, "result": "N/A"}, {"date": "13/fev", "close": 182.98, "delta_skew": -0.09, "signal": "NEUTRO", "next_close": 182.43, "variation_pct": -0.3, "result": "N/A"}, {"date": "18/fev", "close": 182.43, "delta_skew": 0.525, "signal": "NEUTRO", "next_close": 184.99, "variation_pct": 1.4, "result": "N/A"}, {"date": "19/fev", "close": 184.99, "delta_skew": -0.2925, "signal": "NEUTRO", "next_close": 186.69, "variation_pct": 0.92, "result": "N/A"}, {"date": "20/fev", "close": 186.69, "delta_skew": -0.2233, "signal": "NEUTRO", "next_close": 185.17, "variation_pct": -0.81, "result": "N/A"}, {"date": "23/fev", "close": 185.17, "delta_skew": -0.5525, "signal": "NEUTRO", "next_close": 187.78, "variation_pct": 1.41, "result": "N/A"}, {"date": "24/fev", "close": 187.78, "delta_skew": 1.48, "signal": "QUEDA", "next_close": 187.46, "variation_pct": -0.17, "result": "ACERTOU"}, {"date": "25/fev", "close": 187.46, "delta_skew": 0.222, "signal": "NEUTRO", "next_close": 187.35, "variation_pct": -0.06, "result": "N/A"}, {"date": "26/fev", "close": 187.35, "delta_skew": -0.334, "signal": "NEUTRO", "next_close": 185.16, "variation_pct": -1.17, "result": "N/A"}, {"date": "27/fev", "close": 185.16, "delta_skew": -1.355, "signal": "ALTA", "next_close": 185.5, "variation_pct": 0.18, "result": "ACERTOU"}, {"date": "02/mar", "close": 185.5, "delta_skew": 0.88, "signal": "QUEDA", "next_close": 179.3, "variation_pct": -3.34, "result": "ACERTOU"}, {"date": "03/mar", "close": 179.3, "delta_skew": -3.154, "signal": "ALTA", "next_close": 181.6, "variation_pct": 1.28, "result": "ACERTOU"}, {"date": "04/mar", "close": 181.6, "delta_skew": 2.674, "signal": "QUEDA", "next_close": 176.75, "variation_pct": -2.67, "result": "ACERTOU"}, {"date": "05/mar", "close": 176.75, "delta_skew": -0.626, "signal": "NEUTRO", "next_close": 175.89, "variation_pct": -0.49, "result": "N/A"}, {"date": "06/mar", "close": 175.89, "delta_skew": 1.286, "signal": "QUEDA", "next_close": 177.26, "variation_pct": 0.78, "result": "ERROU"}, {"date": "09/mar", "close": 177.26, "delta_skew": 0.455, "signal": "NEUTRO", "next_close": 179.75, "variation_pct": 1.4, "result": "N/A"}, {"date": "10/mar", "close": 179.75, "delta_skew": 1.4725, "signal": "QUEDA", "next_close": 180.21, "variation_pct": 0.26, "result": "ERROU"}, {"date": "11/mar", "close": 180.21, "delta_skew": 1.57, "signal": "QUEDA", "next_close": 175.85, "variation_pct": -2.42, "result": "ACERTOU"}, {"date": "12/mar", "close": 175.85, "delta_skew": -11.1733, "signal": "ALTA", "next_close": 174.55, "variation_pct": -0.74, "result": "ERROU"}, {"date": "13/mar", "close": 174.55, "delta_skew": 3.786, "signal": "QUEDA", "next_close": 176.55, "variation_pct": 1.15, "result": "ERROU"}, {"date": "16/mar", "close": 176.55, "delta_skew": 0.552, "signal": "NEUTRO", "next_close": 176.83, "variation_pct": 0.16, "result": "N/A"}, {"date": "17/mar", "close": 176.83, "delta_skew": 0.37, "signal": "NEUTRO", "next_close": 175.8, "variation_pct": -0.58, "result": "N/A"}, {"date": "18/mar", "close": 175.8, "delta_skew": -0.514, "signal": "NEUTRO", "next_close": 177.15, "variation_pct": 0.77, "result": "N/A"}, {"date": "19/mar", "close": 177.15, "delta_skew": 1.414, "signal": "QUEDA", "next_close": 173.01, "variation_pct": -2.34, "result": "ACERTOU"}, {"date": "20/mar", "close": 173.01, "delta_skew": -1.03, "signal": "ALTA", "next_close": 178.9, "variation_pct": 3.4, "result": "ACERTOU"}, {"date": "23/mar", "close": 178.9, "delta_skew": 0.7025, "signal": "NEUTRO", "next_close": 179.19, "variation_pct": 0.16, "result": "N/A"}, {"date": "24/mar", "close": 179.19, "delta_skew": -0.056, "signal": "NEUTRO", "next_close": 182.2, "variation_pct": 1.68, "result": "N/A"}, {"date": "25/mar", "close": 182.2, "delta_skew": 3.574, "signal": "QUEDA", "next_close": 179.45, "variation_pct": -1.51, "result": "ACERTOU"}, {"date": "26/mar", "close": 179.45, "delta_skew": -2.1, "signal": "ALTA", "next_close": 177.74, "variation_pct": -0.95, "result": "ERROU"}, {"date": "27/mar", "close": 177.74, "delta_skew": -2.08, "signal": "ALTA", "next_close": 179.0, "variation_pct": 0.71, "result": "ACERTOU"}, {"date": "30/mar", "close": 179.0, "delta_skew": 0.86, "signal": "QUEDA", "next_close": 184.28, "variation_pct": 2.95, "result": "ERROU"}, {"date": "31/mar", "close": 184.28, "delta_skew": 7.55, "signal": "QUEDA", "next_close": 184.89, "variation_pct": 0.33, "result": "ERROU"}, {"date": "01/abr", "close": 184.89, "delta_skew": -6.328, "signal": "ALTA", "next_close": null, "variation_pct": null, "result": "PENDENTE"}];
+        const IV_SKEW_ROWS = [{"date": "03/03/2026", "date_key": "03/mar", "iv_call": 25.734, "iv_put": 25.952, "skew": 0.218033, "delta_skew": null, "zscore": 0.0, "confidence": 1.5, "vol_oi_call": 2.9997, "vol_oi_put": 2.9276, "signal": 0.0, "signal_adjusted": 0.0, "direction": "NEUTRO", "strength": "FRACO", "volume_total": 208167.2, "n_vencimentos": 4, "diag_vol_oi": "VOL/OI equilibrado (ratio=0.98)", "comp_1": 0.0, "comp_2": 0.0, "comp_3": 0.0, "adjustment": 0.0}, {"date": "04/03/2026", "date_key": "04/mar", "iv_call": 22.7441, "iv_put": 23.6457, "skew": 0.901579, "delta_skew": 0.683546, "zscore": 0.7071, "confidence": 1.5, "vol_oi_call": 2.0211, "vol_oi_put": 0.9644, "signal": 0.129638, "signal_adjusted": 0.094456, "direction": "BEARISH", "strength": "FRACO", "volume_total": 96551.0, "n_vencimentos": 4, "diag_vol_oi": "Call VOL/OI dominante (ratio=0.48)", "comp_1": 0.011788, "comp_2": 0.247487, "comp_3": 0.0, "adjustment": -0.1}, {"date": "05/03/2026", "date_key": "05/mar", "iv_call": 25.2002, "iv_put": 26.7146, "skew": 1.514445, "delta_skew": 0.612865, "zscore": 0.9813, "confidence": 1.5, "vol_oi_call": 3.2684, "vol_oi_put": 2.3065, "signal": 0.203965, "signal_adjusted": 0.305948, "direction": "BEARISH", "strength": "FRACO", "volume_total": 137507.0, "n_vencimentos": 4, "diag_vol_oi": "VOL/OI equilibrado (ratio=0.71)", "comp_1": 0.010616, "comp_2": 0.343469, "comp_3": -0.001465, "adjustment": 0.0}, {"date": "06/03/2026", "date_key": "06/mar", "iv_call": 25.7513, "iv_put": 26.6544, "skew": 0.903154, "delta_skew": -0.61129, "zscore": 0.0356, "confidence": 1.5, "vol_oi_call": 2.4408, "vol_oi_put": 2.5673, "signal": 0.205528, "signal_adjusted": 0.308292, "direction": "BEARISH", "strength": "FRACO", "volume_total": 220034.0, "n_vencimentos": 4, "diag_vol_oi": "VOL/OI equilibrado (ratio=1.05)", "comp_1": 0.003967, "comp_2": 0.012457, "comp_3": -0.011735, "adjustment": 0.0}, {"date": "09/03/2026", "date_key": "09/mar", "iv_call": 24.6067, "iv_put": 26.1069, "skew": 1.500189, "delta_skew": 0.597035, "zscore": 0.9209, "confidence": 1.5, "vol_oi_call": 1.5793, "vol_oi_put": 2.6877, "signal": 0.231503, "signal_adjusted": 0.447255, "direction": "BEARISH", "strength": "FRACO", "volume_total": 98159.8, "n_vencimentos": 5, "diag_vol_oi": "Put VOL/OI dominante (ratio=1.70)", "comp_1": 0.003177, "comp_2": 0.322305, "comp_3": 0.011719, "adjustment": 0.1}, {"date": "10/03/2026", "date_key": "10/mar", "iv_call": 23.5532, "iv_put": 25.2683, "skew": 1.715072, "delta_skew": 0.214883, "zscore": 1.0549, "confidence": 1.5, "vol_oi_call": 2.682, "vol_oi_put": 1.6961, "signal": 0.236203, "signal_adjusted": 0.254305, "direction": "BEARISH", "strength": "MODERADO", "volume_total": 137133.0, "n_vencimentos": 4, "diag_vol_oi": "Call VOL/OI dominante (ratio=0.63)", "comp_1": 0.001203, "comp_2": 0.369204, "comp_3": -0.003686, "adjustment": -0.1}, {"date": "11/03/2026", "date_key": "11/mar", "iv_call": 22.8206, "iv_put": 24.6919, "skew": 1.871299, "delta_skew": 0.156227, "zscore": 1.0967, "confidence": 1.5, "vol_oi_call": 2.656, "vol_oi_put": 1.6813, "signal": 0.364128, "signal_adjusted": 0.446192, "direction": "BEARISH", "strength": "MODERADO", "volume_total": 155793.2, "n_vencimentos": 3, "diag_vol_oi": "Call VOL/OI dominante (ratio=0.63)", "comp_1": 0.00519, "comp_2": 0.38383, "comp_3": -0.000557, "adjustment": -0.1}, {"date": "12/03/2026", "date_key": "12/mar", "iv_call": 25.9814, "iv_put": 27.4896, "skew": 1.508118, "delta_skew": -0.363181, "zscore": 0.4405, "confidence": 1.5, "vol_oi_call": 1.6218, "vol_oi_put": 1.5199, "signal": 0.301524, "signal_adjusted": 0.452286, "direction": "BEARISH", "strength": "FRACO", "volume_total": 196309.0, "n_vencimentos": 4, "diag_vol_oi": "VOL/OI equilibrado (ratio=0.94)", "comp_1": 0.000239, "comp_2": 0.154187, "comp_3": -0.00504, "adjustment": 0.0}, {"date": "13/03/2026", "date_key": "13/mar", "iv_call": 25.7564, "iv_put": 26.9846, "skew": 1.22822, "delta_skew": -0.279898, "zscore": -0.0663, "confidence": 1.5, "vol_oi_call": 3.5135, "vol_oi_put": 3.0426, "signal": 0.171016, "signal_adjusted": 0.256524, "direction": "BEARISH", "strength": "FRACO", "volume_total": 285955.0, "n_vencimentos": 5, "diag_vol_oi": "VOL/OI equilibrado (ratio=0.87)", "comp_1": -0.00235, "comp_2": -0.023196, "comp_3": 0.000743, "adjustment": 0.0}, {"date": "16/03/2026", "date_key": "16/mar", "iv_call": 25.6401, "iv_put": 26.172, "skew": 0.531887, "delta_skew": -0.696334, "zscore": -1.2259, "confidence": 1.5, "vol_oi_call": 5.6586, "vol_oi_put": 1.7322, "signal": -0.105124, "signal_adjusted": -0.257686, "direction": "BULLISH", "strength": "MODERADO", "volume_total": 175944.0, "n_vencimentos": 4, "diag_vol_oi": "Call VOL/OI dominante (ratio=0.31)", "comp_1": -0.00681, "comp_2": -0.429079, "comp_3": -0.004066, "adjustment": -0.1}, {"date": "17/03/2026", "date_key": "17/mar", "iv_call": 24.5604, "iv_put": 25.5881, "skew": 1.027743, "delta_skew": 0.495856, "zscore": -0.2872, "confidence": 1.5, "vol_oi_call": 3.0957, "vol_oi_put": 1.7121, "signal": -0.185332, "signal_adjusted": -0.377998, "direction": "BULLISH", "strength": "FRACO", "volume_total": 284637.0, "n_vencimentos": 5, "diag_vol_oi": "Call VOL/OI dominante (ratio=0.55)", "comp_1": -0.002362, "comp_2": -0.100537, "comp_3": 0.011664, "adjustment": -0.1}, {"date": "18/03/2026", "date_key": "18/mar", "iv_call": 26.5638, "iv_put": 27.1209, "skew": 0.557133, "delta_skew": -0.470609, "zscore": -1.0909, "confidence": 1.5, "vol_oi_call": 2.4655, "vol_oi_put": 1.5619, "signal": -0.308541, "signal_adjusted": -0.562812, "direction": "BULLISH", "strength": "MODERADO", "volume_total": 106350.53, "n_vencimentos": 5, "diag_vol_oi": "Call VOL/OI dominante (ratio=0.63)", "comp_1": -0.003285, "comp_2": -0.38182, "comp_3": -0.009327, "adjustment": -0.1}, {"date": "19/03/2026", "date_key": "19/mar", "iv_call": 27.2398, "iv_put": 28.0855, "skew": 0.84573, "delta_skew": 0.288596, "zscore": -0.5094, "confidence": 1.5, "vol_oi_call": 1.4732, "vol_oi_put": 1.7353, "signal": -0.218421, "signal_adjusted": -0.327631, "direction": "BULLISH", "strength": "FRACO", "volume_total": 146636.93, "n_vencimentos": 5, "diag_vol_oi": "VOL/OI equilibrado (ratio=1.18)", "comp_1": 0.00169, "comp_2": -0.178275, "comp_3": 0.006991, "adjustment": 0.0}, {"date": "20/03/2026", "date_key": "20/mar", "iv_call": 27.5671, "iv_put": 29.4174, "skew": 1.850248, "delta_skew": 1.004519, "zscore": 1.3297, "confidence": 1.5, "vol_oi_call": 3.1261, "vol_oi_put": 4.4129, "signal": -0.029551, "signal_adjusted": -0.044327, "direction": "BULLISH", "strength": "MODERADO", "volume_total": 327397.8, "n_vencimentos": 5, "diag_vol_oi": "VOL/OI equilibrado (ratio=1.41)", "comp_1": 0.003754, "comp_2": 0.465411, "comp_3": 0.006206, "adjustment": 0.0}, {"date": "23/03/2026", "date_key": "23/mar", "iv_call": 25.583, "iv_put": 26.9716, "skew": 1.388609, "delta_skew": -0.461639, "zscore": 0.4294, "confidence": 1.5, "vol_oi_call": 2.2541, "vol_oi_put": 1.4728, "signal": 0.148876, "signal_adjusted": 0.123314, "direction": "BEARISH", "strength": "FRACO", "volume_total": 73307.2, "n_vencimentos": 5, "diag_vol_oi": "Call VOL/OI dominante (ratio=0.65)", "comp_1": 0.003749, "comp_2": 0.150306, "comp_3": -0.013206, "adjustment": -0.1}, {"date": "24/03/2026", "date_key": "24/mar", "iv_call": 25.8763, "iv_put": 27.1395, "skew": 1.263165, "delta_skew": -0.125443, "zscore": 0.1766, "confidence": 1.5, "vol_oi_call": 2.1025, "vol_oi_put": 1.7926, "signal": 0.227652, "signal_adjusted": 0.341478, "direction": "BEARISH", "strength": "FRACO", "volume_total": 72374.4, "n_vencimentos": 5, "diag_vol_oi": "VOL/OI equilibrado (ratio=0.85)", "comp_1": 0.001727, "comp_2": 0.061799, "comp_3": 0.003209, "adjustment": 0.0}, {"date": "25/03/2026", "date_key": "25/mar", "iv_call": 24.9937, "iv_put": 26.0954, "skew": 1.101652, "delta_skew": -0.161514, "zscore": -0.1483, "confidence": 1.5, "vol_oi_call": 2.9176, "vol_oi_put": 1.3859, "signal": 0.050493, "signal_adjusted": -0.024261, "direction": "BULLISH", "strength": "FRACO", "volume_total": 190389.4, "n_vencimentos": 5, "diag_vol_oi": "Call VOL/OI dominante (ratio=0.48)", "comp_1": -0.003816, "comp_2": -0.051893, "comp_3": -0.000398, "adjustment": -0.1}, {"date": "26/03/2026", "date_key": "26/mar", "iv_call": 27.9373, "iv_put": 29.4585, "skew": 1.521198, "delta_skew": 0.419547, "zscore": 0.7037, "confidence": 1.5, "vol_oi_call": 1.4369, "vol_oi_put": 1.479, "signal": 0.087547, "signal_adjusted": 0.131321, "direction": "BEARISH", "strength": "FRACO", "volume_total": 51941.0, "n_vencimentos": 4, "diag_vol_oi": "VOL/OI equilibrado (ratio=1.03)", "comp_1": 0.000475, "comp_2": 0.246303, "comp_3": 0.005236, "adjustment": 0.0}, {"date": "27/03/2026", "date_key": "27/mar", "iv_call": 29.9864, "iv_put": 30.971, "skew": 0.98454, "delta_skew": -0.536658, "zscore": -0.4284, "confidence": 1.5, "vol_oi_call": 1.934, "vol_oi_put": 1.674, "signal": 0.012224, "signal_adjusted": 0.018336, "direction": "BEARISH", "strength": "FRACO", "volume_total": 57688.0, "n_vencimentos": 5, "diag_vol_oi": "VOL/OI equilibrado (ratio=0.87)", "comp_1": -0.001241, "comp_2": -0.149938, "comp_3": -0.008057, "adjustment": 0.0}, {"date": "30/03/2026", "date_key": "30/mar", "iv_call": 27.1301, "iv_put": 28.2249, "skew": 1.09475, "delta_skew": 0.11021, "zscore": -0.183, "confidence": 1.5, "vol_oi_call": 1.7413, "vol_oi_put": 1.4556, "signal": 0.011425, "signal_adjusted": 0.017137, "direction": "BEARISH", "strength": "FRACO", "volume_total": 133414.2, "n_vencimentos": 5, "diag_vol_oi": "VOL/OI equilibrado (ratio=0.84)", "comp_1": 0.000132, "comp_2": -0.064035, "comp_3": 0.005397, "adjustment": 0.0}, {"date": "31/03/2026", "date_key": "31/mar", "iv_call": 23.4839, "iv_put": 28.3341, "skew": 4.85014, "delta_skew": 3.75539, "zscore": 3.8379, "confidence": 1.5, "vol_oi_call": 2.4452, "vol_oi_put": 3.2465, "signal": 0.392757, "signal_adjusted": 0.589135, "direction": "BEARISH", "strength": "FORTE", "volume_total": 191046.4, "n_vencimentos": 5, "diag_vol_oi": "VOL/OI equilibrado (ratio=1.33)", "comp_1": 0.017509, "comp_2": 1.343261, "comp_3": 0.035241, "adjustment": 0.0}, {"date": "01/04/2026", "date_key": "01/abr", "iv_call": 24.5827, "iv_put": 25.6632, "skew": 1.080525, "delta_skew": -3.769615, "zscore": -0.3769, "confidence": 1.5, "vol_oi_call": 2.2601, "vol_oi_put": 2.102, "signal": 0.377232, "signal_adjusted": 0.565848, "direction": "BEARISH", "strength": "FRACO", "volume_total": 123159.0, "n_vencimentos": 4, "diag_vol_oi": "VOL/OI equilibrado (ratio=0.93)", "comp_1": -0.000149, "comp_2": -0.131914, "comp_3": -0.073748, "adjustment": 0.0}];
+        const IV_SKEW_META = {"w1": 0.4, "w2": 0.35, "w3": 0.25, "mma": 3, "zscore_window": 20, "atm_range": 3, "min_dte": 2, "vol_minimo": 50, "dte_penalty": 5, "records": 22};
 
-        let chartInstance = null;
+        const DEFAULT_ROWS = 8;
         let showAll = false;
-        const DEFAULT_ROWS = 7;
+        let chart = null;
 
-        function fmtNum(v) {
-            if (v === null || v === undefined) return '—';
-            return typeof v === 'number' ? v.toFixed(2) : v;
+        function dirClass(direction) {
+            if (direction === 'BEARISH') return 'dir-bear';
+            if (direction === 'BULLISH') return 'dir-bull';
+            return 'dir-neut';
         }
 
-        function fmtClose(v) {
-            if (v === null || v === undefined) return '—';
-            return typeof v === 'number' ? v.toFixed(2) : v;
+        function fmt(v, n=2) {
+            if (v === null || v === undefined || Number.isNaN(v)) return '—';
+            return Number(v).toFixed(n);
         }
 
-        function fmtVar(v) {
-            if (v === null || v === undefined) return '—';
-            const sign = v > 0 ? '+' : '';
-            return sign + v.toFixed(2) + '%';
+        function fmtSigned(v, n=4) {
+            if (v === null || v === undefined || Number.isNaN(v)) return '—';
+            const x = Number(v);
+            return `${x >= 0 ? '+' : ''}${x.toFixed(n)}`;
         }
 
-        function signalHtml(s) {
-            if (!s || s === 'null') return '<span class="signal-neutro">—</span>';
-            if (s === 'ALTA')   return '<span class="signal-alta">↑ ALTA</span>';
-            if (s === 'QUEDA')  return '<span class="signal-queda">↓ QUEDA</span>';
-            if (s === 'NEUTRO') return '<span class="signal-neutro">→ NEUTRO</span>';
-            return '<span class="signal-neutro">' + s + '</span>';
-        }
-
-        function resultHtml(r) {
-            if (!r || r === 'PENDENTE') return '<span class="result-pend">⏳</span>';
-            if (r === 'ACERTOU')  return '<span class="result-ok">✅</span>';
-            if (r === 'ERROU')    return '<span class="result-err">❌</span>';
-            if (r === 'N/A')      return '<span class="result-na">N/A</span>';
-            return '<span class="result-na">' + r + '</span>';
-        }
-
-        function renderTable(rows) {
+        function renderTable() {
             const tbody = document.getElementById('tableBody');
-            if (!rows || rows.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text2)">Sem dados</td></tr>';
-                document.getElementById('btnExpand').style.display = 'none';
-                return;
-            }
-            // Most recent first
-            const reversed = [...rows].reverse();
+            const reversed = [...IV_SKEW_ROWS].reverse();
             const visible = showAll ? reversed : reversed.slice(0, DEFAULT_ROWS);
+
             tbody.innerHTML = visible.map(r => `
                 <tr>
                     <td>${r.date}</td>
-                    <td>${fmtClose(r.close)}</td>
-                    <td style="color: ${r.delta_skew > 1 ? 'var(--red)' : r.delta_skew < -1 ? 'var(--grn)' : 'var(--text2)'}">${fmtNum(r.delta_skew)}</td>
-                    <td>${signalHtml(r.signal)}</td>
-                    <td>${fmtClose(r.next_close)}</td>
-                    <td style="color: ${r.variation_pct > 0 ? 'var(--grn)' : r.variation_pct < 0 ? 'var(--red)' : 'var(--text2)'}">${fmtVar(r.variation_pct)}</td>
-                    <td>${resultHtml(r.result)}</td>
+                    <td>${fmt(r.iv_call)}%</td>
+                    <td>${fmt(r.iv_put)}%</td>
+                    <td>${fmtSigned(r.skew, 4)}</td>
+                    <td>${fmtSigned(r.delta_skew, 4)}</td>
+                    <td>${fmtSigned(r.zscore, 2)}</td>
+                    <td>${fmt(r.confidence, 2)}x</td>
+                    <td>${fmtSigned(r.signal, 4)}</td>
+                    <td>${fmtSigned(r.signal_adjusted, 4)}</td>
+                    <td><span class="${dirClass(r.direction)}">${r.direction}</span></td>
                 </tr>
             `).join('');
-            // Update expand button
+
             const btn = document.getElementById('btnExpand');
-            if (rows.length <= DEFAULT_ROWS) {
+            if (IV_SKEW_ROWS.length <= DEFAULT_ROWS) {
                 btn.style.display = 'none';
             } else {
                 btn.style.display = 'inline-block';
-                btn.textContent = showAll
-                    ? '▲ Mostrar menos'
-                    : `▼ Ver todos os ${rows.length} dias`;
+                btn.textContent = showAll ? '▲ Mostrar menos' : `▼ Ver todas as ${IV_SKEW_ROWS.length} sessões`;
             }
         }
 
         function toggleExpand() {
             showAll = !showAll;
-            renderTable(AGG_ROWS);
+            renderTable();
         }
 
-        function renderChart(rows) {
-            const labels = rows.map(r => r.date);
-            const deltas = rows.map(r => r.delta_skew);
-            const closes = rows.map(r => r.close);
+        function renderChart() {
+            const labels = IV_SKEW_ROWS.map(r => r.date_key);
+            const skew = IV_SKEW_ROWS.map(r => r.skew);
+            const base = IV_SKEW_ROWS.map(r => r.signal);
+            const adjusted = IV_SKEW_ROWS.map(r => r.signal_adjusted);
 
-            if (chartInstance) { chartInstance.destroy(); }
+            if (chart) chart.destroy();
 
-            const ctx = document.getElementById('chartPred').getContext('2d');
-            chartInstance = new Chart(ctx, {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            chart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels,
                     datasets: [
                         {
-                            label: 'ΔSkew',
-                            data: deltas,
-                            borderColor: '#58a6ff',
-                            backgroundColor: 'rgba(88,166,255,0.1)',
+                            label: 'Skew (Put - Call)',
+                            data: skew,
+                            borderColor: '#d29922',
+                            backgroundColor: 'rgba(210,153,34,0.12)',
                             fill: true,
-                            tension: 0.3,
-                            pointRadius: 3,
-                            pointHoverRadius: 6,
-                            yAxisID: 'yLeft',
+                            yAxisID: 'y1',
+                            tension: 0.25,
+                            pointRadius: 2,
                         },
                         {
-                            label: 'Fechamento BOVA11',
-                            data: closes,
-                            borderColor: '#e6edf3',
-                            backgroundColor: 'transparent',
+                            label: 'Sinal Base',
+                            data: base,
+                            borderColor: '#58a6ff',
+                            backgroundColor: 'rgba(88,166,255,0.10)',
                             fill: false,
-                            tension: 0.3,
-                            pointRadius: 0,
-                            pointHoverRadius: 4,
-                            borderWidth: 1.5,
-                            yAxisID: 'yRight',
+                            yAxisID: 'y2',
+                            tension: 0.25,
+                            pointRadius: 2,
                         },
+                        {
+                            label: 'Sinal Ajustado',
+                            data: adjusted,
+                            borderColor: '#3fb950',
+                            backgroundColor: 'rgba(63,185,80,0.10)',
+                            fill: false,
+                            yAxisID: 'y2',
+                            tension: 0.25,
+                            pointRadius: 2,
+                        }
                     ]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
                     interaction: { mode: 'index', intersect: false },
                     plugins: {
-                        legend: { display: true, position: 'top',
-                                   labels: { color: '#8b949e', boxWidth: 14 } },
-                        annotation: {}
+                        legend: { labels: { color: '#8b949e' } },
                     },
                     scales: {
-                        x: {
-                            ticks: { color: '#8b949e', maxRotation: 45, maxTicksLimit: 16 },
-                            grid:  { color: 'rgba(88,166,255,0.05)' },
-                        },
-                        yLeft: {
+                        x: { ticks: { color: '#8b949e', maxTicksLimit: 16 }, grid: { color: 'rgba(88,166,255,0.05)' } },
+                        y1: {
                             position: 'left',
-                            ticks: { color: '#58a6ff' },
-                            grid:  { color: 'rgba(88,166,255,0.05)' },
-                            title: { display: true, text: 'ΔSkew', color: '#58a6ff' },
+                            title: { display: true, text: 'Skew', color: '#d29922' },
+                            ticks: { color: '#d29922' },
+                            grid: { color: 'rgba(88,166,255,0.05)' }
                         },
-                        yRight: {
+                        y2: {
                             position: 'right',
-                            ticks: { color: '#8b949e' },
-                            grid:  { drawOnChartArea: false },
-                            title: { display: true, text: 'Fechamento', color: '#8b949e' },
-                        },
-                    },
+                            title: { display: true, text: 'Sinal', color: '#58a6ff' },
+                            ticks: { color: '#58a6ff' },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
                 }
             });
         }
 
-        function renderAll() {
-            renderChart(AGG_ROWS);
-            renderTable(AGG_ROWS);
+        function renderDecomposition() {
+            const last = IV_SKEW_ROWS[IV_SKEW_ROWS.length - 1];
+            const grid = document.getElementById('decompGrid');
+
+            const metrics = [
+                ['Componente 1 (W1*ΔSkew_norm_MMA)', fmtSigned(last.comp_1, 4)],
+                ['Componente 2 (W2*Z-Score)', fmtSigned(last.comp_2, 4)],
+                ['Componente 3 (W3*Aceleração)', fmtSigned(last.comp_3, 4)],
+                ['Sinal Base', fmtSigned(last.signal, 4)],
+                ['Fator Confiança VOL/OI', `${fmt(last.confidence, 2)}x`],
+                ['Ajuste Direcional VOL/OI', fmtSigned(last.adjustment, 4)],
+                ['Sinal Final Ajustado', fmtSigned(last.signal_adjusted, 4)],
+                ['Diagnóstico Fluxo', last.diag_vol_oi || 'Sem dados VOL/OI']
+            ];
+
+            grid.innerHTML = metrics.map(([k, v]) => `
+                <div class="metric">
+                    <div class="k">${k}</div>
+                    <div class="v">${v}</div>
+                </div>
+            `).join('');
         }
 
-        // Inicializar
-        renderAll();
-    </script>
-    <script>
-    (function(){
-      const saved = localStorage.getItem('bova11-theme');
-      const btn = document.getElementById('theme-toggle');
-      if(saved === 'dark'){
-        document.documentElement.setAttribute('data-theme','dark');
-        if(btn) btn.textContent = '◐';
-      }
-    })();
-    function toggleTheme(){
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      const btn = document.getElementById('theme-toggle');
-      if(isDark){
-        document.documentElement.removeAttribute('data-theme');
-        localStorage.setItem('bova11-theme','light');
-        btn.textContent = '◐';
-      } else {
-        document.documentElement.setAttribute('data-theme','dark');
-        localStorage.setItem('bova11-theme','dark');
-        btn.textContent = '◐';
-      }
-    }
+        (function() {
+            const saved = localStorage.getItem('bova11-theme');
+            const btn = document.getElementById('theme-toggle');
+            if (saved === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                if (btn) btn.textContent = '◐';
+            }
+        })();
+
+        function toggleTheme() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const btn = document.getElementById('theme-toggle');
+            if (isDark) {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('bova11-theme', 'light');
+                if (btn) btn.textContent = '◐';
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('bova11-theme', 'dark');
+                if (btn) btn.textContent = '◐';
+            }
+        }
+
+        renderChart();
+        renderTable();
+        renderDecomposition();
     </script>
 </body>
 </html>

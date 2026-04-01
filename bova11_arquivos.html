@@ -122,8 +122,8 @@
     <script>
         const files = ["bova11_2026-04-01", "bova11_2026-03-31", "bova11_2026-03-30", "bova11_2026-03-27"];
         const fullText = `# Arquivo de Conhecimento BOVA11 — 2026-04-01
-**Gerado em:** 2026-04-01 16:57:05
-**Preço D:** 184.89 | **Preço D-1:** 184.28
+**Gerado em:** 2026-04-01 19:45:37
+**Preço D:** 184.49 | **Preço D-1:** 184.28
 ---
 Este arquivo é projetado primariamente como input para IA.
 Ele contém os dados extraídos de todos os relatórios processados hoje, bem como os conceitos fundamentais do sistema BOVA11.
@@ -166,7 +166,11 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 - Institucional Bias analisa o net pressure (comprado em call vs put) nos block trades da B3.
 
 ### 5. Prediction e Dinâmica de Skew (Módulos 8, 9, 10, 14, 16)
-- **Δ Skew Prediction**: Mudanças abruptas no Delta Skew geralmente antecedem em 1/2 pregões reversões no Spot. \`ΔSkew < -0.8 = Alta / > +0.8 = Queda\`.
+- **IV Skew Signal v2**: Sinal composto por \`W1*ΔSkew_norm + W2*Z-Score + W3*Aceleração\`, com suavização por MMA.
+  * Agregação diária por vencimento usa \`peso = volume_real * fator_DTE\`.
+  * DTE curto é filtrado/penalizado para reduzir ruído de pin risk e microestrutura.
+  * VOL/OI gera fator de confiança (0.5x a 1.5x) e ajuste direcional (±0.10), diferenciando fluxo real de proteção vs lançamento.
+  * Convenção: \`Sinal > 0 = Bearish\` e \`Sinal < 0 = Bullish\`.
 - **Hunter Walls**: Agregações severas de volume intradiário. Indica onde "Predadores" agem e travam book.
 - **Evolução do GEX History**: O crescimento repentino num strike vira imã de preço.
 - **OI Stats**: Distribuição Lognormal das probabililidades.
@@ -305,7 +309,7 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   177.74,
   179.0,
   184.28,
-  184.87
+  184.18
 ]
 \`\`\`
 
@@ -403,19 +407,19 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 \`\`\`json
 {
   "2 abr W1": {
-    "adi": 0.160478,
-    "pdi": 2.741686,
+    "adi": 0.139595,
+    "pdi": 3.050976,
     "ids": -0.37763,
     "dfp_net_M": 6.7164,
     "bias_adi": "Puts",
     "bias_ids": "Base",
     "quadrant": "Hedge",
-    "atm_strike": 185.0,
-    "sps_d": 0.02861,
-    "sps_d1": 0.088532,
-    "iv_skew_d": 1.044736842105263,
-    "iv_atm_d": 26.6,
-    "delta_iv_atm": 3.655000000000001,
+    "atm_strike": 184.0,
+    "sps_d": -0.008186,
+    "sps_d1": 0.103942,
+    "iv_skew_d": 1.024516129032258,
+    "iv_atm_d": 27.125,
+    "delta_iv_atm": 4.18,
     "d1_iv_available": true,
     "nds_list": [
       {
@@ -554,7 +558,7 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     ],
     "top_call_strikes": [
       177.0,
-   
+      181.0,
 ... [DADOS EXCESSIVOS TRUNCADOS]
 \`\`\`
 
@@ -8323,7 +8327,7 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "key": "V1",
     "name": "2 abr W1",
     "color": "red",
-    "gex": 63621296,
+    "gex": 63346311,
     "iv_c_atm": 26.93,
     "div_c_atm": 8.38,
     "iv_p_atm": 26.79,
@@ -8347,7 +8351,7 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "key": "V2",
     "name": "10 abr W2",
     "color": "blu",
-    "gex": 45795200,
+    "gex": 45597263,
     "iv_c_atm": 25.67,
     "div_c_atm": 11.37,
     "iv_p_atm": 26.15,
@@ -8371,7 +8375,7 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "key": "V3",
     "name": "17 abr Mensal",
     "color": "grn",
-    "gex": 91328854,
+    "gex": 90934111,
     "iv_c_atm": 24.71,
     "div_c_atm": -1.11,
     "iv_p_atm": 25.66,
@@ -8419,7 +8423,7 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "key": "V5",
     "name": "15 mai Mensal",
     "color": "pur",
-    "gex": 15882121,
+    "gex": 15813475,
     "iv_c_atm": 23.93,
     "div_c_atm": 2.57,
     "iv_p_atm": 25.74,
@@ -8447,111 +8451,111 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 [
   {
     "s": 176.0,
-    "c": 16440063,
-    "p": -18747870,
-    "n": -2307808
+    "c": 16369005,
+    "p": -18666838,
+    "n": -2297833
   },
   {
     "s": 177.0,
-    "c": 15164610,
-    "p": -16521313,
-    "n": -1356703
+    "c": 15099066,
+    "p": -16449904,
+    "n": -1350839
   },
   {
     "s": 178.0,
-    "c": 18527762,
-    "p": -33669520,
-    "n": -15141757
+    "c": 18447681,
+    "p": -33523993,
+    "n": -15076311
   },
   {
     "s": 179.0,
-    "c": 190277364,
-    "p": -189743120,
-    "n": 534244
+    "c": 189454944,
+    "p": -188923010,
+    "n": 531935
   },
   {
     "s": 180.0,
-    "c": 326745170,
-    "p": -301449209,
-    "n": 25295961
+    "c": 325332906,
+    "p": -300146280,
+    "n": 25186626
   },
   {
     "s": 181.0,
-    "c": 52228283,
-    "p": -43465126,
-    "n": 8763158
+    "c": 52002542,
+    "p": -43277260,
+    "n": 8725282
   },
   {
     "s": 182.0,
-    "c": 55269101,
-    "p": -67785931,
-    "n": -12516830
+    "c": 55030216,
+    "p": -67492946,
+    "n": -12462730
   },
   {
     "s": 183.0,
-    "c": 54007268,
-    "p": -33338012,
-    "n": 20669256
+    "c": 53773836,
+    "p": -33193918,
+    "n": 20579919
   },
   {
     "s": 184.0,
-    "c": 84179848,
-    "p": -59093236,
-    "n": 25086611
+    "c": 83816004,
+    "p": -58837822,
+    "n": 24978182
   },
   {
     "s": 185.0,
-    "c": 149395044,
-    "p": -139977478,
-    "n": 9417565
+    "c": 148749326,
+    "p": -139372465,
+    "n": 9376861
   },
   {
     "s": 186.0,
-    "c": 66481655,
-    "p": -59065501,
-    "n": 7416154
+    "c": 66194307,
+    "p": -58810207,
+    "n": 7384100
   },
   {
     "s": 187.0,
-    "c": 55216992,
-    "p": -23158730,
-    "n": 32058262
+    "c": 54978332,
+    "p": -23058633,
+    "n": 31919699
   },
   {
     "s": 188.0,
-    "c": 60080727,
-    "p": -17973856,
-    "n": 42106872
+    "c": 59821045,
+    "p": -17896169,
+    "n": 41924877
   },
   {
     "s": 189.0,
-    "c": 29163629,
-    "p": -13788046,
-    "n": 15375583
+    "c": 29037578,
+    "p": -13728451,
+    "n": 15309126
   },
   {
     "s": 190.0,
-    "c": 53268595,
-    "p": -23890072,
-    "n": 29378523
+    "c": 53038357,
+    "p": -23786814,
+    "n": 29251543
   },
   {
     "s": 191.0,
-    "c": 29460546,
-    "p": -16982731,
-    "n": 12477814
+    "c": 29333211,
+    "p": -16909328,
+    "n": 12423883
   },
   {
     "s": 192.0,
-    "c": 82772569,
-    "p": -67556697,
-    "n": 15215871
+    "c": 82414808,
+    "p": -67264703,
+    "n": 15150105
   },
   {
     "s": 193.0,
-    "c": 5383041,
-    "p": -1228346,
-    "n": 4154694
+    "c": 5359774,
+    "p": -1223037,
+    "n": 4136737
   }
 ]
 \`\`\`
@@ -8563,177 +8567,177 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "strikes": [
       {
         "s": 176.0,
-        "c": 37917,
-        "p": -92117,
-        "n": -54200
+        "c": 37753,
+        "p": -91719,
+        "n": -53966
       },
       {
         "s": 177.0,
-        "c": 154462,
-        "p": -321483,
-        "n": -167021
+        "c": 153794,
+        "p": -320093,
+        "n": -166299
       },
       {
         "s": 178.0,
-        "c": 543873,
-        "p": -1085441,
-        "n": -541568
+        "c": 541522,
+        "p": -1080749,
+        "n": -539227
       },
       {
         "s": 179.0,
-        "c": 1578526,
-        "p": -1648712,
-        "n": -70186
+        "c": 1571703,
+        "p": -1641586,
+        "n": -69883
       },
       {
         "s": 180.0,
-        "c": 3577922,
-        "p": -6041225,
-        "n": -2463304
+        "c": 3562457,
+        "p": -6015114,
+        "n": -2452657
       },
       {
         "s": 181.0,
-        "c": 7490842,
-        "p": -6297933,
-        "n": 1192909
+        "c": 7458465,
+        "p": -6270712,
+        "n": 1187753
       },
       {
         "s": 182.0,
-        "c": 6975534,
-        "p": -13831403,
-        "n": -6855870
+        "c": 6945384,
+        "p": -13771621,
+        "n": -6826237
       },
       {
         "s": 183.0,
-        "c": 22421704,
-        "p": -10746379,
-        "n": 11675325
+        "c": 22324792,
+        "p": -10699930,
+        "n": 11624862
       },
       {
         "s": 184.0,
-        "c": 29740415,
-        "p": -20815284,
-        "n": 8925131
+        "c": 29611871,
+        "p": -20725315,
+        "n": 8886555
       },
       {
         "s": 185.0,
-        "c": 25146327,
-        "p": -27361722,
-        "n": -2215395
+        "c": 25037639,
+        "p": -27243459,
+        "n": -2205820
       },
       {
         "s": 186.0,
-        "c": 14807832,
-        "p": -6652622,
-        "n": 8155210
+        "c": 14743829,
+        "p": -6623868,
+        "n": 8119961
       },
       {
         "s": 187.0,
-        "c": 15382417,
-        "p": -1714563,
-        "n": 13667854
+        "c": 15315931,
+        "p": -1707152,
+        "n": 13608779
       },
       {
         "s": 188.0,
-        "c": 21025403,
-        "p": -697640,
-        "n": 20327763
+        "c": 20934527,
+        "p": -694625,
+        "n": 20239902
       },
       {
         "s": 189.0,
-        "c": 6237152,
-        "p": -435098,
-        "n": 5802054
+        "c": 6210193,
+        "p": -433217,
+        "n": 5776976
       },
       {
         "s": 190.0,
-        "c": 5224740,
-        "p": -590161,
-        "n": 4634578
+        "c": 5202157,
+        "p": -587611,
+        "n": 4614547
       },
       {
         "s": 191.0,
-        "c": 1327302,
-        "p": -128159,
-        "n": 1199143
+        "c": 1321565,
+        "p": -127605,
+        "n": 1193960
       },
       {
         "s": 192.0,
-        "c": 449961,
-        "p": -41090,
-        "n": 408872
+        "c": 448016,
+        "p": -40912,
+        "n": 407104
       }
     ],
-    "net": 63621296,
+    "net": 63346311,
     "flip": 180.7,
     "dom_s": 188.0,
-    "dom_n": 20327763
+    "dom_n": 20239902
   },
   "V2": {
     "strikes": [
       {
         "s": 176.0,
-        "c": 618565,
-        "p": -1082282,
-        "n": -463717
+        "c": 615892,
+        "p": -1077604,
+        "n": -461713
       },
       {
         "s": 177.0,
-        "c": 1408946,
-        "p": -1609414,
-        "n": -200468
+        "c": 1402856,
+        "p": -1602458,
+        "n": -199601
       },
       {
         "s": 178.0,
-        "c": 2890466,
-        "p": -2527511,
-        "n": 362954
+        "c": 2877973,
+        "p": -2516587,
+        "n": 361386
       },
       {
         "s": 179.0,
-        "c": 166841321,
-        "p": -165791179,
-        "n": 1050142
+        "c": 166120197,
+        "p": -165074594,
+        "n": 1045603
       },
       {
         "s": 180.0,
-        "c": 170866866,
-        "p": -169663578,
-        "n": 1203288
+        "c": 170128342,
+        "p": -168930255,
+        "n": 1198087
       },
       {
         "s": 181.0,
-        "c": 4516540,
-        "p": -2280845,
-        "n": 2235695
+        "c": 4497019,
+        "p": -2270987,
+        "n": 2226032
       },
       {
         "s": 182.0,
-        "c": 6122843,
-        "p": -3474287,
-        "n": 2648556
+        "c": 6096378,
+        "p": -3459270,
+        "n": 2637108
       },
       {
         "s": 183.0,
-        "c": 5393464,
-        "p": -4789622,
-        "n": 603842
+        "c": 5370152,
+        "p": -4768920,
+        "n": 601232
       },
       {
         "s": 184.0,
-        "c": 8504040,
-        "p": -2789079,
-        "n": 5714961
+        "c": 8467283,
+        "p": -2777024,
+        "n": 5690259
       },
       {
         "s": 185.0,
-        "c": 11763960,
-        "p": -2195775,
-        "n": 9568186
+        "c": 11713114,
+        "p": -2186284,
+        "n": 9526830
       },
       {
         "s": 186.0,
-        "c": 6420083,
+        "c": 6392334,
         "p": -4
 ... [DADOS EXCESSIVOS TRUNCADOS]
 \`\`\`
@@ -10852,9 +10856,9 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   "gex": [
     {
       "strike": 176.0,
-      "call_gex": 782.8207470899998,
-      "put_gex": -21136.160171429994,
-      "net_gex": -20353.339424339993
+      "call_gex": 779.4372262900001,
+      "put_gex": -21044.805109830002,
+      "net_gex": -20265.367883540002
     },
     {
       "strike": 177.0,
@@ -10865,8 +10869,8 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     {
       "strike": 178.0,
       "call_gex": 0.0,
-      "put_gex": -16921.2344895,
-      "net_gex": -16921.2344895
+      "put_gex": -16848.097249500002,
+      "net_gex": -16848.097249500002
     },
     {
       "strike": 179.0,
@@ -10876,9 +10880,9 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     },
     {
       "strike": 180.0,
-      "call_gex": 542812.6918359,
-      "put_gex": -26141.427149111998,
-      "net_gex": 516671.26468678797
+      "call_gex": 540466.5378279,
+      "put_gex": -26028.438239672007,
+      "net_gex": 514438.09958822804
     },
     {
       "strike": 181.0,
@@ -10888,21 +10892,21 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     },
     {
       "strike": 182.0,
-      "call_gex": 119.30324922899997,
-      "put_gex": -35790.9747687,
-      "net_gex": -35671.671519471
+      "call_gex": 118.78759474900001,
+      "put_gex": -35636.2784247,
+      "net_gex": -35517.490829951
     },
     {
       "strike": 183.0,
-      "call_gex": 259.8691405842,
+      "call_gex": 258.74592988020004,
       "put_gex": -0.0,
-      "net_gex": 259.8691405842
+      "net_gex": 258.74592988020004
     },
     {
       "strike": 184.0,
-      "call_gex": 2536.4759578199996,
-      "put_gex": -12682.379789099998,
-      "net_gex": -10145.903831279998
+      "call_gex": 2525.5127594200003,
+      "put_gex": -12627.563797100001,
+      "net_gex": -10102.051037680001
     },
     {
       "strike": 185.0,
@@ -10912,16 +10916,15 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     },
     {
       "strike": 186.0,
-      "call_gex": 1216462.4198033398,
-      "put_gex": -197968.18823351996,
-      "net_gex": 1018494.2315698199
+      "call_gex": 1211204.60578254,
+      "put_gex": -197112.52685112003,
+      "net_gex": 1014092.07893142
     },
     {
       "strike": 188.0,
       "call_gex": 0.0,
       "put_gex": -0.0,
-      "net_gex": 0.0
-    },
+      "net_ge
 ... [DADOS EXCESSIVOS TRUNCADOS]
 \`\`\`
 
@@ -11453,105 +11456,105 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 [
   {
     "strike": 177.0,
-    "call_gex": 1463036.9395687284,
-    "put_gex": -2868615.5199872935,
-    "net_gex": -1405578.580418565
+    "call_gex": 1456713.3770742489,
+    "put_gex": -2856216.742470014,
+    "net_gex": -1399503.365395765
   },
   {
     "strike": 178.0,
-    "call_gex": 2231575.8229064695,
-    "put_gex": -5258925.512443871,
-    "net_gex": -3027349.689537402
+    "call_gex": 2221930.46892007,
+    "put_gex": -5236195.297483232,
+    "net_gex": -3014264.8285631617
   },
   {
     "strike": 179.0,
-    "call_gex": 2848305.252796199,
-    "put_gex": -4425518.136622049,
-    "net_gex": -1577212.8838258497
+    "call_gex": 2835994.2606522,
+    "put_gex": -4406390.08882605,
+    "net_gex": -1570395.8281738502
   },
   {
     "strike": 180.0,
-    "call_gex": 7366077.959855002,
-    "put_gex": -4863550.442381513,
-    "net_gex": 2502527.517473489
+    "call_gex": 7334240.175682524,
+    "put_gex": -4842529.124097834,
+    "net_gex": 2491711.05158469
   },
   {
     "strike": 181.0,
-    "call_gex": 5566212.3960282225,
-    "put_gex": -1938139.7388987956,
-    "net_gex": 3628072.657129427
+    "call_gex": 5542154.020609344,
+    "put_gex": -1929762.679215276,
+    "net_gex": 3612391.3413940687
   },
   {
     "strike": 182.0,
-    "call_gex": 1505750.2375376788,
-    "put_gex": -2598275.0409206217,
-    "net_gex": -1092524.803382943
+    "call_gex": 1499242.058919199,
+    "put_gex": -2587044.7334999824,
+    "net_gex": -1087802.6745807834
   },
   {
     "strike": 183.0,
-    "call_gex": 2766958.2126643136,
-    "put_gex": -1751451.0062857915,
-    "net_gex": 1015507.2063785221
+    "call_gex": 2754998.8200446344,
+    "put_gex": -1743880.855734752,
+    "net_gex": 1011117.9643098824
   },
   {
     "strike": 184.0,
-    "call_gex": 2414661.529024134,
-    "put_gex": -2550237.8781852173,
-    "net_gex": -135576.34916108334
+    "call_gex": 2404224.8389660544,
+    "put_gex": -2539215.197785058,
+    "net_gex": -134990.35881900368
   },
   {
     "strike": 185.0,
-    "call_gex": 5419148.750629055,
-    "put_gex": -5625921.4502870515,
-    "net_gex": -206772.69965799619
+    "call_gex": 5395726.016134337,
+    "put_gex": -5601604.999404813,
+    "net_gex": -205878.98327047657
   },
   {
     "strike": 186.0,
-    "call_gex": 1747365.9809898417,
-    "put_gex": -1321316.9858370326,
-    "net_gex": 426048.9951528092
+    "call_gex": 1739813.4868028022,
+    "put_gex": -1315605.967674073,
+    "net_gex": 424207.5191287291
   },
   {
     "strike": 187.0,
-    "call_gex": 4655333.113694171,
-    "put_gex": -4278307.498680851,
-    "net_gex": 377025.61501332
+    "call_gex": 4635211.755797532,
+    "put_gex": -4259815.727142612,
+    "net_gex": 375396.02865491994
   },
   {
     "strike": 188.0,
-    "call_gex": 3753625.4822965497,
-    "put_gex": -1362263.9803997758,
-    "net_gex": 2391361.501896774
+    "call_gex": 3737401.500060551,
+    "put_gex": -1356375.980458656,
+    "net_gex": 2381025.5196018945
   },
   {
     "strike": 189.0,
-    "call_gex": 1762213.5951073556,
-    "put_gex": -1186829.407016334,
-    "net_gex": 575384.1880910217
+    "call_gex": 1754596.9263166361,
+    "put_gex": -1181699.673294254,
+    "net_gex": 572897.253022382
   },
   {
     "strike": 190.0,
-    "call_gex": 7566262.658885086,
-    "put_gex": -1714482.7238083675,
-    "net_gex": 5851779.935076718
+    "call_gex": 7533559.633090529,
+    "put_gex": -1707072.358180208,
+    "net_gex": 5826487.2749103205
   },
   {
     "strike": 191.0,
-    "call_gex": 1886933.0067454798,
-    "put_gex": -1337589.060239754,
-    "net_gex": 549343.9465057258
+    "call_gex": 1878777.2736478802,
+    "put_gex": -1331807.7106472743,
+    "net_gex": 546969.5630006059
   },
   {
     "strike": 192.0,
-    "call_gex": 5505330.478021244,
-    "put_gex": -1134801.2258432547,
-    "net_gex": 4370529.252177989
+    "call_gex": 5481535.247436845,
+    "put_gex": -1129896.369187655,
+    "net_gex": 4351638.87824919
   },
   {
     "strike": 193.0,
-    "call_gex": 2764765.6308862194,
-    "put_gex": -1125210.8170835997,
-    "net_gex": 1639554.8138026197
+    "call_gex": 2752815.7150798202,
+    "put_gex": -1120347.4122516,
+    "net_gex": 1632468.3028282202
   }
 ]
 \`\`\`
@@ -11562,8 +11565,8 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   {
     "label": "2 Abr — W1",
     "mp": 180.0,
-    "spot": 184.89,
-    "dist": 2.64,
+    "spot": 184.49,
+    "dist": 2.43,
     "dte": 1,
     "score": 74,
     "verdict": "Atração moderada",
@@ -11573,8 +11576,8 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   {
     "label": "10 Abr — W2",
     "mp": 180.0,
-    "spot": 184.89,
-    "dist": 2.64,
+    "spot": 184.49,
+    "dist": 2.43,
     "dte": 9,
     "score": 66,
     "verdict": "Atração moderada",
@@ -11584,10 +11587,10 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   {
     "label": "17 Abr — Mensal",
     "mp": 183.0,
-    "spot": 184.89,
-    "dist": 1.02,
+    "spot": 184.49,
+    "dist": 0.81,
     "dte": 16,
-    "score": 61,
+    "score": 64,
     "verdict": "Atração moderada",
     "color": "#6B9E1D",
     "direction": "para baixo"
@@ -11595,8 +11598,8 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   {
     "label": "24 Abr — W2",
     "mp": 180.0,
-    "spot": 184.89,
-    "dist": 2.64,
+    "spot": 184.49,
+    "dist": 2.43,
     "dte": 23,
     "score": 54,
     "verdict": "Atração fraca",
@@ -11606,8 +11609,8 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   {
     "label": "15 Mai — Mensal",
     "mp": 182.0,
-    "spot": 184.89,
-    "dist": 1.56,
+    "spot": 184.49,
+    "dist": 1.35,
     "dte": 44,
     "score": 61,
     "verdict": "Atração moderada",
@@ -14475,165 +14478,150 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 \`\`\`
 
 ### bova11_skew_prediction.html
-**Variable:** \`AGG_ROWS\`
+**Variable:** \`IV_SKEW_ROWS\`
 \`\`\`json
 [
   {
-    "date": "03/fev",
-    "close": 182.19,
-    "delta_skew": 0.5575,
-    "signal": "NEUTRO",
-    "next_close": 178.2,
-    "variation_pct": -2.19,
-    "result": "N/A"
+    "date": "03/03/2026",
+    "date_key": "03/mar",
+    "iv_call": 25.734,
+    "iv_put": 25.952,
+    "skew": 0.218033,
+    "delta_skew": null,
+    "zscore": 0.0,
+    "confidence": 1.5,
+    "vol_oi_call": 2.9997,
+    "vol_oi_put": 2.9276,
+    "signal": 0.0,
+    "signal_adjusted": 0.0,
+    "direction": "NEUTRO",
+    "strength": "FRACO",
+    "volume_total": 208167.2,
+    "n_vencimentos": 4,
+    "diag_vol_oi": "VOL/OI equilibrado (ratio=0.98)",
+    "comp_1": 0.0,
+    "comp_2": 0.0,
+    "comp_3": 0.0,
+    "adjustment": 0.0
   },
   {
-    "date": "04/fev",
-    "close": 178.2,
-    "delta_skew": -1.926,
-    "signal": "ALTA",
-    "next_close": 178.65,
-    "variation_pct": 0.25,
-    "result": "ACERTOU"
+    "date": "04/03/2026",
+    "date_key": "04/mar",
+    "iv_call": 22.7441,
+    "iv_put": 23.6457,
+    "skew": 0.901579,
+    "delta_skew": 0.683546,
+    "zscore": 0.7071,
+    "confidence": 1.5,
+    "vol_oi_call": 2.0211,
+    "vol_oi_put": 0.9644,
+    "signal": 0.129638,
+    "signal_adjusted": 0.094456,
+    "direction": "BEARISH",
+    "strength": "FRACO",
+    "volume_total": 96551.0,
+    "n_vencimentos": 4,
+    "diag_vol_oi": "Call VOL/OI dominante (ratio=0.48)",
+    "comp_1": 0.011788,
+    "comp_2": 0.247487,
+    "comp_3": 0.0,
+    "adjustment": -0.1
   },
   {
-    "date": "05/fev",
-    "close": 178.65,
-    "delta_skew": 1.76,
-    "signal": "QUEDA",
-    "next_close": 179.24,
-    "variation_pct": 0.33,
-    "result": "ERROU"
+    "date": "05/03/2026",
+    "date_key": "05/mar",
+    "iv_call": 25.2002,
+    "iv_put": 26.7146,
+    "skew": 1.514445,
+    "delta_skew": 0.612865,
+    "zscore": 0.9813,
+    "confidence": 1.5,
+    "vol_oi_call": 3.2684,
+    "vol_oi_put": 2.3065,
+    "signal": 0.203965,
+    "signal_adjusted": 0.305948,
+    "direction": "BEARISH",
+    "strength": "FRACO",
+    "volume_total": 137507.0,
+    "n_vencimentos": 4,
+    "diag_vol_oi": "VOL/OI equilibrado (ratio=0.71)",
+    "comp_1": 0.010616,
+    "comp_2": 0.343469,
+    "comp_3": -0.001465,
+    "adjustment": 0.0
   },
   {
-    "date": "06/fev",
-    "close": 179.24,
-    "delta_skew": -1.285,
-    "signal": "ALTA",
-    "next_close": 182.79,
-    "variation_pct": 1.98,
-    "result": "ACERTOU"
+    "date": "06/03/2026",
+    "date_key": "06/mar",
+    "iv_call": 25.7513,
+    "iv_put": 26.6544,
+    "skew": 0.903154,
+    "delta_skew": -0.61129,
+    "zscore": 0.0356,
+    "confidence": 1.5,
+    "vol_oi_call": 2.4408,
+    "vol_oi_put": 2.5673,
+    "signal": 0.205528,
+    "signal_adjusted": 0.308292,
+    "direction": "BEARISH",
+    "strength": "FRACO",
+    "volume_total": 220034.0,
+    "n_vencimentos": 4,
+    "diag_vol_oi": "VOL/OI equilibrado (ratio=1.05)",
+    "comp_1": 0.003967,
+    "comp_2": 0.012457,
+    "comp_3": -0.011735,
+    "adjustment": 0.0
   },
   {
-    "date": "09/fev",
-    "close": 182.79,
-    "delta_skew": 0.5175,
-    "signal": "NEUTRO",
-    "next_close": 182.4,
-    "variation_pct": -0.21,
-    "result": "N/A"
+    "date": "09/03/2026",
+    "date_key": "09/mar",
+    "iv_call": 24.6067,
+    "iv_put": 26.1069,
+    "skew": 1.500189,
+    "delta_skew": 0.597035,
+    "zscore": 0.9209,
+    "confidence": 1.5,
+    "vol_oi_call": 1.5793,
+    "vol_oi_put": 2.6877,
+    "signal": 0.231503,
+    "signal_adjusted": 0.447255,
+    "direction": "BEARISH",
+    "strength": "FRACO",
+    "volume_total": 98159.8,
+    "n_vencimentos": 5,
+    "diag_vol_oi": "Put VOL/OI dominante (ratio=1.70)",
+    "comp_1": 0.003177,
+    "comp_2": 0.322305,
+    "comp_3": 0.011719,
+    "adjustment": 0.1
   },
   {
-    "date": "10/fev",
-    "close": 182.4,
-    "delta_skew": -1.0275,
-    "signal": "ALTA",
-    "next_close": 185.99,
-    "variation_pct": 1.97,
-    "result": "ACERTOU"
-  },
-  {
-    "date": "11/fev",
-    "close": 185.99,
-    "delta_skew": 0.1,
-    "signal": "NEUTRO",
-    "next_close": 184.28,
-    "variation_pct": -0.92,
-    "result": "N/A"
-  },
-  {
-    "date": "12/fev",
-    "close": 184.28,
-    "delta_skew": 0.0475,
-    "signal": "NEUTRO",
-    "next_close": 182.98,
-    "variation_pct": -0.71,
-    "result": "N/A"
-  },
-  {
-    "date": "13/fev",
-    "close": 182.98,
-    "delta_skew": -0.09,
-    "signal": "NEUTRO",
-    "next_close": 182.43,
-    "variation_pct": -0.3,
-    "result": "N/A"
-  },
-  {
-    "date": "18/fev",
-    "close": 182.43,
-    "delta_skew": 0.525,
-    "signal": "NEUTRO",
-    "next_close": 184.99,
-    "variation_pct": 1.4,
-    "result": "N/A"
-  },
-  {
-    "date": "19/fev",
-    "close": 184.99,
-    "delta_skew": -0.2925,
-    "signal": "NEUTRO",
-    "next_close": 186.69,
-    "variation_pct": 0.92,
-    "result": "N/A"
-  },
-  {
-    "date": "20/fev",
-    "close": 186.69,
-    "delta_skew": -0.2233,
-    "signal": "NEUTRO",
-    "next_close": 185.17,
-    "variation_pct": -0.81,
-    "result": "N/A"
-  },
-  {
-    "date": "23/fev",
-    "close": 185.17,
-    "delta_skew": -0.5525,
-    "signal": "NEUTRO",
-    "next_close": 187.78,
-    "variation_pct": 1.41,
-    "result": "N/A"
-  },
-  {
-    "date": "24/fev",
-    "close": 187.78,
-    "delta_skew": 1.48,
-    "signal": "QUEDA",
-    "next_close": 187.46,
-    "variation_pct": -0.17,
-    "result": "ACERTOU"
-  },
-  {
-    "date": "25/fev",
-    "close": 187.46,
-    "delta_skew": 0.222,
-    "signal": "NEUTRO",
-    "next_close": 187.35,
-    "variation_pct": -0.06,
-    "result": "N/A"
-  },
-  {
-    "date": "26/fev",
-    "close": 187.35,
-    "delta_skew": -0.334,
-    "signal": "NEUTRO",
-    "next_close": 185.16,
-    "variation_pct": -1.17,
-    "result": "N/A"
-  },
-  {
-    "date": "27/fev",
-    "close": 185.16,
-    "delta_skew": -1.355,
-    "signal": "ALTA",
-    "next_close": 185.5,
-    "variation_pct": 0.18,
-    "result": "ACERTOU"
-  },
-  {
-    "date":
+    "date": "10/03/2026",
+    "date_key": "10/mar",
+    "iv_call": 23.5532,
+    "iv_put": 25.2683,
+    "skew": 1.715072,
+    "delta_skew": 0.214883,
+    "zscore": 1.0549,
+    "confidence":
 ... [DADOS EXCESSIVOS TRUNCADOS]
+\`\`\`
+
+**Variable:** \`IV_SKEW_META\`
+\`\`\`json
+{
+  "w1": 0.4,
+  "w2": 0.35,
+  "w3": 0.25,
+  "mma": 3,
+  "zscore_window": 20,
+  "atm_range": 3,
+  "min_dte": 2,
+  "vol_minimo": 50,
+  "dte_penalty": 5,
+  "records": 22
+}
 \`\`\`
 
 ### bova11_tex_dex_vex_10mar_vs_11mar.html
@@ -22943,7 +22931,11 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 - Institucional Bias analisa o net pressure (comprado em call vs put) nos block trades da B3.
 
 ### 5. Prediction e Dinâmica de Skew (Módulos 8, 9, 10, 14, 16)
-- **Δ Skew Prediction**: Mudanças abruptas no Delta Skew geralmente antecedem em 1/2 pregões reversões no Spot. \`ΔSkew < -0.8 = Alta / > +0.8 = Queda\`.
+- **IV Skew Signal v2**: Sinal composto por \`W1*ΔSkew_norm + W2*Z-Score + W3*Aceleração\`, com suavização por MMA.
+  * Agregação diária por vencimento usa \`peso = volume_real * fator_DTE\`.
+  * DTE curto é filtrado/penalizado para reduzir ruído de pin risk e microestrutura.
+  * VOL/OI gera fator de confiança (0.5x a 1.5x) e ajuste direcional (±0.10), diferenciando fluxo real de proteção vs lançamento.
+  * Convenção: \`Sinal > 0 = Bearish\` e \`Sinal < 0 = Bullish\`.
 - **Hunter Walls**: Agregações severas de volume intradiário. Indica onde "Predadores" agem e travam book.
 - **Evolução do GEX History**: O crescimento repentino num strike vira imã de preço.
 - **OI Stats**: Distribuição Lognormal das probabililidades.
