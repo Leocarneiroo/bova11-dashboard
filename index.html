@@ -97,10 +97,15 @@
             background: var(--bg2);
             border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 6px 12px;
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
             color: var(--text);
             cursor: pointer;
-            font-size: 0.82rem;
+            font-size: 1rem;
             font-weight: 600;
             line-height: 1;
             transition: all 0.2s ease;
@@ -229,9 +234,9 @@
     <div class="content">
         <div class="control-stack">
             <div class="update-badge" title="Momento em que os dados do dashboard foram gerados">
-                01/04/2026 13:02:19
+                01/04/2026 13:25:51
             </div>
-            <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Alternar tema">◐ Tema</button>
+            <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Alternar tema">◐</button>
         </div>
         <iframe id="main-frame" src="bova11_rankings_pro_31mar_vs_1abr.html" onload="checkIframe()"></iframe>
         <div id="error-msg" class="missing-file">
@@ -305,7 +310,11 @@
                 if (!doc || !doc.body || doc.body.innerHTML.trim() === '') {
                     iframe.style.display = 'none';
                     document.getElementById('error-msg').style.display = 'block';
+                    return;
                 }
+                doc.querySelectorAll('#theme-toggle, #theme-btn, button.theme-toggle, button.theme-btn').forEach(btn => {
+                    btn.style.display = 'none';
+                });
             } catch(e) {
                 // Ignorar (cross-origin quando abre via file://)
             }

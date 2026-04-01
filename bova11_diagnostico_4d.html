@@ -476,7 +476,7 @@
     <h1>BOVA11 Diagnóstico 4D</h1>
     <div class="subtitle">GEX &middot; DEX &middot; VEX &middot; TEX &nbsp;|&nbsp; Ref: 2026-04-01 (1abr)</div>
   </div>
-  <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">◐ Tema</button>
+  <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">◐</button>
 </header>
 
 <div class="container">
@@ -485,8 +485,8 @@
   <div class="stats-strip">
     <div class="stat-card">
       <div class="label">Spot D</div>
-      <div class="value mono">R$ 185.00</div>
-      <div class="sub" style="color:var(--green);">+0.39% vs D-1</div>
+      <div class="value mono">R$ 184.93</div>
+      <div class="sub" style="color:var(--green);">+0.35% vs D-1</div>
     </div>
     <div class="stat-card">
       <div class="label">Gamma Flip</div>
@@ -577,6 +577,46 @@
     </div>
   </div>
 
+  <!-- ── Alertas ── -->
+  <div class="alert-card">
+    <div class="card-title">Alertas de Mudança de Cenário</div>
+    <div class="alert-grid">
+      <div>
+        <div class="al-title">Regime Atual</div>
+        <div class="al-text">Dealers estão em long gamma — amortecem movimentos e tendem a estabilizar o mercado.</div>
+      </div>
+      <div>
+        <div class="al-title">Gatilho de Mudança</div>
+        <div class="al-text">Mudança para SHORT gamma ocorre quando há aumento de OI em calls fora do dinheiro ou aumento de put selling institucional.</div>
+      </div>
+      <div>
+        <div class="al-title">Fluxo de Hedge</div>
+        <div class="al-text">Pressão <strong>compradora</strong> líquida identificada. DEX positivo indica dealers com viés de compra no spot para hedge.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Charts 2x2 ── -->
+  <div class="section-title">Gráficos Principais</div>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">GEX por Strike (M)</div>
+      <div class="chart-wrap"><canvas id="chartGex"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">DEX Momentum (M)</div>
+      <div class="chart-wrap"><canvas id="chartDex"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">VEX por Strike (M)</div>
+      <div class="chart-wrap"><canvas id="chartVex"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">TEX Cumulativo (M)</div>
+      <div class="chart-wrap"><canvas id="chartTex"></canvas></div>
+    </div>
+  </div>
+
   
     <div class="section-title">Sugestão de Strikes</div>
     <div class="suggestions-grid">
@@ -617,46 +657,6 @@
             
     </div>
     
-
-  <!-- ── Alertas ── -->
-  <div class="alert-card">
-    <div class="card-title">Alertas de Mudança de Cenário</div>
-    <div class="alert-grid">
-      <div>
-        <div class="al-title">Regime Atual</div>
-        <div class="al-text">Dealers estão em long gamma — amortecem movimentos e tendem a estabilizar o mercado.</div>
-      </div>
-      <div>
-        <div class="al-title">Gatilho de Mudança</div>
-        <div class="al-text">Mudança para SHORT gamma ocorre quando há aumento de OI em calls fora do dinheiro ou aumento de put selling institucional.</div>
-      </div>
-      <div>
-        <div class="al-title">Fluxo de Hedge</div>
-        <div class="al-text">Pressão <strong>compradora</strong> líquida identificada. DEX positivo indica dealers com viés de compra no spot para hedge.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Charts 2x2 ── -->
-  <div class="section-title">Gráficos Principais</div>
-  <div class="charts-grid">
-    <div class="chart-card">
-      <div class="chart-title">GEX por Strike (M)</div>
-      <div class="chart-wrap"><canvas id="chartGex"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">DEX Momentum (M)</div>
-      <div class="chart-wrap"><canvas id="chartDex"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">VEX por Strike (M)</div>
-      <div class="chart-wrap"><canvas id="chartVex"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">TEX Cumulativo (M)</div>
-      <div class="chart-wrap"><canvas id="chartTex"></canvas></div>
-    </div>
-  </div>
 
   <!-- ── Decision Matrix ── -->
   <div class="section-title">Matriz de Decisão 4D &mdash; 16 Cenários</div>
@@ -704,7 +704,7 @@
     try {
       var t = localStorage.getItem('bova11-theme') || 'dark';
       document.documentElement.setAttribute('data-theme', t);
-      document.getElementById('theme-btn').textContent = '◐ Tema';
+      document.getElementById('theme-btn').textContent = '◐';
     } catch(e) {}
   })();
 
@@ -712,7 +712,7 @@
     var html = document.documentElement;
     var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     html.setAttribute('data-theme', next);
-    document.getElementById('theme-btn').textContent = '◐ Tema';
+    document.getElementById('theme-btn').textContent = '◐';
     try { localStorage.setItem('bova11-theme', next); } catch(e) {}
     initCharts();
   }
