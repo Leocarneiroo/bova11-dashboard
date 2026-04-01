@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BOVA11 Dashboard Completo - {data_d1} vs {data_d}</title>
     <style>
-        :root { --bg: #0d1117; --bg2: #161b22; --border: #30363d; --text: #c9d1d9; --blu: #58a6ff; --sidebar-w: 280px; }
+        :root { --bg: #0d1117; --bg2: #161b22; --border: #30363d; --text: #c9d1d9; --blu: #58a6ff; --sidebar-w: 280px; --topbar-h: 49px; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; height: 100dvh; overflow: hidden; }
 
         /* ── Sidebar ── */
         .sidebar {
@@ -21,6 +21,7 @@
             overflow: hidden;
             transition: width 0.3s ease, transform 0.3s ease;
             z-index: 200;
+            height: 100%;
         }
         .sidebar.collapsed { width: 48px; padding: 12px 0; align-items: center; }
         .sidebar.collapsed .brand,
@@ -44,7 +45,19 @@
         .brand { padding: 0 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
         .brand h1 { font-size: 1.2rem; color: #fff; margin-bottom: 4px; }
         .brand span { font-size: 0.85rem; color: #8b949e; }
-        .menu { display: flex; flex-direction: column; gap: 4px; padding: 0 12px; overflow-y: auto; flex: 1; min-height: 0; padding-bottom: 20px; }
+        .menu {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 0 12px;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 0;
+            padding-bottom: 20px;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            touch-action: pan-y;
+        }
         .menu-item { padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 500; color: #8b949e; transition: all 0.2s; }
         .menu-item:hover { background: rgba(88, 166, 255, 0.1); color: var(--text); }
         .menu-item.active { background: var(--blu); color: #000; }
@@ -63,6 +76,7 @@
             border-bottom: 1px solid var(--border);
             padding: 12px 16px;
             flex-shrink: 0;
+            min-height: var(--topbar-h);
         }
         .hamburger {
             background: none;
@@ -96,21 +110,28 @@
 
         /* ── Mobile breakpoint ── */
         @media (max-width: 768px) {
-            body { flex-direction: column; }
+            body { flex-direction: column; min-height: 100vh; height: 100dvh; }
 
             .topbar { display: flex; }
             .collapse-btn { display: none; }
 
             .sidebar {
                 position: fixed;
-                top: 0; left: 0; bottom: 0;
+                top: 0;
+                left: 0;
+                bottom: auto;
+                height: 100dvh;
                 transform: translateX(-100%);
                 padding-top: 16px;
                 width: var(--sidebar-w) !important;
             }
             .sidebar.open { transform: translateX(0); }
+            .sidebar.collapsed { width: var(--sidebar-w) !important; padding: 16px 0; align-items: stretch; }
+            .sidebar.collapsed .brand,
+            .sidebar.collapsed .menu { display: flex; }
+            .menu { padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
 
-            .content { height: calc(100vh - 49px); }
+            .content { height: calc(100dvh - var(--topbar-h)); }
         }
     </style>
 </head>
@@ -131,25 +152,25 @@
             <span>Modelos Quantitativos</span>
         </div>
         <div class="menu">
-            <div class="menu-item" class="active" onclick="loadPage(this, 'bova11_rankings_pro_30mar_vs_31mar.html')">🏆 Rankings & Overview</div>
-<div class="menu-item"  onclick="loadPage(this, 'bova11_gex_pro_30mar_vs_31mar.html')">🎯 GEX & MaxPain</div>
-<div class="menu-item"  onclick="loadPage(this, 'bova11_insights_30Mar_vs_31Mar.html')">💡 Insights Analíticos</div>
-<div class="menu-item"  onclick="loadPage(this, 'bova11_skew_history.html')">📈 Skew & IV History</div>
-<div class="menu-item"  onclick="loadPage(this, 'bova11_flow_history.html')">📦 Flow History</div>
-<div class="menu-item"  onclick="loadPage(this, 'bova11_convexity_30mar_vs_31mar.html')">🔄 Convexity (G/V/C)</div>
-<div class="menu-item"  onclick="loadPage(this, 'bova11_trade_score_30mar_vs_31mar.html')">⚖️ Trade Score & Bias</div>
-<div class="menu-item"  onclick="loadPage(this, 'bova11_quant_institucional.html')">📊 Quant Institucional</div>
-<div class="menu-item"  onclick="loadPage(this, 'bova11_tex_dex_vex_30mar_vs_31mar.html')">🌡️ TEX DEX VEX</div>
-<div class="menu-item"  onclick="loadPage(this, 'bova11_skew_prediction.html')">🎯 Skew Prediction</div>
-<div class="menu-item"  onclick="loadPage(this, 'bova11_oi_stats_light.html')">☀️ OI Stats</div>
-<div class="menu-item"  onclick="loadPage(this, 'bova11_max_pain.html')">🩺 Max Pain Relevance</div>
-<div class="menu-item"  onclick="loadPage(this, 'bova11_gravity_map.html')">🌌 Mapa Gravitacional</div>
-<div class="menu-item"  onclick="loadPage(this, 'bova11_hunter_walls.html')">🧱 Hunter Walls</div>
-<div class="menu-item"  onclick="loadPage(this, 'bova11_gex_history.html')">📉 GEX Histórico</div>
-<div class="menu-item"  onclick="loadPage(this, 'bova11_diagnostico_4d.html')">🧠 Diagnóstico 4D</div>
-<div class="menu-item"  onclick="loadPage(this, 'bova11_bandas_vol.html')">📊 Bandas de Vol</div>
-<div class="menu-item"  onclick="loadPage(this, 'bova11_demand_flow.html')">🎯 Demand Flow & PDI</div>
-<div class="menu-item"  onclick="loadPage(this, 'bova11_arquivos.html')">📁 Arquivos</div>
+            <div class="menu-item active" onclick="loadPage(this, 'bova11_rankings_pro_30mar_vs_31mar.html')">🏆 Rankings & Overview</div>
+<div class="menu-item" onclick="loadPage(this, 'bova11_gex_pro_30mar_vs_31mar.html')">🎯 GEX & MaxPain</div>
+<div class="menu-item" onclick="loadPage(this, 'bova11_insights_30Mar_vs_31Mar.html')">💡 Insights Analíticos</div>
+<div class="menu-item" onclick="loadPage(this, 'bova11_skew_history.html')">📈 Skew & IV History</div>
+<div class="menu-item" onclick="loadPage(this, 'bova11_flow_history.html')">📦 Flow History</div>
+<div class="menu-item" onclick="loadPage(this, 'bova11_convexity_30mar_vs_31mar.html')">🔄 Convexity (G/V/C)</div>
+<div class="menu-item" onclick="loadPage(this, 'bova11_trade_score_30mar_vs_31mar.html')">⚖️ Trade Score & Bias</div>
+<div class="menu-item" onclick="loadPage(this, 'bova11_quant_institucional.html')">📊 Quant Institucional</div>
+<div class="menu-item" onclick="loadPage(this, 'bova11_tex_dex_vex_30mar_vs_31mar.html')">🌡️ TEX DEX VEX</div>
+<div class="menu-item" onclick="loadPage(this, 'bova11_skew_prediction.html')">🎯 Skew Prediction</div>
+<div class="menu-item" onclick="loadPage(this, 'bova11_oi_stats_light.html')">☀️ OI Stats</div>
+<div class="menu-item" onclick="loadPage(this, 'bova11_max_pain.html')">🩺 Max Pain Relevance</div>
+<div class="menu-item" onclick="loadPage(this, 'bova11_gravity_map.html')">🌌 Mapa Gravitacional</div>
+<div class="menu-item" onclick="loadPage(this, 'bova11_hunter_walls.html')">🧱 Hunter Walls</div>
+<div class="menu-item" onclick="loadPage(this, 'bova11_gex_history.html')">📉 GEX Histórico</div>
+<div class="menu-item" onclick="loadPage(this, 'bova11_diagnostico_4d.html')">🧠 Diagnóstico 4D</div>
+<div class="menu-item" onclick="loadPage(this, 'bova11_bandas_vol.html')">📊 Bandas de Vol</div>
+<div class="menu-item" onclick="loadPage(this, 'bova11_demand_flow.html')">🎯 Demand Flow & PDI</div>
+<div class="menu-item" onclick="loadPage(this, 'bova11_arquivos.html')">📁 Arquivos</div>
 
         </div>
     </div>
@@ -184,12 +205,24 @@
         }
 
         function toggleCollapse() {
+            if (window.matchMedia('(max-width: 768px)').matches) return;
             const sidebar = document.getElementById('sidebar');
             const btn = document.getElementById('collapse-btn');
             const collapsed = sidebar.classList.toggle('collapsed');
             btn.textContent = collapsed ? '▶' : '◀';
             btn.title = collapsed ? 'Expandir menu' : 'Recolher menu';
             try { localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0'); } catch(e) {}
+        }
+
+        function ensureMobileSidebarState() {
+            if (!window.matchMedia('(max-width: 768px)').matches) return;
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.remove('collapsed');
+            const btn = document.getElementById('collapse-btn');
+            if (btn) {
+                btn.textContent = '◀';
+                btn.title = 'Recolher menu';
+            }
         }
 
         // Restore collapse state on load
@@ -202,7 +235,10 @@
                     btn.title = 'Expandir menu';
                 }
             } catch(e) {}
+            ensureMobileSidebarState();
         })();
+
+        window.addEventListener('resize', ensureMobileSidebarState);
 
         function checkIframe() {
             const iframe = document.getElementById('main-frame');
