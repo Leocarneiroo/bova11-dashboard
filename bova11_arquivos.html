@@ -7,6 +7,7 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root { --bg: #0d1117; --bg2: #161b22; --border: #30363d; --text: #c9d1d9; --blue: #58a6ff; --green: #238636; }
+        [data-theme="light"] { --bg: #f6f8fa; --bg2: #ffffff; --border: #d0d7de; --text: #24292f; --blue: #0969da; --green: #1a7f37; }
 
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); }
 
@@ -14,11 +15,28 @@
         .hdr { background: var(--bg2); padding: 20px; border-bottom: 1px solid var(--border); }
         .hdr h1 { font-size: 1.5em; margin-bottom: 8px; }
         .hdr p { color: #8b949e; font-size: 0.9em; }
+        [data-theme="light"] .hdr p { color: #57606a; }
+        .theme-toggle {
+            position: fixed;
+            top: 12px;
+            right: 16px;
+            z-index: 9999;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 8px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            line-height: 1;
+            transition: all 0.2s ease;
+        }
+        .theme-toggle:hover { border-color: var(--blue); color: var(--blue); }
 
         .content-wrapper { display: flex; flex: 1; overflow: hidden; gap: 1px; background: var(--border); }
 
         .sidebar { background: var(--bg2); width: 280px; padding: 16px; overflow-y: auto; border-right: 1px solid var(--border); }
-        .sidebar-title { font-weight: bold; font-size: 0.95em; color: white; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+        .sidebar-title { font-weight: bold; font-size: 0.95em; color: var(--text); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
 
         .file-item { padding: 10px 12px; margin-bottom: 6px; border-radius: 6px; cursor: pointer; color: #8b949e; transition: all 0.2s; }
         .file-item:hover { background: var(--bg); color: var(--text); }
@@ -36,11 +54,11 @@
         .btn-tertiary:hover { background: var(--border); }
 
         .viewer-wrapper { flex: 1; overflow-y: auto; padding: 24px; line-height: 1.6; }
-        .viewer-wrapper h1 { font-size: 1.8em; margin-bottom: 12px; color: white; }
-        .viewer-wrapper h2 { font-size: 1.3em; margin-top: 24px; margin-bottom: 12px; color: white; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+        .viewer-wrapper h1 { font-size: 1.8em; margin-bottom: 12px; color: var(--text); }
+        .viewer-wrapper h2 { font-size: 1.3em; margin-top: 24px; margin-bottom: 12px; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
         .viewer-wrapper h3 { font-size: 1.1em; margin-top: 16px; margin-bottom: 8px; color: var(--blue); }
-        .viewer-wrapper p { margin-bottom: 12px; color: #c9d1d9; }
-        .viewer-wrapper strong { color: white; }
+        .viewer-wrapper p { margin-bottom: 12px; color: var(--text); }
+        .viewer-wrapper strong { color: var(--text); }
         .viewer-wrapper code { background: var(--bg2); padding: 2px 6px; border-radius: 3px; font-family: Monaco, monospace; font-size: 0.9em; }
         .viewer-wrapper pre { background: var(--bg2); padding: 12px; border-radius: 6px; overflow-x: auto; border: 1px solid var(--border); margin: 12px 0; }
         .viewer-wrapper pre code { background: none; padding: 0; }
@@ -73,6 +91,7 @@
     </style>
 </head>
 <body>
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Alternar tema">◐ Tema</button>
     <div class="shell">
         <div class="hdr">
             <h1>📁 Arquivos BOVA11 (IA)</h1>
@@ -103,8 +122,8 @@
     <script>
         const files = ["bova11_2026-04-01", "bova11_2026-03-31", "bova11_2026-03-30", "bova11_2026-03-27"];
         const fullText = `# Arquivo de Conhecimento BOVA11 — 2026-04-01
-**Gerado em:** 2026-04-01 12:40:06
-**Preço D:** 185.04 | **Preço D-1:** 184.24
+**Gerado em:** 2026-04-01 12:51:32
+**Preço D:** 185.0 | **Preço D-1:** 184.28
 ---
 Este arquivo é projetado primariamente como input para IA.
 Ele contém os dados extraídos de todos os relatórios processados hoje, bem como os conceitos fundamentais do sistema BOVA11.
@@ -286,7 +305,7 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   177.74,
   179.0,
   184.28,
-  185.0
+  184.79
 ]
 \`\`\`
 
@@ -8298,11 +8317,11 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "key": "V1",
     "name": "2 abr W1",
     "color": "red",
-    "gex": 56143120,
-    "iv_c_atm": 29.57,
-    "div_c_atm": 9.94,
-    "iv_p_atm": 29.36,
-    "div_p_atm": -12.02,
+    "gex": 56118850,
+    "iv_c_atm": 29.72,
+    "div_c_atm": 9.98,
+    "iv_p_atm": 29.54,
+    "div_p_atm": -8.3,
     "mp": 182.0,
     "pcr_oi": 0.63,
     "dpcr_oi": 0.06,
@@ -8322,11 +8341,11 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "key": "V2",
     "name": "10 abr W2",
     "color": "blu",
-    "gex": 45218365,
-    "iv_c_atm": 25.94,
-    "div_c_atm": 13.08,
-    "iv_p_atm": 26.63,
-    "div_p_atm": 2.02,
+    "gex": 45198818,
+    "iv_c_atm": 26.03,
+    "div_c_atm": 11.49,
+    "iv_p_atm": 26.73,
+    "div_p_atm": 1.34,
     "mp": 179.0,
     "pcr_oi": 0.91,
     "dpcr_oi": 0.0,
@@ -8346,11 +8365,11 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "key": "V3",
     "name": "17 abr Mensal",
     "color": "grn",
-    "gex": 91035693,
-    "iv_c_atm": 24.91,
-    "div_c_atm": -0.26,
-    "iv_p_atm": 25.88,
-    "div_p_atm": 1.99,
+    "gex": 90996339,
+    "iv_c_atm": 24.97,
+    "div_c_atm": -0.15,
+    "iv_p_atm": 25.97,
+    "div_p_atm": 1.61,
     "mp": 183.0,
     "pcr_oi": 0.88,
     "dpcr_oi": 0.01,
@@ -8394,11 +8413,11 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "key": "V5",
     "name": "15 mai Mensal",
     "color": "pur",
-    "gex": 3216466,
-    "iv_c_atm": 23.89,
-    "div_c_atm": 4.2,
-    "iv_p_atm": 25.7,
-    "div_p_atm": -3.1,
+    "gex": 3215075,
+    "iv_c_atm": 23.92,
+    "div_c_atm": 3.93,
+    "iv_p_atm": 25.75,
+    "div_p_atm": -2.04,
     "mp": 181.0,
     "pcr_oi": 1.01,
     "dpcr_oi": 0.15,
@@ -8422,117 +8441,117 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 [
   {
     "s": 175.0,
-    "c": 1652314,
-    "p": -2430850,
-    "n": -778536
+    "c": 1651599,
+    "p": -2429799,
+    "n": -778199
   },
   {
     "s": 176.0,
-    "c": 18125222,
-    "p": -26424573,
-    "n": -8299351
+    "c": 18117387,
+    "p": -26413150,
+    "n": -8295763
   },
   {
     "s": 177.0,
-    "c": 15745985,
-    "p": -17155610,
-    "n": -1409625
+    "c": 15739178,
+    "p": -17148194,
+    "n": -1409016
   },
   {
     "s": 178.0,
-    "c": 19238066,
-    "p": -34949383,
-    "n": -15711318
+    "c": 19229749,
+    "p": -34934275,
+    "n": -15704526
   },
   {
     "s": 179.0,
-    "c": 197973303,
-    "p": -197476079,
-    "n": 497224
+    "c": 197887721,
+    "p": -197390712,
+    "n": 497009
   },
   {
     "s": 180.0,
-    "c": 336331374,
-    "p": -311393713,
-    "n": 24937661
+    "c": 336185981,
+    "p": -311259100,
+    "n": 24926881
   },
   {
     "s": 181.0,
-    "c": 54314438,
-    "p": -45229781,
-    "n": 9084657
+    "c": 54290959,
+    "p": -45210229,
+    "n": 9080730
   },
   {
     "s": 182.0,
-    "c": 56879351,
-    "p": -70244599,
-    "n": -13365249
+    "c": 56854762,
+    "p": -70214233,
+    "n": -13359471
   },
   {
     "s": 183.0,
-    "c": 55904252,
-    "p": -34328322,
-    "n": 21575930
+    "c": 55880085,
+    "p": -34313483,
+    "n": 21566603
   },
   {
     "s": 184.0,
-    "c": 85305845,
-    "p": -59878483,
-    "n": 25427362
+    "c": 85268968,
+    "p": -59852598,
+    "n": 25416370
   },
   {
     "s": 185.0,
-    "c": 149591055,
-    "p": -140176575,
-    "n": 9414480
+    "c": 149526388,
+    "p": -140115978,
+    "n": 9410410
   },
   {
     "s": 186.0,
-    "c": 65629569,
-    "p": -58721440,
-    "n": 6908129
+    "c": 65601198,
+    "p": -58696055,
+    "n": 6905143
   },
   {
     "s": 187.0,
-    "c": 53688984,
-    "p": -22981480,
-    "n": 30707504
+    "c": 53665775,
+    "p": -22971546,
+    "n": 30694229
   },
   {
     "s": 188.0,
-    "c": 57011164,
-    "p": -17827911,
-    "n": 39183253
+    "c": 56986519,
+    "p": -17820205,
+    "n": 39166314
   },
   {
     "s": 189.0,
-    "c": 27865949,
-    "p": -13595813,
-    "n": 14270136
+    "c": 27853902,
+    "p": -13589935,
+    "n": 14263967
   },
   {
     "s": 190.0,
-    "c": 51767138,
-    "p": -23521770,
-    "n": 28245368
+    "c": 51744760,
+    "p": -23511602,
+    "n": 28233158
   },
   {
     "s": 191.0,
-    "c": 28716098,
-    "p": -16732387,
-    "n": 11983711
+    "c": 28703684,
+    "p": -16725153,
+    "n": 11978531
   },
   {
     "s": 192.0,
-    "c": 75751556,
-    "p": -65207355,
-    "n": 10544201
+    "c": 75718809,
+    "p": -65179166,
+    "n": 10539643
   },
   {
     "s": 193.0,
-    "c": 2496442,
-    "p": -98336,
-    "n": 2398106
+    "c": 2495363,
+    "p": -98294,
+    "n": 2397069
   }
 ]
 \`\`\`
@@ -8544,177 +8563,177 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "strikes": [
       {
         "s": 176.0,
-        "c": 52221,
-        "p": -126867,
-        "n": -74646
+        "c": 52198,
+        "p": -126812,
+        "n": -74614
       },
       {
         "s": 177.0,
-        "c": 210409,
-        "p": -456173,
-        "n": -245764
+        "c": 210318,
+        "p": -455976,
+        "n": -245658
       },
       {
         "s": 178.0,
-        "c": 718446,
-        "p": -1454933,
-        "n": -736487
+        "c": 718136,
+        "p": -1454304,
+        "n": -736168
       },
       {
         "s": 179.0,
-        "c": 1954800,
-        "p": -2117424,
-        "n": -162624
+        "c": 1953955,
+        "p": -2116509,
+        "n": -162554
       },
       {
         "s": 180.0,
-        "c": 4268854,
-        "p": -7289547,
-        "n": -3020693
+        "c": 4267009,
+        "p": -7286396,
+        "n": -3019387
       },
       {
         "s": 181.0,
-        "c": 8705963,
-        "p": -7319546,
-        "n": 1386416
+        "c": 8702199,
+        "p": -7316382,
+        "n": 1385817
       },
       {
         "s": 182.0,
-        "c": 7767344,
-        "p": -15401439,
-        "n": -7634096
+        "c": 7763986,
+        "p": -15394781,
+        "n": -7630796
       },
       {
         "s": 183.0,
-        "c": 23903512,
-        "p": -11429003,
-        "n": 12474510
+        "c": 23893179,
+        "p": -11424062,
+        "n": 12469117
       },
       {
         "s": 184.0,
-        "c": 30387770,
-        "p": -21268367,
-        "n": 9119403
+        "c": 30374634,
+        "p": -21259173,
+        "n": 9115461
       },
       {
         "s": 185.0,
-        "c": 24616675,
-        "p": -26879458,
-        "n": -2262782
+        "c": 24606034,
+        "p": -26867838,
+        "n": -2261804
       },
       {
         "s": 186.0,
-        "c": 13897668,
-        "p": -6243719,
-        "n": 7653950
+        "c": 13891661,
+        "p": -6241019,
+        "n": 7650641
       },
       {
         "s": 187.0,
-        "c": 13882211,
-        "p": -1542672,
-        "n": 12339540
+        "c": 13876210,
+        "p": -1542005,
+        "n": 12334205
       },
       {
         "s": 188.0,
-        "c": 18230640,
-        "p": -613251,
-        "n": 17617389
+        "c": 18222759,
+        "p": -612986,
+        "n": 17609773
       },
       {
         "s": 189.0,
-        "c": 5136649,
-        "p": -360628,
-        "n": 4776021
+        "c": 5134429,
+        "p": -360472,
+        "n": 4773957
       },
       {
         "s": 190.0,
-        "c": 4176749,
-        "p": -467266,
-        "n": 3709483
+        "c": 4174943,
+        "p": -467064,
+        "n": 3707880
       },
       {
         "s": 191.0,
-        "c": 1007164,
-        "p": -100576,
-        "n": 906588
+        "c": 1006728,
+        "p": -100533,
+        "n": 906196
       },
       {
         "s": 192.0,
-        "c": 326751,
-        "p": -29838,
-        "n": 296913
+        "c": 326610,
+        "p": -29825,
+        "n": 296785
       }
     ],
-    "net": 56143120,
+    "net": 56118850,
     "flip": 180.7,
     "dom_s": 188.0,
-    "dom_n": 17617389
+    "dom_n": 17609773
   },
   "V2": {
     "strikes": [
       {
         "s": 176.0,
-        "c": 656180,
-        "p": -1153023,
-        "n": -496843
+        "c": 655896,
+        "p": -1152525,
+        "n": -496628
       },
       {
         "s": 177.0,
-        "c": 1483870,
-        "p": -1694998,
-        "n": -211128
+        "c": 1483229,
+        "p": -1694266,
+        "n": -211037
       },
       {
         "s": 178.0,
-        "c": 3027963,
-        "p": -2655108,
-        "n": 372856
+        "c": 3026654,
+        "p": -2653960,
+        "n": 372694
       },
       {
         "s": 179.0,
-        "c": 173639963,
-        "p": -172547029,
-        "n": 1092934
+        "c": 173564900,
+        "p": -172472438,
+        "n": 1092462
       },
       {
         "s": 180.0,
-        "c": 176589722,
-        "p": -175732358,
-        "n": 857365
+        "c": 176513384,
+        "p": -175656390,
+        "n": 856994
       },
       {
         "s": 181.0,
-        "c": 4643648,
-        "p": -2349688,
-        "n": 2293961
+        "c": 4641641,
+        "p": -2348672,
+        "n": 2292969
       },
       {
         "s": 182.0,
-        "c": 6258876,
-        "p": -3551476,
-        "n": 2707400
+        "c": 6256171,
+        "p": -3549941,
+        "n": 2706230
       },
       {
         "s": 183.0,
-        "c": 5478040,
-        "p": -4864729,
-        "n": 613311
+        "c": 5475671,
+        "p": -4862626,
+        "n": 613046
       },
       {
         "s": 184.0,
-        "c": 8589785,
-        "p": -2817201,
-        "n": 5772584
+        "c": 8586072,
+        "p": -2815983,
+        "n": 5770089
       },
       {
         "s": 185.0,
-        "c": 11802629,
-        "p": -2202992,
-        "n": 9599637
+        "c": 11797527,
+        "p": -2202040,
+        "n": 9595487
       },
       {
         "s": 186.0,
-        "c": 6398244,
+        "c": 6395479,
         "p": -4
 ... [DADOS EXCESSIVOS TRUNCADOS]
 \`\`\`
@@ -11448,105 +11467,105 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 [
   {
     "strike": 175.0,
-    "call_gex": 1652313.52979136,
-    "put_gex": -2430849.5786217595,
-    "net_gex": -778536.0488303995
+    "call_gex": 1651599.2475,
+    "put_gex": -2429798.74125,
+    "net_gex": -778199.4937499999
   },
   {
     "strike": 176.0,
-    "call_gex": 1009793.3808268799,
-    "put_gex": -6877064.15136,
-    "net_gex": -5867270.770533119
+    "call_gex": 1009356.855,
+    "put_gex": -6874091.25,
+    "net_gex": -5864734.395
   },
   {
     "strike": 177.0,
-    "call_gex": 1487068.138493568,
-    "put_gex": -2915734.1321940483,
-    "net_gex": -1428665.9937004803
+    "call_gex": 1486425.2905,
+    "put_gex": -2914473.683,
+    "net_gex": -1428048.3925000003
   },
   {
     "strike": 178.0,
-    "call_gex": 2266532.77074336,
-    "put_gex": -5341304.960603136,
-    "net_gex": -3074772.189859776
+    "call_gex": 2265552.96625,
+    "put_gex": -5338995.956,
+    "net_gex": -3073442.98975
   },
   {
     "strike": 179.0,
-    "call_gex": 2878288.1155722244,
-    "put_gex": -4472103.629126016,
-    "net_gex": -1593815.5135537917
+    "call_gex": 2877043.8540000003,
+    "put_gex": -4470170.3735,
+    "net_gex": -1593126.5194999995
   },
   {
     "strike": 180.0,
-    "call_gex": 7472625.097226111,
-    "put_gex": -4933899.599683392,
-    "net_gex": 2538725.4975427194
+    "call_gex": 7469394.739499999,
+    "put_gex": -4931766.71325,
+    "net_gex": 2537628.026249999
   },
   {
     "strike": 181.0,
-    "call_gex": 5621134.532751359,
-    "put_gex": -1957263.4747814399,
-    "net_gex": 3663871.0579699194
+    "call_gex": 5618704.56,
+    "put_gex": -1956417.365,
+    "net_gex": 3662287.1949999994
   },
   {
     "strike": 182.0,
-    "call_gex": 1520211.9240443518,
-    "put_gex": -2623229.6702895355,
-    "net_gex": -1103017.7462451837
+    "call_gex": 1519554.74825,
+    "put_gex": -2622095.6684999997,
+    "net_gex": -1102540.9202499997
   },
   {
     "strike": 183.0,
-    "call_gex": 2782191.715595712,
-    "put_gex": -1767946.1333667838,
-    "net_gex": 1014245.5822289281
+    "call_gex": 2780988.99575,
+    "put_gex": -1767181.864,
+    "net_gex": 1013807.1317499997
   },
   {
     "strike": 184.0,
-    "call_gex": 2436973.3671379196,
-    "put_gex": -2573802.46229184,
-    "net_gex": -136829.09515392035
+    "call_gex": 2435919.8825,
+    "put_gex": -2572689.8275,
+    "net_gex": -136769.9450000003
   },
   {
     "strike": 185.0,
-    "call_gex": 5448198.8820142085,
-    "put_gex": -5656080.016662336,
-    "net_gex": -207881.13464812748
+    "call_gex": 5445843.6680000005,
+    "put_gex": -5653634.93725,
+    "net_gex": -207791.2692499999
   },
   {
     "strike": 186.0,
-    "call_gex": 1756660.6947594238,
-    "put_gex": -1328345.4294005758,
-    "net_gex": 428315.26535884803
+    "call_gex": 1755901.304,
+    "put_gex": -1327771.1959999998,
+    "net_gex": 428130.10800000024
   },
   {
     "strike": 187.0,
-    "call_gex": 4679970.040659456,
-    "put_gex": -4300949.132868096,
-    "net_gex": 379020.90779135935
+    "call_gex": 4677946.926,
+    "put_gex": -4299089.866,
+    "net_gex": 378857.0599999996
   },
   {
     "strike": 188.0,
-    "call_gex": 3759718.5345888003,
-    "put_gex": -1364475.268048896,
-    "net_gex": 2395243.2665399043
+    "call_gex": 3758093.2375000003,
+    "put_gex": -1363885.416,
+    "net_gex": 2394207.8215000005
   },
   {
     "strike": 189.0,
-    "call_gex": 1765074.098808576,
-    "put_gex": -1188755.921441664,
-    "net_gex": 576318.1773669119
+    "call_gex": 1764311.071,
+    "put_gex": -1188242.0315,
+    "net_gex": 576069.0395
   },
   {
     "strike": 190.0,
-    "call_gex": 7578544.553883648,
-    "put_gex": -1717265.7486305276,
-    "net_gex": 5861278.80525312
+    "call_gex": 7575268.408,
+    "put_gex": -1716523.3879999998,
+    "net_gex": 5858745.02
   },
   {
     "strike": 191.0,
-    "call_gex": 1889995.9605580799,
-    "put_gex": -1339760.294457984,
-    "net_gex": 550235.666100096
+    "call_gex": 1889178.93,
+    "put_gex": -1339181.1265,
+    "net_gex": 549997.8034999999
   }
 ]
 \`\`\`
@@ -11557,8 +11576,8 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   {
     "label": "2 Abr — W1",
     "mp": 180.0,
-    "spot": 185.04,
-    "dist": 2.72,
+    "spot": 185.0,
+    "dist": 2.7,
     "dte": 1,
     "score": 74,
     "verdict": "Atração moderada",
@@ -11568,8 +11587,8 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   {
     "label": "10 Abr — W2",
     "mp": 180.0,
-    "spot": 185.04,
-    "dist": 2.72,
+    "spot": 185.0,
+    "dist": 2.7,
     "dte": 9,
     "score": 66,
     "verdict": "Atração moderada",
@@ -11579,8 +11598,8 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   {
     "label": "17 Abr — Mensal",
     "mp": 182.0,
-    "spot": 185.04,
-    "dist": 1.64,
+    "spot": 185.0,
+    "dist": 1.62,
     "dte": 16,
     "score": 61,
     "verdict": "Atração moderada",
@@ -11590,8 +11609,8 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   {
     "label": "24 Abr — W2",
     "mp": 181.0,
-    "spot": 185.04,
-    "dist": 2.18,
+    "spot": 185.0,
+    "dist": 2.16,
     "dte": 23,
     "score": 61,
     "verdict": "Atração moderada",
@@ -11601,8 +11620,8 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   {
     "label": "15 Mai — Mensal",
     "mp": 181.0,
-    "spot": 185.04,
-    "dist": 2.18,
+    "spot": 185.0,
+    "dist": 2.16,
     "dte": 44,
     "score": 61,
     "verdict": "Atração moderada",
@@ -22985,6 +23004,22 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
             const content = isFullView ? fullText : resumoText;
             render(content);
             updateStatus();
+        }
+
+        (function() {
+            try {
+                const saved = localStorage.getItem('bova11-theme');
+                if (saved === 'light' || saved === 'dark') {
+                    document.documentElement.setAttribute('data-theme', saved);
+                }
+            } catch (e) {}
+        })();
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', next);
+            try { localStorage.setItem('bova11-theme', next); } catch (e) {}
         }
 
         // Preencher lista de datas

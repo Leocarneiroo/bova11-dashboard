@@ -476,7 +476,7 @@
     <h1>BOVA11 Diagnóstico 4D</h1>
     <div class="subtitle">GEX &middot; DEX &middot; VEX &middot; TEX &nbsp;|&nbsp; Ref: 2026-04-01 (1abr)</div>
   </div>
-  <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">&#9728; Modo Claro</button>
+  <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">◐ Tema</button>
 </header>
 
 <div class="container">
@@ -485,8 +485,8 @@
   <div class="stats-strip">
     <div class="stat-card">
       <div class="label">Spot D</div>
-      <div class="value mono">R$ 185.04</div>
-      <div class="sub" style="color:var(--green);">+0.43% vs D-1</div>
+      <div class="value mono">R$ 185.00</div>
+      <div class="sub" style="color:var(--green);">+0.39% vs D-1</div>
     </div>
     <div class="stat-card">
       <div class="label">Gamma Flip</div>
@@ -704,7 +704,7 @@
     try {
       var t = localStorage.getItem('bova11-theme') || 'dark';
       document.documentElement.setAttribute('data-theme', t);
-      document.getElementById('theme-btn').textContent = t === 'dark' ? '☀ Modo Claro' : '☾ Modo Escuro';
+      document.getElementById('theme-btn').textContent = '◐ Tema';
     } catch(e) {}
   })();
 
@@ -712,7 +712,7 @@
     var html = document.documentElement;
     var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     html.setAttribute('data-theme', next);
-    document.getElementById('theme-btn').textContent = next === 'dark' ? '☀ Modo Claro' : '☾ Modo Escuro';
+    document.getElementById('theme-btn').textContent = '◐ Tema';
     try { localStorage.setItem('bova11-theme', next); } catch(e) {}
     initCharts();
   }

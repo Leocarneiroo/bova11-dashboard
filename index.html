@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BOVA11 Dashboard Completo - {data_d1} vs {data_d}</title>
     <style>
-        :root { --bg: #0d1117; --bg2: #161b22; --border: #30363d; --text: #c9d1d9; --blu: #58a6ff; --sidebar-w: 280px; --topbar-h: 49px; }
+        :root { --bg: #f6f8fa; --bg2: #ffffff; --border: #d0d7de; --text: #24292f; --muted: #57606a; --blu: #0969da; --sidebar-w: 280px; --topbar-h: 49px; }
+        [data-theme="dark"] { --bg: #0d1117; --bg2: #161b22; --border: #30363d; --text: #c9d1d9; --muted: #8b949e; --blu: #58a6ff; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; height: 100dvh; overflow: hidden; }
 
@@ -32,7 +33,7 @@
             border-radius: 6px;
             padding: 5px 9px;
             cursor: pointer;
-            color: #8b949e;
+            color: var(--muted);
             font-size: 0.75rem;
             line-height: 1;
             align-self: flex-end;
@@ -43,8 +44,8 @@
         .sidebar.collapsed .collapse-btn { align-self: center; margin: 0; }
         .collapse-btn:hover { color: var(--text); border-color: var(--blu); }
         .brand { padding: 0 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
-        .brand h1 { font-size: 1.2rem; color: #fff; margin-bottom: 4px; }
-        .brand span { font-size: 0.85rem; color: #8b949e; }
+        .brand h1 { font-size: 1.2rem; color: var(--text); margin-bottom: 4px; }
+        .brand span { font-size: 0.85rem; color: var(--muted); }
         .menu {
             display: flex;
             flex-direction: column;
@@ -58,30 +59,54 @@
             overscroll-behavior: contain;
             touch-action: pan-y;
         }
-        .menu-item { padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 500; color: #8b949e; transition: all 0.2s; }
+        .menu-item { padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 500; color: var(--muted); transition: all 0.2s; }
         .menu-item:hover { background: rgba(88, 166, 255, 0.1); color: var(--text); }
-        .menu-item.active { background: var(--blu); color: #000; }
+        .menu-item.active { background: var(--blu); color: #fff; }
 
         /* ── Content ── */
         .content { flex: 1; display: flex; flex-direction: column; background: var(--bg); overflow: hidden; position: relative; }
         iframe { border: none; width: 100%; height: 100%; }
         .missing-file { display: none; padding: 40px; text-align: center; color: #f85149; }
-        .update-badge {
+        .control-stack {
             position: absolute;
             top: 14px;
             right: 16px;
             z-index: 120;
-            padding: 6px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+        .update-badge {
+            padding: 4px 8px;
             border-radius: 999px;
             border: 1px solid rgba(88, 166, 255, 0.25);
             background: rgba(13, 17, 23, 0.82);
             backdrop-filter: blur(8px);
             color: #8b949e;
-            font-size: 0.72rem;
+            font-size: 0.68rem;
             line-height: 1.2;
             white-space: nowrap;
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
         }
+        [data-theme="light"] .update-badge {
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--muted);
+        }
+        .theme-toggle {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 12px;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 600;
+            line-height: 1;
+            transition: all 0.2s ease;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+        }
+        .theme-toggle:hover { border-color: var(--blu); color: var(--blu); }
 
         /* ── Mobile topbar ── */
         .topbar {
@@ -148,10 +173,13 @@
             .menu { padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
 
             .content { height: calc(100dvh - var(--topbar-h)); }
-            .update-badge {
+            .control-stack {
                 top: 10px;
                 right: 12px;
                 max-width: calc(100vw - 24px);
+                align-items: flex-end;
+            }
+            .update-badge {
                 white-space: normal;
                 text-align: right;
                 font-size: 0.68rem;
@@ -199,8 +227,11 @@
         </div>
     </div>
     <div class="content">
-        <div class="update-badge" title="Momento em que os dados do dashboard foram gerados">
-            Atualizado: 01/04/2026 12:40:06 | via runner local
+        <div class="control-stack">
+            <div class="update-badge" title="Momento em que os dados do dashboard foram gerados">
+                01/04/2026 12:51:32
+            </div>
+            <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Alternar tema">◐ Tema</button>
         </div>
         <iframe id="main-frame" src="bova11_rankings_pro_31mar_vs_1abr.html" onload="checkIframe()"></iframe>
         <div id="error-msg" class="missing-file">
@@ -278,6 +309,22 @@
             } catch(e) {
                 // Ignorar (cross-origin quando abre via file://)
             }
+        }
+
+        (function() {
+            try {
+                const saved = localStorage.getItem('bova11-theme');
+                if (saved === 'light' || saved === 'dark') {
+                    document.documentElement.setAttribute('data-theme', saved);
+                }
+            } catch(e) {}
+        })();
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', next);
+            try { localStorage.setItem('bova11-theme', next); } catch(e) {}
         }
     </script>
 </body>

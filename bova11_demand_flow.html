@@ -119,9 +119,9 @@
 <div class="hdr">
   <div>
     <div class="hdr-title">BOVA11 — Demand Flow &amp; PDI</div>
-    <div class="hdr-sub">2026-04-01 | 1abr | Spot D: 185.04 / D-1: 184.24</div>
+    <div class="hdr-sub">2026-04-01 | 1abr | Spot D: 185.00 / D-1: 184.28</div>
   </div>
-  <button class="theme-btn" id="theme-toggle" onclick="toggleTheme()">🌙 Modo Escuro</button>
+  <button class="theme-btn" id="theme-toggle" onclick="toggleTheme()">◐ Tema</button>
 </div>
 
 <div class="exp-wrap">
@@ -237,7 +237,7 @@ function toggleTheme() {
   const dark = document.documentElement.getAttribute('data-theme') === 'dark';
   const next = dark ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', next);
-  document.getElementById('theme-toggle').textContent = next === 'dark' ? '☀️ Modo Claro' : '🌙 Modo Escuro';
+  document.getElementById('theme-toggle').textContent = '◐ Tema';
   try { localStorage.setItem('bova11-theme', next); } catch(e) {}
   if (histChart) { histChart.update(); }
 }
@@ -246,7 +246,7 @@ function toggleTheme() {
   if (saved === 'dark') {
     document.documentElement.setAttribute('data-theme', 'dark');
     const btn = document.getElementById('theme-toggle');
-    if (btn) btn.textContent = '☀️ Modo Claro';
+    if (btn) btn.textContent = '◐ Tema';
   }
 })();
 
