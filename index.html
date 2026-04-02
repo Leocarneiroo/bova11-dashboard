@@ -1,264 +1,627 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BOVA11 Dashboard Completo - {data_d1} vs {data_d}</title>
+    <title>BOVA11 Dashboard - 31/Mar vs 1/Abr</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #f6f8fa; --bg2: #ffffff; --border: #d0d7de; --text: #24292f; --muted: #57606a; --blu: #0969da; --sidebar-w: 280px; --topbar-h: 49px; }
-        [data-theme="dark"] { --bg: #0d1117; --bg2: #161b22; --border: #30363d; --text: #c9d1d9; --muted: #8b949e; --blu: #58a6ff; }
+        :root {
+            --bg: #f3f5f7;
+            --surface: #ffffff;
+            --surface-2: #f7f9fb;
+            --surface-3: #eef3f8;
+            --border: #dce2e8;
+            --border-strong: #c9d3dd;
+            --text: #111827;
+            --muted: #5f6b7a;
+            --soft: #7a8696;
+            --accent: #2563eb;
+            --accent-soft: rgba(37, 99, 235, 0.08);
+            --danger: #c33c31;
+            --shadow: 0 18px 45px rgba(17, 24, 39, 0.06);
+            --sidebar-w: 330px;
+            --topbar-h: 56px;
+            --font: 'Instrument Sans', system-ui, sans-serif;
+            --mono: 'JetBrains Mono', monospace;
+        }
+        [data-theme="dark"] {
+            --bg: #0f141b;
+            --surface: #141b23;
+            --surface-2: #19212b;
+            --surface-3: #1f2933;
+            --border: #273240;
+            --border-strong: #334155;
+            --text: #e5ebf3;
+            --muted: #a3afbf;
+            --soft: #7d8a9b;
+            --accent: #6ea8ff;
+            --accent-soft: rgba(110, 168, 255, 0.12);
+            --danger: #f87171;
+            --shadow: 0 22px 50px rgba(0, 0, 0, 0.28);
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; height: 100dvh; overflow: hidden; }
-
-        /* ── Sidebar ── */
-        .sidebar {
-            width: var(--sidebar-w);
-            background: var(--bg2);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            padding: 20px 0;
-            flex-shrink: 0;
-            overflow: hidden;
-            transition: width 0.3s ease, transform 0.3s ease;
-            z-index: 200;
-            height: 100%;
-        }
-        .sidebar.collapsed { width: 48px; padding: 12px 0; align-items: center; }
-        .sidebar.collapsed .brand,
-        .sidebar.collapsed .menu { display: none; }
-        .collapse-btn {
-            background: none;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 5px 9px;
-            cursor: pointer;
-            color: var(--muted);
-            font-size: 0.75rem;
-            line-height: 1;
-            align-self: flex-end;
-            margin: 0 12px 14px 0;
-            transition: all 0.2s;
-            flex-shrink: 0;
-        }
-        .sidebar.collapsed .collapse-btn { align-self: center; margin: 0; }
-        .collapse-btn:hover { color: var(--text); border-color: var(--blu); }
-        .brand { padding: 0 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
-        .brand h1 { font-size: 1.2rem; color: var(--text); margin-bottom: 4px; }
-        .brand span { font-size: 0.85rem; color: var(--muted); }
-        .menu {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            padding: 0 12px;
-            overflow-y: auto;
-            flex: 1;
-            min-height: 0;
-            padding-bottom: 20px;
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior: contain;
-            touch-action: pan-y;
-        }
-        .menu-item { padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 500; color: var(--muted); transition: all 0.2s; }
-        .menu-item:hover { background: rgba(88, 166, 255, 0.1); color: var(--text); }
-        .menu-item.active { background: var(--blu); color: #fff; }
-
-        /* ── Content ── */
-        .content { flex: 1; display: flex; flex-direction: column; background: var(--bg); overflow: hidden; position: relative; }
-        iframe { border: none; width: 100%; height: 100%; }
-        .missing-file { display: none; padding: 40px; text-align: center; color: #f85149; }
-        .control-stack {
-            position: absolute;
-            top: 14px;
-            right: 16px;
-            z-index: 120;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 8px;
-        }
-        .update-badge {
-            padding: 4px 8px;
-            border-radius: 999px;
-            border: 1px solid rgba(88, 166, 255, 0.25);
-            background: rgba(13, 17, 23, 0.82);
-            backdrop-filter: blur(8px);
-            color: #8b949e;
-            font-size: 0.68rem;
-            line-height: 1.2;
-            white-space: nowrap;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
-        }
-        [data-theme="light"] .update-badge {
-            background: rgba(255, 255, 255, 0.9);
-            color: var(--muted);
-        }
-        .theme-toggle {
-            background: var(--bg2);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            width: 34px;
-            height: 34px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0;
+        html, body { height: 100%; }
+        body {
+            font-family: var(--font);
+            background: var(--bg);
             color: var(--text);
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            line-height: 1;
-            transition: all 0.2s ease;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+            display: flex;
+            min-height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
         }
-        .theme-toggle:hover { border-color: var(--blu); color: var(--blu); }
-
-        /* ── Mobile topbar ── */
+        button { font: inherit; }
+        .mono { font-family: var(--mono); }
         .topbar {
             display: none;
             align-items: center;
             gap: 12px;
-            background: var(--bg2);
-            border-bottom: 1px solid var(--border);
-            padding: 12px 16px;
-            flex-shrink: 0;
             min-height: var(--topbar-h);
+            padding: 12px 16px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            z-index: 180;
         }
-        .hamburger {
-            background: none;
+        .hamburger, .theme-toggle {
             border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 6px 10px;
-            cursor: pointer;
+            background: var(--surface);
             color: var(--text);
-            font-size: 1.2rem;
-            line-height: 1;
-            flex-shrink: 0;
+            border-radius: 999px;
+            padding: 9px 12px;
+            cursor: pointer;
+            transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+        }
+        .hamburger:hover, .theme-toggle:hover {
+            border-color: var(--accent);
+            color: var(--accent);
         }
         .topbar-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #fff;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .topbar-title strong {
+            font-size: 0.98rem;
+            line-height: 1.2;
+        }
+        .topbar-title span {
+            font-size: 0.72rem;
+            color: var(--muted);
+            line-height: 1.2;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-
-        /* ── Overlay ── */
         .overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.55);
-            z-index: 150;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(2px);
+            z-index: 190;
         }
         .overlay.open { display: block; }
-
-        /* ── Mobile breakpoint ── */
-        @media (max-width: 768px) {
-            body { flex-direction: column; min-height: 100vh; height: 100dvh; }
-
-            .topbar { display: flex; }
-            .collapse-btn { display: none; }
-
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            min-height: 100%;
+            box-shadow: inset -1px 0 0 rgba(255,255,255,0.02);
+        }
+        .brand {
+            padding: 28px 24px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .brand-kicker {
+            font-size: 0.7rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--soft);
+            margin-bottom: 10px;
+            font-family: var(--mono);
+        }
+        .brand h1 {
+            font-size: 1.18rem;
+            letter-spacing: -0.03em;
+            margin-bottom: 6px;
+        }
+        .brand p {
+            font-size: 0.88rem;
+            color: var(--muted);
+            line-height: 1.5;
+            max-width: 28ch;
+        }
+        .menu {
+            padding: 18px 16px 22px;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 0;
+        }
+        .menu-group + .menu-group {
+            margin-top: 10px;
+        }
+        .group-toggle {
+            width: 100%;
+            border: none;
+            background: transparent;
+            color: var(--text);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 10px 10px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+        .group-toggle:hover {
+            background: var(--surface-2);
+        }
+        .group-toggle::after {
+            content: '+';
+            color: var(--muted);
+            font-weight: 500;
+        }
+        .group-toggle.expanded::after {
+            content: '−';
+        }
+        .group-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 28px;
+            height: 22px;
+            padding: 0 8px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 0.74rem;
+            font-family: var(--mono);
+        }
+        .group-items {
+            display: none;
+            gap: 6px;
+            padding: 6px 0 4px;
+        }
+        .group-items.expanded {
+            display: grid;
+        }
+        .menu-item {
+            border: 1px solid transparent;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+            padding: 12px 14px;
+            border-radius: 14px;
+            cursor: pointer;
+            display: grid;
+            gap: 4px;
+            color: var(--text);
+            transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+        }
+        .menu-item:hover {
+            background: var(--surface-2);
+            border-color: var(--border);
+            transform: translateY(-1px);
+        }
+        .menu-item.active {
+            background: var(--accent-soft);
+            border-color: rgba(37, 99, 235, 0.2);
+        }
+        .mi-title {
+            font-size: 0.92rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+        .mi-desc {
+            font-size: 0.76rem;
+            line-height: 1.45;
+            color: var(--muted);
+        }
+        .content {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .content-shell {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 18px 20px 20px;
+            height: 100%;
+            min-height: 0;
+        }
+        .context-bar {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 18px;
+            box-shadow: var(--shadow);
+        }
+        .context-meta {
+            min-width: 0;
+            display: grid;
+            gap: 8px;
+        }
+        .context-kicker {
+            font-size: 0.72rem;
+            font-family: var(--mono);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--soft);
+        }
+        .context-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 12px;
+        }
+        .context-head h2 {
+            font-size: 1.38rem;
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+        }
+        .context-desc {
+            font-size: 0.92rem;
+            color: var(--muted);
+            line-height: 1.5;
+            max-width: 68ch;
+        }
+        .context-time {
+            font-size: 0.76rem;
+            color: var(--soft);
+            white-space: nowrap;
+        }
+        .context-side {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .update-badge {
+            font-size: 0.72rem;
+            color: var(--soft);
+            padding: 7px 10px;
+            border-radius: 999px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            white-space: nowrap;
+        }
+        .quick-switch {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 2px;
+        }
+        .quick-link {
+            flex: 0 0 auto;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--muted);
+            border-radius: 999px;
+            padding: 10px 14px;
+            cursor: pointer;
+            transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+        }
+        .quick-link:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+        .quick-link.active {
+            background: var(--accent-soft);
+            border-color: rgba(37, 99, 235, 0.2);
+            color: var(--accent);
+        }
+        .frame-shell {
+            flex: 1;
+            min-height: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+        }
+        .frame-shell iframe {
+            border: none;
+            width: 100%;
+            height: 100%;
+            flex: 1;
+            background: var(--surface);
+        }
+        .missing-file {
+            display: none;
+            height: 100%;
+            padding: 48px 28px;
+            color: var(--danger);
+            text-align: center;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .missing-file h2 {
+            font-size: 1.1rem;
+        }
+        .missing-file p {
+            max-width: 42ch;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+        @media (max-width: 980px) {
+            body {
+                flex-direction: column;
+            }
+            .topbar {
+                display: flex;
+            }
             .sidebar {
                 position: fixed;
                 top: 0;
                 left: 0;
-                bottom: auto;
-                height: 100dvh;
+                bottom: 0;
                 transform: translateX(-100%);
-                padding-top: 16px;
-                width: var(--sidebar-w) !important;
+                transition: transform 0.24s ease;
+                z-index: 200;
+                width: min(92vw, var(--sidebar-w));
+                box-shadow: var(--shadow);
             }
-            .sidebar.open { transform: translateX(0); }
-            .sidebar.collapsed { width: var(--sidebar-w) !important; padding: 16px 0; align-items: stretch; }
-            .sidebar.collapsed .brand,
-            .sidebar.collapsed .menu { display: flex; }
-            .menu { padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
-
-            .content { height: calc(100dvh - var(--topbar-h)); }
-            .control-stack {
-                top: 10px;
-                right: 12px;
-                max-width: calc(100vw - 24px);
-                align-items: flex-end;
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .content {
+                height: calc(100dvh - var(--topbar-h));
+            }
+            .content-shell {
+                padding: 14px 14px 16px;
+            }
+            .context-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .context-side {
+                align-items: stretch;
             }
             .update-badge {
                 white-space: normal;
-                text-align: right;
-                font-size: 0.68rem;
+            }
+        }
+        @media (max-width: 720px) {
+            .context-head h2 {
+                font-size: 1.12rem;
+            }
+            .quick-link {
+                padding: 9px 12px;
+                font-size: 0.84rem;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Mobile topbar -->
     <div class="topbar">
-        <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">&#9776;</button>
-        <span class="topbar-title" id="topbar-title">BOVA11 Analytics</span>
+        <button class="hamburger" onclick="toggleSidebar()" aria-label="Abrir navegação">Menu</button>
+        <div class="topbar-title">
+            <strong id="topbar-title">Rankings &amp; Overview</strong>
+            <span id="topbar-desc">Panorama agregado de OI, IV e volume por vencimento.</span>
+        </div>
+        <button class="theme-toggle" onclick="toggleTheme()" title="Alternar tema">Tema</button>
     </div>
 
-    <!-- Overlay (fecha sidebar ao clicar fora) -->
     <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 
-    <div class="sidebar" id="sidebar">
-        <button class="collapse-btn" id="collapse-btn" onclick="toggleCollapse()" title="Recolher menu">◀</button>
+    <aside class="sidebar" id="sidebar">
         <div class="brand">
-            <h1>BOVA11 Analytics</h1>
-            <span>Modelos Quantitativos</span>
+            <div class="brand-kicker">BOVA11 Analytics</div>
+            <h1>Painel quantitativo unificado</h1>
+            <p>Leitura rápida do dia, estrutura por vencimento e módulos de apoio organizados por tarefa.</p>
         </div>
         <div class="menu">
-            <div class="menu-item active" onclick="loadPage(this, 'bova11_rankings_pro_31mar_vs_1abr.html')">🏆 Rankings & Overview</div>
-<div class="menu-item" onclick="loadPage(this, 'bova11_gex_pro_31mar_vs_1abr.html')">🎯 GEX & MaxPain</div>
-<div class="menu-item" onclick="loadPage(this, 'bova11_insights_31Mar_vs_1Abr.html')">💡 Insights Analíticos</div>
-<div class="menu-item" onclick="loadPage(this, 'bova11_skew_history.html')">📈 Skew & IV History</div>
-<div class="menu-item" onclick="loadPage(this, 'bova11_flow_history.html')">📦 Flow History</div>
-<div class="menu-item" onclick="loadPage(this, 'bova11_convexity_31mar_vs_1abr.html')">🔄 Convexity (G/V/C)</div>
-<div class="menu-item" onclick="loadPage(this, 'bova11_trade_score_31mar_vs_1abr.html')">⚖️ Trade Score & Bias</div>
-<div class="menu-item" onclick="loadPage(this, 'bova11_quant_institucional.html')">📊 Quant Institucional</div>
-<div class="menu-item" onclick="loadPage(this, 'bova11_tex_dex_vex_31mar_vs_1abr.html')">🌡️ TEX DEX VEX</div>
-<div class="menu-item" onclick="loadPage(this, 'bova11_skew_prediction.html')">🎯 IV Skew Signal</div>
-<div class="menu-item" onclick="loadPage(this, 'bova11_oi_stats_light.html')">☀️ OI Stats</div>
-<div class="menu-item" onclick="loadPage(this, 'bova11_max_pain.html')">🩺 Max Pain Relevance</div>
-<div class="menu-item" onclick="loadPage(this, 'bova11_gravity_map.html')">🌌 Mapa Gravitacional</div>
-<div class="menu-item" onclick="loadPage(this, 'bova11_hunter_walls.html')">🧱 Hunter Walls</div>
-<div class="menu-item" onclick="loadPage(this, 'bova11_gex_history.html')">📉 GEX Histórico</div>
-<div class="menu-item" onclick="loadPage(this, 'bova11_diagnostico_4d.html')">🧠 Diagnóstico 4D</div>
-<div class="menu-item" onclick="loadPage(this, 'bova11_bandas_vol.html')">📊 Bandas de Vol</div>
-<div class="menu-item" onclick="loadPage(this, 'bova11_demand_flow.html')">🎯 Demand Flow & PDI</div>
-<div class="menu-item" onclick="loadPage(this, 'bova11_arquivos.html')">📁 Arquivos</div>
+            
+            <section class="menu-group">
+                <button class="group-toggle expanded" data-group="hoje" onclick="toggleGroup('hoje')" aria-expanded="true">
+                    <span>Hoje</span>
+                    <span class="group-count">4</span>
+                </button>
+                <div class="group-items expanded" id="group-hoje">
+                    
+                <button class="menu-item active" data-file="bova11_rankings_pro_31mar_vs_1abr.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">Rankings &amp; Overview</span>
+                    <span class="mi-desc">Panorama agregado de OI, IV e volume por vencimento.</span>
+                </button>
+                <button class="menu-item" data-file="bova11_gex_pro_31mar_vs_1abr.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">GEX &amp; MaxPain</span>
+                    <span class="mi-desc">Regime gamma, flip e strikes dominantes do dia.</span>
+                </button>
+                <button class="menu-item" data-file="bova11_insights_31Mar_vs_1Abr.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">Insights Analíticos</span>
+                    <span class="mi-desc">Leitura operacional por vencimento com foco no que mudou.</span>
+                </button>
+                <button class="menu-item" data-file="bova11_trade_score_31mar_vs_1abr.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">Trade Score &amp; Bias</span>
+                    <span class="mi-desc">Score por strike e viés institucional estimado.</span>
+                </button>
+                </div>
+            </section>
+            <section class="menu-group">
+                <button class="group-toggle" data-group="estrutura" onclick="toggleGroup('estrutura')" aria-expanded="false">
+                    <span>Estrutura</span>
+                    <span class="group-count">6</span>
+                </button>
+                <div class="group-items" id="group-estrutura">
+                    
+                <button class="menu-item" data-file="bova11_oi_stats_light.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">OI Stats</span>
+                    <span class="mi-desc">Distribuição estatística do OI e concentração por vencimento.</span>
+                </button>
+                <button class="menu-item" data-file="bova11_tex_dex_vex_31mar_vs_1abr.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">TEX DEX VEX</span>
+                    <span class="mi-desc">Exposição de gregas por strike para leitura estrutural.</span>
+                </button>
+                <button class="menu-item" data-file="bova11_max_pain.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">Max Pain Relevance</span>
+                    <span class="mi-desc">Força relativa do pinning considerando prazo e OI.</span>
+                </button>
+                <button class="menu-item" data-file="bova11_gravity_map.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">Mapa Gravitacional</span>
+                    <span class="mi-desc">Centros de massa de OI, GEX e DEX no mesmo painel.</span>
+                </button>
+                <button class="menu-item" data-file="bova11_hunter_walls.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">Hunter Walls</span>
+                    <span class="mi-desc">Paredes de volume e concentração por strike.</span>
+                </button>
+                <button class="menu-item" data-file="bova11_demand_flow.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">Demand Flow &amp; PDI</span>
+                    <span class="mi-desc">Fluxo líquido de demanda e direção do hedge.</span>
+                </button>
+                </div>
+            </section>
+            <section class="menu-group">
+                <button class="group-toggle" data-group="hist-rico" onclick="toggleGroup('hist-rico')" aria-expanded="false">
+                    <span>Histórico</span>
+                    <span class="group-count">5</span>
+                </button>
+                <div class="group-items" id="group-hist-rico">
+                    
+                <button class="menu-item" data-file="bova11_skew_history.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">Skew &amp; IV History</span>
+                    <span class="mi-desc">Evolução histórica de skew e IV média.</span>
+                </button>
+                <button class="menu-item" data-file="bova11_flow_history.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">Flow History</span>
+                    <span class="mi-desc">Entradas e saídas acumuladas de OI por sessão.</span>
+                </button>
+                <button class="menu-item" data-file="bova11_gex_history.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">GEX Histórico</span>
+                    <span class="mi-desc">Série temporal do gamma exposure agregado.</span>
+                </button>
+                <button class="menu-item" data-file="bova11_quant_institucional.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">Quant Institucional</span>
+                    <span class="mi-desc">Força relativa, momentum e leitura institucional.</span>
+                </button>
+                <button class="menu-item" data-file="bova11_bandas_vol.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">Bandas de Vol</span>
+                    <span class="mi-desc">Vol implícita versus bandas de referência histórica.</span>
+                </button>
+                </div>
+            </section>
+            <section class="menu-group">
+                <button class="group-toggle" data-group="laborat-rio" onclick="toggleGroup('laborat-rio')" aria-expanded="false">
+                    <span>Laboratório</span>
+                    <span class="group-count">4</span>
+                </button>
+                <div class="group-items" id="group-laborat-rio">
+                    
+                <button class="menu-item" data-file="bova11_convexity_31mar_vs_1abr.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">Convexity</span>
+                    <span class="mi-desc">Decomposição de gamma, vanna e charm.</span>
+                </button>
+                <button class="menu-item" data-file="bova11_skew_prediction.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">IV Skew Signal</span>
+                    <span class="mi-desc">Sinal composto de skew com backtest auxiliar.</span>
+                </button>
+                <button class="menu-item" data-file="bova11_diagnostico_4d.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">Diagnóstico 4D</span>
+                    <span class="mi-desc">Leitura cruzada entre GEX, DEX, VEX e TEX.</span>
+                </button>
+                <button class="menu-item" data-file="bova11_arquivos.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">Arquivos</span>
+                    <span class="mi-desc">Saída auxiliar para revisão e histórico em markdown.</span>
+                </button>
+                </div>
+            </section>
+        </div>
+    </aside>
 
-        </div>
-    </div>
-    <div class="content">
-        <div class="control-stack">
-            <div class="update-badge" title="Momento em que os dados do dashboard foram gerados">
-                02/04/2026 02:15:54
+    <main class="content">
+        <div class="content-shell">
+            <section class="context-bar">
+                <div class="context-meta">
+                    <div class="context-kicker" id="context-group">Hoje</div>
+                    <div class="context-head">
+                        <h2 id="context-title">Rankings &amp; Overview</h2>
+                        <span class="context-time mono">Atualizado em 02/04/2026 12:40:53</span>
+                    </div>
+                    <p class="context-desc" id="context-desc">Panorama agregado de OI, IV e volume por vencimento.</p>
+                </div>
+                <div class="context-side">
+                    <div class="update-badge mono" title="Momento em que os dados do dashboard foram gerados">02/04/2026 12:40:53</div>
+                    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Alternar tema">Tema</button>
+                </div>
+            </section>
+
+            <div class="quick-switch">
+                <button class="quick-link active" data-file="bova11_rankings_pro_31mar_vs_1abr.html" onclick="loadPage(this.dataset.file)">Rankings &amp; Overview</button><button class="quick-link" data-file="bova11_gex_pro_31mar_vs_1abr.html" onclick="loadPage(this.dataset.file)">GEX &amp; MaxPain</button><button class="quick-link" data-file="bova11_insights_31Mar_vs_1Abr.html" onclick="loadPage(this.dataset.file)">Insights Analíticos</button>
             </div>
-            <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Alternar tema">◐</button>
+
+            <section class="frame-shell">
+                <iframe id="main-frame" src="bova11_rankings_pro_31mar_vs_1abr.html" onload="checkIframe()"></iframe>
+                <div id="error-msg" class="missing-file">
+                    <h2>Arquivo não encontrado</h2>
+                    <p>Este módulo pode não ter sido processado ainda ou o nome do arquivo gerado está incorreto.</p>
+                </div>
+            </section>
         </div>
-        <iframe id="main-frame" src="bova11_rankings_pro_31mar_vs_1abr.html" onload="checkIframe()"></iframe>
-        <div id="error-msg" class="missing-file">
-            <h2>⚠️ Arquivo não encontrado</h2>
-            <p>Este módulo pode não ter sido processado ou o nome do arquivo está incorreto.</p>
-        </div>
-    </div>
+    </main>
+
     <script>
-        function loadPage(el, url) {
-            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-            el.classList.add('active');
-            document.getElementById('main-frame').style.display = 'block';
+        const MODULES = [{"title": "Rankings & Overview", "file": "bova11_rankings_pro_31mar_vs_1abr.html", "group": "Hoje", "priority": 1, "description": "Panorama agregado de OI, IV e volume por vencimento.", "quick": true}, {"title": "GEX & MaxPain", "file": "bova11_gex_pro_31mar_vs_1abr.html", "group": "Hoje", "priority": 2, "description": "Regime gamma, flip e strikes dominantes do dia.", "quick": true}, {"title": "Insights Analíticos", "file": "bova11_insights_31Mar_vs_1Abr.html", "group": "Hoje", "priority": 3, "description": "Leitura operacional por vencimento com foco no que mudou.", "quick": true}, {"title": "Trade Score & Bias", "file": "bova11_trade_score_31mar_vs_1abr.html", "group": "Hoje", "priority": 4, "description": "Score por strike e viés institucional estimado.", "quick": false}, {"title": "OI Stats", "file": "bova11_oi_stats_light.html", "group": "Estrutura", "priority": 1, "description": "Distribuição estatística do OI e concentração por vencimento.", "quick": false}, {"title": "TEX DEX VEX", "file": "bova11_tex_dex_vex_31mar_vs_1abr.html", "group": "Estrutura", "priority": 2, "description": "Exposição de gregas por strike para leitura estrutural.", "quick": false}, {"title": "Max Pain Relevance", "file": "bova11_max_pain.html", "group": "Estrutura", "priority": 3, "description": "Força relativa do pinning considerando prazo e OI.", "quick": false}, {"title": "Mapa Gravitacional", "file": "bova11_gravity_map.html", "group": "Estrutura", "priority": 4, "description": "Centros de massa de OI, GEX e DEX no mesmo painel.", "quick": false}, {"title": "Hunter Walls", "file": "bova11_hunter_walls.html", "group": "Estrutura", "priority": 5, "description": "Paredes de volume e concentração por strike.", "quick": false}, {"title": "Demand Flow & PDI", "file": "bova11_demand_flow.html", "group": "Estrutura", "priority": 6, "description": "Fluxo líquido de demanda e direção do hedge.", "quick": false}, {"title": "Skew & IV History", "file": "bova11_skew_history.html", "group": "Histórico", "priority": 1, "description": "Evolução histórica de skew e IV média.", "quick": false}, {"title": "Flow History", "file": "bova11_flow_history.html", "group": "Histórico", "priority": 2, "description": "Entradas e saídas acumuladas de OI por sessão.", "quick": false}, {"title": "GEX Histórico", "file": "bova11_gex_history.html", "group": "Histórico", "priority": 3, "description": "Série temporal do gamma exposure agregado.", "quick": false}, {"title": "Quant Institucional", "file": "bova11_quant_institucional.html", "group": "Histórico", "priority": 4, "description": "Força relativa, momentum e leitura institucional.", "quick": false}, {"title": "Bandas de Vol", "file": "bova11_bandas_vol.html", "group": "Histórico", "priority": 5, "description": "Vol implícita versus bandas de referência histórica.", "quick": false}, {"title": "Convexity", "file": "bova11_convexity_31mar_vs_1abr.html", "group": "Laboratório", "priority": 1, "description": "Decomposição de gamma, vanna e charm.", "quick": false}, {"title": "IV Skew Signal", "file": "bova11_skew_prediction.html", "group": "Laboratório", "priority": 2, "description": "Sinal composto de skew com backtest auxiliar.", "quick": false}, {"title": "Diagnóstico 4D", "file": "bova11_diagnostico_4d.html", "group": "Laboratório", "priority": 3, "description": "Leitura cruzada entre GEX, DEX, VEX e TEX.", "quick": false}, {"title": "Arquivos", "file": "bova11_arquivos.html", "group": "Laboratório", "priority": 4, "description": "Saída auxiliar para revisão e histórico em markdown.", "quick": false}];
+        const MODULE_MAP = Object.fromEntries(MODULES.map(module => [module.file, module]));
+
+        function setActiveModule(url) {
+            document.querySelectorAll('.menu-item, .quick-link').forEach(el => {
+                el.classList.toggle('active', el.dataset.file === url);
+            });
+        }
+
+        function updateContext(url) {
+            const module = MODULE_MAP[url];
+            if (!module) return;
+            document.title = `BOVA11 - ${module.title}`;
+            document.getElementById('context-group').textContent = module.group;
+            document.getElementById('context-title').textContent = module.title;
+            document.getElementById('context-desc').textContent = module.description;
+            document.getElementById('topbar-title').textContent = module.title;
+            document.getElementById('topbar-desc').textContent = module.description;
+        }
+
+        function loadPage(url) {
+            const frame = document.getElementById('main-frame');
             document.getElementById('error-msg').style.display = 'none';
-            document.getElementById('main-frame').src = url;
-            const label = el.innerText.trim();
-            document.title = "BOVA11 - " + label.replace(/[^\w\s]/g, '').trim();
-            document.getElementById('topbar-title').textContent = label;
+            frame.style.display = 'block';
+            frame.src = url;
+            setActiveModule(url);
+            updateContext(url);
             closeSidebar();
         }
 
+        function toggleGroup(groupId) {
+            const toggle = document.querySelector(`.group-toggle[data-group="${groupId}"]`);
+            const group = document.getElementById(`group-${groupId}`);
+            if (!toggle || !group) return;
+            const expanded = group.classList.toggle('expanded');
+            toggle.classList.toggle('expanded', expanded);
+            toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        }
+
         function toggleSidebar() {
-            const open = document.getElementById('sidebar').classList.toggle('open');
+            const sidebar = document.getElementById('sidebar');
+            const open = sidebar.classList.toggle('open');
             document.getElementById('overlay').classList.toggle('open', open);
         }
 
@@ -267,72 +630,36 @@
             document.getElementById('overlay').classList.remove('open');
         }
 
-        function toggleCollapse() {
-            if (window.matchMedia('(max-width: 768px)').matches) return;
-            const sidebar = document.getElementById('sidebar');
-            const btn = document.getElementById('collapse-btn');
-            const collapsed = sidebar.classList.toggle('collapsed');
-            btn.textContent = collapsed ? '▶' : '◀';
-            btn.title = collapsed ? 'Expandir menu' : 'Recolher menu';
-            try { localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0'); } catch(e) {}
-        }
-
-        function ensureMobileSidebarState() {
-            if (!window.matchMedia('(max-width: 768px)').matches) return;
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.remove('collapsed');
-            const btn = document.getElementById('collapse-btn');
-            if (btn) {
-                btn.textContent = '◀';
-                btn.title = 'Recolher menu';
-            }
-        }
-
-        // Restore collapse state on load
-        (function() {
-            try {
-                if (localStorage.getItem('sidebarCollapsed') === '1') {
-                    document.getElementById('sidebar').classList.add('collapsed');
-                    const btn = document.getElementById('collapse-btn');
-                    btn.textContent = '▶';
-                    btn.title = 'Expandir menu';
-                }
-            } catch(e) {}
-            ensureMobileSidebarState();
-        })();
-
-        window.addEventListener('resize', ensureMobileSidebarState);
-
         function checkIframe() {
             const iframe = document.getElementById('main-frame');
             try {
                 const doc = iframe.contentDocument || iframe.contentWindow.document;
                 if (!doc || !doc.body || doc.body.innerHTML.trim() === '') {
                     iframe.style.display = 'none';
-                    document.getElementById('error-msg').style.display = 'block';
+                    document.getElementById('error-msg').style.display = 'flex';
                     return;
                 }
                 doc.querySelectorAll('#theme-toggle, #theme-btn, button.theme-toggle, button.theme-btn').forEach(btn => {
                     btn.style.display = 'none';
                 });
             } catch(e) {
-                // Ignorar (cross-origin quando abre via file://)
+                // Ignorar quando o contexto não permitir inspeção do iframe.
             }
         }
 
         function refreshCurrentFrame() {
             const iframe = document.getElementById('main-frame');
-            if (!iframe || iframe.style.display === 'none' || !iframe.src) return;
+            if (!iframe || iframe.style.display === 'none') return;
             const currentSrc = iframe.getAttribute('src');
             if (!currentSrc) return;
             iframe.setAttribute('src', currentSrc);
         }
 
-        (function() {
+        (function applySavedTheme() {
             try {
                 const saved = localStorage.getItem('bova11-theme');
-                if (saved === 'light' || saved === 'dark') {
-                    document.documentElement.setAttribute('data-theme', saved);
+                if (saved === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
                 }
             } catch(e) {}
         })();
@@ -340,7 +667,8 @@
         function toggleTheme() {
             const html = document.documentElement;
             const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-theme', next);
+            if (next === 'light') html.removeAttribute('data-theme');
+            else html.setAttribute('data-theme', 'dark');
             try { localStorage.setItem('bova11-theme', next); } catch(e) {}
             refreshCurrentFrame();
         }
