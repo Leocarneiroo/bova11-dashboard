@@ -32,10 +32,22 @@
         .card .label { color:var(--text2); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; }
         .card .value { margin-top:6px; font-size:1.35rem; font-weight:700; }
         .card .sub { margin-top:4px; color:var(--text2); font-size:0.78rem; }
+        .expand { margin-top:8px; border-top:1px dashed var(--border); padding-top:8px; }
+        .expand summary {
+            cursor:pointer; color:var(--blu); font-size:0.78rem; font-weight:600;
+            list-style:none; user-select:none;
+        }
+        .expand summary::-webkit-details-marker { display:none; }
+        .expand summary::after { content:" ▼"; font-size:0.68rem; color:var(--text2); }
+        .expand[open] summary::after { content:" ▲"; }
+        .expand .sub { margin-top:6px; }
 
         .box { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:18px; margin-bottom:16px; }
         .box h2 { font-size:1.02rem; margin-bottom:12px; }
         canvas { max-height:330px; }
+        .guide p { margin-bottom:8px; color:var(--text2); }
+        .guide ul { margin:6px 0 10px 20px; color:var(--text2); }
+        .guide li { margin-bottom:4px; }
 
         .table-wrap { overflow-x:auto; }
         table { width:100%; border-collapse:collapse; font-size:0.88rem; }
@@ -84,39 +96,51 @@
             <div class="label">Backtest V3 (Principal)</div>
             <div class="value">42.9%</div>
             <div class="sub">3/7 acertos | Erros: 4</div>
-            <div class="sub">Cobertura preço: 33.3% | Missing price: 1</div>
-            <div class="sub">Alta: 2/4 (50.0%) | Baixa: 1/3 (33.3%)</div>
-            <div class="sub">Estados: NEUTRO=14 FLAT=0 N/A=1</div>
             <div class="sub">N/A(price=1, feature=0) | Operados: 8 (Bull=4, Bear=4)</div>
             <div class="sub">Viés por operação: Bull=50.0% | Bear=50.0%</div>
+            <details class="expand">
+                <summary>Ver detalhes</summary>
+                <div class="sub">Cobertura preço: 33.3% | Missing price: 1</div>
+                <div class="sub">Alta: 2/4 (50.0%) | Baixa: 1/3 (33.3%)</div>
+                <div class="sub">Estados: NEUTRO=14 FLAT=0 N/A=1</div>
+            </details>
         </div>
         <div class="card">
             <div class="label">Backtest Híbrido (Shadow)</div>
             <div class="value">75.0%</div>
             <div class="sub">9/12 acertos | Erros: 3</div>
-            <div class="sub">Cobertura preço: 54.5% | Missing price: 0</div>
-            <div class="sub">Alta: 3/5 (60.0%) | Baixa: 6/7 (85.7%)</div>
-            <div class="sub">Estados: NEUTRO=9 FLAT=0 N/A=1</div>
             <div class="sub">N/A(price=0, feature=1) | Operados: 12 (Bull=5, Bear=7)</div>
             <div class="sub">Viés por operação: Bull=41.7% | Bear=58.3%</div>
             <div class="sub">Fallback bear (observacional): 4</div>
+            <details class="expand">
+                <summary>Ver detalhes</summary>
+                <div class="sub">Cobertura preço: 54.5% | Missing price: 0</div>
+                <div class="sub">Alta: 3/5 (60.0%) | Baixa: 6/7 (85.7%)</div>
+                <div class="sub">Estados: NEUTRO=9 FLAT=0 N/A=1</div>
+            </details>
         </div>
         <div class="card">
             <div class="label">Overlap V3 x Híbrido</div>
             <div class="value">6</div>
             <div class="sub">both_operated</div>
             <div class="sub">same_signal=6 | disagreement=0</div>
-            <div class="sub">hybrid_only=6 | v3_only=2</div>
-            <div class="sub">conflicts_raw=3</div>
-            <div class="sub">resolved_to_bull=3 | resolved_to_bear=0</div>
+            <details class="expand">
+                <summary>Ver detalhes</summary>
+                <div class="sub">hybrid_only=6 | v3_only=2</div>
+                <div class="sub">conflicts_raw=3</div>
+                <div class="sub">resolved_to_bull=3 | resolved_to_bear=0</div>
+            </details>
         </div>
         <div class="card">
             <div class="label">Estados (Legenda)</div>
             <div class="value">NEUTRO / FLAT / N/A</div>
-            <div class="sub">NEUTRO: sem gatilho</div>
-            <div class="sub">FLAT: |D+1 - D| <= epsilon</div>
-            <div class="sub">N/A: missing_price ou missing_feature</div>
-            <div class="sub">Status: OK (25 pregões)</div>
+            <div class="sub">NEUTRO: sem trade</div>
+            <details class="expand">
+                <summary>Ver detalhes</summary>
+                <div class="sub">FLAT: |D+1 - D| <= epsilon</div>
+                <div class="sub">N/A: missing_price ou missing_feature</div>
+                <div class="sub">Status: OK (25 pregões)</div>
+            </details>
         </div>
         <div class="card">
             <div class="label">Z-Score</div>
@@ -137,6 +161,21 @@
             <div class="label">Vencimentos Usados</div>
             <div class="value">3</div>
             <div class="sub">Volume pond.: 77594</div>
+        </div>
+    </section>
+
+    <section class="box">
+        <h2>Guia Operacional (Referência)</h2>
+        <div class="guide">
+            <p><strong>Direção principal:</strong> use <code>hybrid_pred_dir</code>.</p>
+            <p><strong>Confirmação de qualidade:</strong> use o overlap com V3.</p>
+            <ul>
+                <li><code>same_signal</code>: opera normal (maior confiança).</li>
+                <li><code>hybrid_only</code>: opera com mão menor (ex.: 50%).</li>
+                <li><code>disagreement</code>: não opera.</li>
+                <li><code>v3_only</code>: ignora por enquanto.</li>
+            </ul>
+            <p><code>NEUTRO</code> = sem trade. <code>FLAT</code> e <code>N/A</code> não entram como acerto/erro.</p>
         </div>
     </section>
 
