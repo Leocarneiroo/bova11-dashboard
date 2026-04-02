@@ -96,10 +96,12 @@
             <div class="label">Backtest V3 (Principal)</div>
             <div class="value">42.9%</div>
             <div class="sub">3/7 acertos | Erros: 4</div>
-            <div class="sub">N/A(price=1, feature=0) | Operados: 8 (Bull=4, Bear=4)</div>
-            <div class="sub">Viés por operação: Bull=50.0% | Bear=50.0%</div>
+            <div class="sub">Operados: 8</div>
             <details class="expand">
                 <summary>Ver detalhes</summary>
+                <div class="sub">N/A(price=1, feature=0)</div>
+                <div class="sub">Bull=4 | Bear=4</div>
+                <div class="sub">Viés por operação: Bull=50.0% | Bear=50.0%</div>
                 <div class="sub">Cobertura preço: 33.3% | Missing price: 1</div>
                 <div class="sub">Alta: 2/4 (50.0%) | Baixa: 1/3 (33.3%)</div>
                 <div class="sub">Estados: NEUTRO=14 FLAT=0 N/A=1</div>
@@ -109,11 +111,13 @@
             <div class="label">Backtest Híbrido (Shadow)</div>
             <div class="value">75.0%</div>
             <div class="sub">9/12 acertos | Erros: 3</div>
-            <div class="sub">N/A(price=0, feature=1) | Operados: 12 (Bull=5, Bear=7)</div>
-            <div class="sub">Viés por operação: Bull=41.7% | Bear=58.3%</div>
-            <div class="sub">Fallback bear (observacional): 4</div>
+            <div class="sub">Operados: 12</div>
             <details class="expand">
                 <summary>Ver detalhes</summary>
+                <div class="sub">N/A(price=0, feature=1)</div>
+                <div class="sub">Bull=5 | Bear=7</div>
+                <div class="sub">Viés por operação: Bull=41.7% | Bear=58.3%</div>
+                <div class="sub">Fallback bear (observacional): 4</div>
                 <div class="sub">Cobertura preço: 54.5% | Missing price: 0</div>
                 <div class="sub">Alta: 3/5 (60.0%) | Baixa: 6/7 (85.7%)</div>
                 <div class="sub">Estados: NEUTRO=9 FLAT=0 N/A=1</div>
@@ -123,7 +127,7 @@
             <div class="label">Overlap V3 x Híbrido</div>
             <div class="value">6</div>
             <div class="sub">both_operated</div>
-            <div class="sub">same_signal=6 | disagreement=0</div>
+            <div class="sub">same=6 | disagree=0</div>
             <details class="expand">
                 <summary>Ver detalhes</summary>
                 <div class="sub">hybrid_only=6 | v3_only=2</div>
@@ -134,9 +138,9 @@
         <div class="card">
             <div class="label">Estados (Legenda)</div>
             <div class="value">NEUTRO / FLAT / N/A</div>
-            <div class="sub">NEUTRO: sem trade</div>
             <details class="expand">
                 <summary>Ver detalhes</summary>
+                <div class="sub">NEUTRO: sem trade</div>
                 <div class="sub">FLAT: |D+1 - D| <= epsilon</div>
                 <div class="sub">N/A: missing_price ou missing_feature</div>
                 <div class="sub">Status: OK (25 pregões)</div>
@@ -167,15 +171,19 @@
     <section class="box">
         <h2>Guia Operacional (Referência)</h2>
         <div class="guide">
-            <p><strong>Direção principal:</strong> use <code>hybrid_pred_dir</code>.</p>
-            <p><strong>Confirmação de qualidade:</strong> use o overlap com V3.</p>
-            <ul>
-                <li><code>same_signal</code>: opera normal (maior confiança).</li>
-                <li><code>hybrid_only</code>: opera com mão menor (ex.: 50%).</li>
-                <li><code>disagreement</code>: não opera.</li>
-                <li><code>v3_only</code>: ignora por enquanto.</li>
-            </ul>
-            <p><code>NEUTRO</code> = sem trade. <code>FLAT</code> e <code>N/A</code> não entram como acerto/erro.</p>
+            <p>Regras de operação resumidas.</p>
+            <details class="expand">
+                <summary>Ver detalhes</summary>
+                <p><strong>Direção principal:</strong> use <code>hybrid_pred_dir</code>.</p>
+                <p><strong>Confirmação de qualidade:</strong> use o overlap com V3.</p>
+                <ul>
+                    <li><code>same_signal</code>: opera normal (maior confiança).</li>
+                    <li><code>hybrid_only</code>: opera com mão menor (ex.: 50%).</li>
+                    <li><code>disagreement</code>: não opera.</li>
+                    <li><code>v3_only</code>: ignora por enquanto.</li>
+                </ul>
+                <p><code>NEUTRO</code> = sem trade. <code>FLAT</code> e <code>N/A</code> não entram como acerto/erro.</p>
+            </details>
         </div>
     </section>
 
