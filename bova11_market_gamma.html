@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Market Gamma</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg:#0f172a; --surface:#111c31; --surface2:#1a2a45; --text:#e7edf7; --muted:#9fb0c8;
+      --line:#314a70; --blue:#2f81f7; --green:#22c55e; --red:#ef4444; --gold:#facc15;
+      --font:'Instrument Sans',system-ui,sans-serif; --mono:'JetBrains Mono',monospace;
+    }
+    [data-theme="light"] {
+      --bg:#f4f6fb; --surface:#ffffff; --surface2:#eef2fa; --text:#111827; --muted:#5b6577;
+      --line:#d4ddeb; --blue:#2563eb; --green:#15803d; --red:#b91c1c; --gold:#b45309;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:var(--font);padding:20px}
+    #theme-toggle{position:fixed;top:12px;right:12px;border:1px solid var(--line);background:var(--surface);color:var(--text);padding:8px 10px;border-radius:10px;cursor:pointer}
+    .page{max-width:1360px;margin:0 auto}
+    h1{text-align:center;font-size:3rem;letter-spacing:-.04em;margin:10px 0 14px}
+    .bar{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+    .sel{border:1px solid var(--line);background:var(--surface);color:var(--text);padding:10px 12px;border-radius:10px;font-weight:600}
+    .chart-wrap{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px}
+    canvas{max-height:480px}
+    .cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:14px}
+    .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px}
+    .card .k{font:.72rem var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+    .card .v{margin-top:6px;font:700 1.4rem var(--mono)}
+    @media(max-width:1100px){.cards{grid-template-columns:1fr 1fr}}
+    @media(max-width:680px){h1{font-size:2.2rem}.cards{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <button id="theme-toggle" onclick="toggleTheme()">Tema</button>
+  <div class="page">
+    <h1>Market Gamma</h1>
+    <div class="bar">
+      <select id="mode" class="sel"></select>
+      <div id="meta" class="sel"></div>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="gamma"></canvas>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="k">Gamma Score [σ]</div><div class="v" id="c-score">-</div></div>
+      <div class="card"><div class="k">Gamma Atual</div><div class="v" id="c-atual">-</div></div>
+      <div class="card"><div class="k">Gamma Mínimo Negativo</div><div class="v" id="c-min">-</div></div>
+      <div class="card"><div class="k">Flip</div><div class="v" id="c-flip">-</div></div>
+      <div class="card"><div class="k">Gamma Máximo Positivo</div><div class="v" id="c-max">-</div></div>
+    </div>
+  </div>
+
+<script>
+const DATA = {"asset": "BOVA11", "ref_date": "2026-04-07", "ref_display": "07/04/2026", "curves": {"AGREGADO": {"strikes": [166.0, 168.0, 170.0, 172.0, 174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0, 188.0, 189.0, 190.0, 191.0, 192.0, 194.0, 196.0], "call": [0.0, 0.0, 7.3926, 0.0, 113.45587500000002, 14358515.556, 17855438.845250003, 16723766.974, 23773076.534, 222844536.5625, 413176519.97325, 60256109.241, 58113131.401, 39959010.980749995, 77301366.01449999, 159630375.28825, 69035639.10245, 58576008.44025, 47861201.722500004, 32056905.8015, 57715995.11075, 31759489.1825, 136480.74375, 0.0, 0.0], "put": [0.0, -785.46375, 0.0, 0.0, 0.0, -26383665.7575, -30075470.646000005, -20788794.1185, -46044169.776999995, -227553545.75625, -386357452.66425, -58332120.0635, -83075071.15025, -43628714.73324999, -64328402.35299999, -169260877.877, -71709365.51075, -31106295.4745, -28259453.1295, -13564440.796, -27915399.81425, -17046247.245, 0.0, 0.0, 0.0], "net": [0.0, -785.46375, 7.3926, 0.0, 113.45587500000002, -12025150.2015, -12220031.800750002, -4065027.1445000004, -22271093.243, -4709009.19375, 26819067.30899997, 1923989.1775000007, -24961939.749250002, -3669703.7524999976, 12972963.6615, -9630502.588749994, -2673726.4082999993, 27469712.96575, 19601748.593000002, 18492465.0055, 29800595.296499997, 14713241.9375, 136480.74375, 0.0, 0.0], "spot": 185.0, "flip": 166.0, "gamma_atual": -9630502.588749994, "gamma_min_neg": {"strike": 182.0, "value": -24961939.749250002}, "gamma_max_pos": {"strike": 190.0, "value": 29800595.296499997}, "gamma_score": -0.323164772144034}, "10 abr W2": {"strikes": [176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0, 188.0, 189.0, 190.0, 191.0, 192.0], "call": [684601.6482500001, 1353502.92, 5877015.694, 196647951.5, 224914721.25, 9708280.6125, 8231153.57, 8450764.10075, 14776626.6375, 13450437.663250001, 11478464.693500001, 11660378.782500003, 18583981.2865, 7060104.125, 3162478.3005, 4136118.63, 136480.74375], "put": [-1774475.896, -2230908.0255, -6670700.289, -200815529.75, -228877976.25, -9676521.181499999, -15730311.054000001, -19222646.481999997, -18046825.3875, -22409959.126999997, -10383987.86775, -5688870.601500001, -10618443.15, -2275278.0, -1269526.7487500003, -312501.63000000006, 0.0], "net": [-1089874.2477499999, -877405.1055000001, -793684.5949999997, -4167578.25, -3963255.0, 31759.43100000173, -7499157.484000001, -10771882.381249998, -3270198.75, -8959521.463749995, 1094476.8257500008, 5971508.181000002, 7965538.136499999, 4784826.125, 1892951.5517499996, 3823617.0, 136480.74375], "spot": 185.0, "flip": 180.99, "gamma_atual": -8959521.463749995, "gamma_min_neg": {"strike": 183.0, "value": -10771882.381249998}, "gamma_max_pos": {"strike": 188.0, "value": 7965538.136499999}, "gamma_score": -0.8317507698882161}, "15 mai Mensal": {"strikes": [175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0, 188.0, 189.0, 190.0, 191.0], "call": [2443081.8060000003, 1399957.197, 1844544.054, 2552651.09, 3277129.3125, 8241721.223250001, 7224112.378499999, 1837607.3310000002, 3919816.63, 4505150.376999999, 8352097.874999999, 2691720.955, 6494535.657749999, 5425817.936000001, 3281039.1764999996, 10300591.81025, 3119981.8025], "put": [-2986086.7575000008, -8675010.75, -3575550.0930000003, -6511993.488, -5244716.00625, -7736202.914249999, -3339987.6319999998, -4940264.09625, -2557512.7512499997, -5882078.9405, -11310677.999999998, -2880515.6380000003, -7027647.873, -2101302.742, -1648007.6759999997, -5109449.5655, -1237007.8649999998], "net": [-543004.9515000004, -7275053.553, -1731006.0390000003, -3959342.398, -1967586.6937499996, 505518.3090000013, 3884124.746499999, -3102656.76525, 1362303.8787500001, -1376928.5635000002, -2958580.124999999, -188794.6830000002, -533112.2152500004, 3324515.1940000006, 1633031.5004999998, 5191142.24475, 1882973.9375000005], "spot": 185.0, "flip": 179.8, "gamma_atual": -2958580.124999999, "gamma_min_neg": {"strike": 176.0, "value": -7275053.553}, "gamma_max_pos": {"strike": 190.0, "value": 5191142.24475}, "gamma_score": -0.40667468678357355}, "17 abr Mensal": {"strikes": [175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0, 188.0, 189.0, 190.0, 191.0], "call": [11915433.75, 15770880.000000002, 13525720.0, 15343409.75, 22919455.75, 180020077.49999997, 43323716.25, 48044370.5, 27588430.25, 58019588.99999999, 137827839.75, 54865413.0, 40421094.0, 23851402.500000004, 21715762.5, 44252925.0, 24503388.75], "put": [-23397579.0, -19625984.000000004, -14982336.0, -32861476.0, -21493300.0, -149743273.5, -45315611.25, -62404496.0, -21848555.5, -40386184.49999999, -135540240.75, -58435422.75, -18389777.0, -15539707.237500003, -9641155.12, -21536423.5, -15496737.75], "net": [-11482145.25, -3855104.000000002, -1456616.0, -17518066.25, 1426155.75, 30276803.99999997, -1991895.0, -14360125.5, 5739874.75, 17633404.5, 2287599.0, -3570009.75, 22031317.0, 8311695.262500001, 12074607.38, 22716501.5, 9006651.0], "spot": 185.0, "flip": 178.92, "gamma_atual": 2287599.0, "gamma_min_neg": {"strike": 178.0, "value": -17518066.25}, "gamma_max_pos": {"strike": 180.0, "value": 30276803.99999997}, "gamma_score": 0.07555615843733052}, "30 abr W5": {"strikes": [166.0, 168.0, 170.0, 172.0, 174.0, 176.0, 178.0, 180.0, 182.0, 184.0, 186.0, 188.0, 189.0, 190.0, 192.0, 194.0, 196.0], "call": [0.0, 0.0, 7.3926, 0.0, 113.45587500000002, 0.0, 0.0, 0.0, 0.0, 0.0, 40.45394999999999, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "put": [0.0, -785.46375, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -13313.525, -9439.255, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "net": [0.0, -785.46375, 7.3926, 0.0, 113.45587500000002, 0.0, 0.0, 0.0, 0.0, -13313.525, -9398.80105, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "spot": 185.0, "flip": 166.0, "gamma_atual": -13313.525, "gamma_min_neg": {"strike": 184.0, "value": -13313.525}, "gamma_max_pos": {"strike": 174.0, "value": 113.45587500000002}, "gamma_score": -1.0}}};
+let chart = null;
+
+(function(){
+  const saved = localStorage.getItem('bova11-theme');
+  if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
+})();
+
+function toggleTheme(){
+  const light = document.documentElement.getAttribute('data-theme') === 'light';
+  if (light) {
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('bova11-theme','dark');
+  } else {
+    document.documentElement.setAttribute('data-theme','light');
+    localStorage.setItem('bova11-theme','light');
+  }
+}
+
+function fmtNum(v){
+  if (v === null || v === undefined) return '-';
+  const a = Math.abs(v);
+  if (a >= 1e9) return (v/1e9).toFixed(2)+'B';
+  if (a >= 1e6) return (v/1e6).toFixed(1)+'M';
+  if (a >= 1e3) return (v/1e3).toFixed(1)+'k';
+  return v.toFixed(0);
+}
+
+function draw(mode){
+  const c = DATA.curves[mode];
+  if (!c) return;
+  document.getElementById('meta').textContent = `${DATA.asset} · ${DATA.ref_display} · Spot R$ ${c.spot.toFixed(2)}`;
+
+  document.getElementById('c-score').textContent = c.gamma_score.toFixed(2);
+  document.getElementById('c-atual').textContent = fmtNum(c.gamma_atual);
+  document.getElementById('c-min').textContent = c.gamma_min_neg ? `R$ ${c.gamma_min_neg.strike.toFixed(2)} · ${fmtNum(c.gamma_min_neg.value)}` : '-';
+  document.getElementById('c-flip').textContent = c.flip ? `R$ ${c.flip.toFixed(2)}` : '-';
+  document.getElementById('c-max').textContent = c.gamma_max_pos ? `R$ ${c.gamma_max_pos.strike.toFixed(2)} · ${fmtNum(c.gamma_max_pos.value)}` : '-';
+
+  const pos = c.net.map(v => v > 0 ? v : null);
+  const neg = c.net.map(v => v < 0 ? v : null);
+
+  const spotIdx = c.strikes.length ? c.strikes.reduce((best, s, i) => Math.abs(s-c.spot) < Math.abs(c.strikes[best]-c.spot) ? i : best, 0) : 0;
+  const flipIdx = (c.flip && c.strikes.length) ? c.strikes.reduce((best, s, i) => Math.abs(s-c.flip) < Math.abs(c.strikes[best]-c.flip) ? i : best, 0) : null;
+
+  const vlinePlugin = {
+    id: 'vline',
+    afterDatasetsDraw(ch){
+      const {ctx, chartArea:{top,bottom}, scales:{x}} = ch;
+      ctx.save();
+      if (c.strikes.length) {
+        const xSpot = x.getPixelForValue(spotIdx);
+        ctx.strokeStyle = '#2f81f7'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(xSpot, top); ctx.lineTo(xSpot, bottom); ctx.stroke();
+      }
+      if (flipIdx !== null) {
+        const xFlip = x.getPixelForValue(flipIdx);
+        ctx.strokeStyle = '#facc15'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(xFlip, top); ctx.lineTo(xFlip, bottom); ctx.stroke();
+      }
+      ctx.restore();
+    }
+  };
+
+  if (chart) chart.destroy();
+  chart = new Chart(document.getElementById('gamma'), {
+    type: 'line',
+    data: {
+      labels: c.strikes.map(s => s.toFixed(2)),
+      datasets: [
+        {label:'Positivo', data:pos, borderColor:'#22c55e', backgroundColor:'rgba(34,197,94,.25)', fill:true, pointRadius:0, tension:.25},
+        {label:'Negativo', data:neg, borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,.25)', fill:true, pointRadius:0, tension:.25},
+        {label:'Net Gamma', data:c.net, borderColor:'#facc15', pointRadius:0, tension:.25, fill:false},
+      ]
+    },
+    options: {
+      responsive:true,
+      maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{labels:{color:getComputedStyle(document.documentElement).getPropertyValue('--text')}}},
+      scales:{
+        x:{ticks:{color:getComputedStyle(document.documentElement).getPropertyValue('--muted')}},
+        y:{ticks:{color:getComputedStyle(document.documentElement).getPropertyValue('--muted')}}
+      }
+    },
+    plugins:[vlinePlugin]
+  });
+}
+
+const sel = document.getElementById('mode');
+Object.keys(DATA.curves).forEach((k, i) => {
+  const o = document.createElement('option');
+  o.value = k;
+  o.textContent = i === 0 ? 'Visão Completa (Agregado)' : k;
+  sel.appendChild(o);
+});
+sel.value = 'AGREGADO';
+sel.addEventListener('change', () => draw(sel.value));
+draw('AGREGADO');
+</script>
+</body>
+</html>

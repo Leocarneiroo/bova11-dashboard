@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BOVA11 — Histórico de Mercado</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg:#f3f5f7; --surface:#ffffff; --surface2:#f7f9fb; --border:#dce2e8;
+      --text:#111827; --muted:#5f6b7a; --soft:#7a8696;
+      --blue:#2563eb; --green:#148a63; --red:#b33530; --amber:#b8720a; --purple:#8250df;
+      --font:'Instrument Sans',system-ui,sans-serif; --mono:'JetBrains Mono',monospace;
+    }
+    [data-theme="dark"] {
+      --bg:#0f141b; --surface:#141b23; --surface2:#19212b; --border:#273240;
+      --text:#e5ebf3; --muted:#a3afbf; --soft:#7d8a9b;
+      --blue:#6ea8ff; --green:#3fb950; --red:#f87171; --amber:#f6c768; --purple:#b388ff;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--font);background:var(--bg);color:var(--text);padding:22px}
+    #theme-toggle{position:fixed;top:16px;right:16px;z-index:9;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:10px;padding:8px 10px;cursor:pointer}
+    .page{max-width:1280px;margin:0 auto}
+    .head{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;margin-bottom:16px}
+    .head h1{font-size:1.75rem;letter-spacing:-.03em}
+    .sub{color:var(--muted);font-size:.92rem;line-height:1.4}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+    .btn{border:1px solid var(--border);background:var(--surface);color:var(--muted);padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:600}
+    .btn.active{border-color:var(--blue);color:var(--blue);background:color-mix(in srgb, var(--blue) 10%, transparent)}
+    .grid{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:14px}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px}
+    .card h3{font-size:.86rem;color:var(--soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+    .card .v{font:700 1.3rem var(--mono)}
+    .chart{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px}
+    .chart + .chart{margin-top:12px}
+    .chart h2{font-size:.95rem;margin-bottom:8px}
+    canvas{max-height:260px}
+    .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px;margin-top:12px;overflow:auto}
+    table{width:100%;border-collapse:collapse;min-width:980px}
+    th,td{padding:8px 9px;border-bottom:1px solid var(--border);font-size:.82rem;text-align:right}
+    th{position:sticky;top:0;background:var(--surface2);color:var(--soft);font:.72rem var(--mono);text-transform:uppercase;letter-spacing:.06em}
+    th:first-child,td:first-child{text-align:left}
+    @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <button id="theme-toggle" onclick="toggleTheme()">Tema</button>
+  <div class="page">
+    <div class="head">
+      <div>
+        <h1>Histórico de Mercado</h1>
+        <div class="sub">Base diária consolidada de OI, volume, IV, Max Pain, GEX e DEX. Referência atual: 7/Abr · Spot R$ 185.00.</div>
+      </div>
+      <div class="sub mono">Ref date: 2026-04-07</div>
+    </div>
+    <div class="toolbar" id="range-buttons">
+      <button class="btn" data-range="5D">5D</button>
+      <button class="btn active" data-range="1M">1M</button>
+      <button class="btn" data-range="3M">3M</button>
+      <button class="btn" data-range="YTD">YTD</button>
+      <button class="btn" data-range="MAX">Max</button>
+    </div>
+    <div class="grid" id="cards"></div>
+    <div class="chart"><h2>Open Interest</h2><canvas id="c1"></canvas></div>
+    <div class="chart"><h2>Option Volume</h2><canvas id="c2"></canvas></div>
+    <div class="chart"><h2>IV ATM & IV Rank</h2><canvas id="c3"></canvas></div>
+    <div class="chart"><h2>Max Pain, Spot, GEX e DEX</h2><canvas id="c4"></canvas></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th><th>Close</th><th>Vol Total</th><th>Vol PCR</th><th>OI Total</th><th>OI PCR</th>
+            <th>IV ATM</th><th>IV Rank</th><th>Max Pain</th><th>GEX Net</th><th>DEX Net</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </div>
+<script>
+const FULL = [{"date": "2026-03-03", "tag": "3mar", "display": "3/Mar", "spot_close": 179.3, "oi_call": 86107959, "oi_put": 105831543, "oi_total": 191939502, "oi_pcr": 1.23, "vol_call": 125400075, "vol_put": 204953764, "vol_total": 330353838, "vol_pcr": 1.63, "iv_atm": 0.2617, "iv_rank": 50.0, "iv_percentile": 50.0, "max_pain": 184.0, "gex_net": -83270657, "dex_net": -2745646474}, {"date": "2026-03-04", "tag": "4mar", "display": "4/Mar", "spot_close": 181.6, "oi_call": 92709269, "oi_put": 106275225, "oi_total": 198984494, "oi_pcr": 1.15, "vol_call": 96938550, "vol_put": 67965937, "vol_total": 164904487, "vol_pcr": 0.7, "iv_atm": 0.2443, "iv_rank": 0.0, "iv_percentile": 0.0, "max_pain": 184.0, "gex_net": -49230393, "dex_net": -320634868}, {"date": "2026-03-05", "tag": "5mar", "display": "5/Mar", "spot_close": 176.75, "oi_call": 74061490, "oi_put": 96465851, "oi_total": 170527341, "oi_pcr": 1.3, "vol_call": 107073875, "vol_put": 124145724, "vol_total": 231219599, "vol_pcr": 1.16, "iv_atm": 0.2787, "iv_rank": 100.0, "iv_percentile": 66.67, "max_pain": 182.0, "gex_net": -92722221, "dex_net": -4160571360}, {"date": "2026-03-06", "tag": "6mar", "display": "6/Mar", "spot_close": 175.89, "oi_call": 74622185, "oi_put": 93480614, "oi_total": 168102799, "oi_pcr": 1.25, "vol_call": 89483099, "vol_put": 118077956, "vol_total": 207561055, "vol_pcr": 1.32, "iv_atm": 0.2833, "iv_rank": 100.0, "iv_percentile": 75.0, "max_pain": 181.0, "gex_net": -57899402, "dex_net": -4514706741}, {"date": "2026-03-09", "tag": "9mar", "display": "9/Mar", "spot_close": 177.26, "oi_call": 82315003, "oi_put": 93378701, "oi_total": 175693704, "oi_pcr": 1.13, "vol_call": 81761510, "vol_put": 114808487, "vol_total": 196569997, "vol_pcr": 1.4, "iv_atm": 0.2758, "iv_rank": 80.77, "iv_percentile": 40.0, "max_pain": 182.0, "gex_net": -35451000, "dex_net": -3301608114}, {"date": "2026-03-10", "tag": "10mar", "display": "10/Mar", "spot_close": 179.75, "oi_call": 94715307, "oi_put": 108438335, "oi_total": 203153642, "oi_pcr": 1.14, "vol_call": 96895184, "vol_put": 76017250, "vol_total": 172912434, "vol_pcr": 0.78, "iv_atm": 0.2507, "iv_rank": 16.41, "iv_percentile": 16.67, "max_pain": 184.0, "gex_net": -35317257, "dex_net": -2428515362}, {"date": "2026-03-11", "tag": "11mar", "display": "11/Mar", "spot_close": 180.21, "oi_call": 69838592, "oi_put": 81834896, "oi_total": 151673488, "oi_pcr": 1.17, "vol_call": 65469926, "vol_put": 35912311, "vol_total": 101382237, "vol_pcr": 0.55, "iv_atm": 0.2263, "iv_rank": 0.0, "iv_percentile": 0.0, "max_pain": 184.0, "gex_net": -33506519, "dex_net": -2572915364}, {"date": "2026-03-12", "tag": "12mar", "display": "12/Mar", "spot_close": 175.85, "oi_call": 62825188, "oi_put": 90280933, "oi_total": 153106121, "oi_pcr": 1.44, "vol_call": 67975807, "vol_put": 84882403, "vol_total": 152858210, "vol_pcr": 1.25, "iv_atm": 0.2842, "iv_rank": 100.0, "iv_percentile": 87.5, "max_pain": 180.0, "gex_net": -131294096, "dex_net": -3945199039}, {"date": "2026-03-13", "tag": "13mar", "display": "13/Mar", "spot_close": 174.55, "oi_call": 50085423, "oi_put": 96302850, "oi_total": 146388273, "oi_pcr": 1.92, "vol_call": 171693109, "vol_put": 208235064, "vol_total": 379928173, "vol_pcr": 1.21, "iv_atm": 0.2923, "iv_rank": 100.0, "iv_percentile": 88.89, "max_pain": 178.0, "gex_net": -171685531, "dex_net": -2645994685}, {"date": "2026-03-16", "tag": "16mar", "display": "16/Mar", "spot_close": 176.55, "oi_call": 75591578, "oi_put": 102137128, "oi_total": 177728706, "oi_pcr": 1.35, "vol_call": 208107459, "vol_put": 171100130, "vol_total": 379207588, "vol_pcr": 0.82, "iv_atm": 0.268, "iv_rank": 63.18, "iv_percentile": 40.0, "max_pain": 179.0, "gex_net": -122849828, "dex_net": -1704638038}, {"date": "2026-03-17", "tag": "17mar", "display": "17/Mar", "spot_close": 176.83, "oi_call": 81733999, "oi_put": 106443034, "oi_total": 188177033, "oi_pcr": 1.3, "vol_call": 199911889, "vol_put": 139884899, "vol_total": 339796788, "vol_pcr": 0.7, "iv_atm": 0.2637, "iv_rank": 56.67, "iv_percentile": 36.36, "max_pain": 179.0, "gex_net": -119453748, "dex_net": -1772897582}, {"date": "2026-03-18", "tag": "18mar", "display": "18/Mar", "spot_close": 175.8, "oi_call": 79409841, "oi_put": 104907587, "oi_total": 184317428, "oi_pcr": 1.32, "vol_call": 220296809, "vol_put": 155358316, "vol_total": 375655125, "vol_pcr": 0.71, "iv_atm": 0.2747, "iv_rank": 73.33, "iv_percentile": 50.0, "max_pain": 179.0, "gex_net": -141212339, "dex_net": -1961503943}, {"date": "2026-03-19", "tag": "19mar", "display": "19/Mar", "spot_close": 177.15, "oi_call": 90458900, "oi_put": 110251586, "oi_total": 200710486, "oi_pcr": 1.22, "vol_call": 124137605, "vol_put": 239107701, "vol_total": 363245306, "vol_pcr": 1.93, "iv_atm": 0.2825, "iv_rank": 85.15, "iv_percentile": 69.23, "max_pain": 180.0, "gex_net": -92394826, "dex_net": -1501984438}, {"date": "2026-03-20", "tag": "20mar", "display": "20/Mar", "spot_close": 173.01, "oi_call": 68945758, "oi_put": 116227126, "oi_total": 185172884, "oi_pcr": 1.69, "vol_call": 81384761, "vol_put": 211077668, "vol_total": 292462429, "vol_pcr": 2.59, "iv_atm": 0.2861, "iv_rank": 90.61, "iv_percentile": 85.71, "max_pain": 178.0, "gex_net": -34066465, "dex_net": -6318218339}, {"date": "2026-03-23", "tag": "23mar", "display": "23/Mar", "spot_close": 178.9, "oi_call": 91015030, "oi_put": 95708623, "oi_total": 186723653, "oi_pcr": 1.05, "vol_call": 134070120, "vol_put": 67347722, "vol_total": 201417842, "vol_pcr": 0.5, "iv_atm": 0.2697, "iv_rank": 65.76, "iv_percentile": 40.0, "max_pain": 180.0, "gex_net": -8746960, "dex_net": -182634460}, {"date": "2026-03-24", "tag": "24mar", "display": "24/Mar", "spot_close": 179.19, "oi_call": 95371240, "oi_put": 96421910, "oi_total": 191793150, "oi_pcr": 1.01, "vol_call": 116142642, "vol_put": 96198862, "vol_total": 212341504, "vol_pcr": 0.83, "iv_atm": 0.2738, "iv_rank": 71.97, "iv_percentile": 43.75, "max_pain": 180.0, "gex_net": 4350983, "dex_net": 206180486}, {"date": "2026-03-25", "tag": "25posmar", "display": "25/Mar", "spot_close": 182.2, "oi_call": 100285620, "oi_put": 91158297, "oi_total": 191443917, "oi_pcr": 0.91, "vol_call": 154648111, "vol_put": 77677470, "vol_total": 232325581, "vol_pcr": 0.5, "iv_atm": 0.2611, "iv_rank": 52.73, "iv_percentile": 17.65, "max_pain": 180.0, "gex_net": 46435565, "dex_net": 3151152762}, {"date": "2026-03-26", "tag": "26mar", "display": "26/Mar", "spot_close": 179.45, "oi_call": 99321690, "oi_put": 100368990, "oi_total": 199690680, "oi_pcr": 1.01, "vol_call": 74093570, "vol_put": 62825840, "vol_total": 136919410, "vol_pcr": 0.85, "iv_atm": 0.2966, "iv_rank": 100.0, "iv_percentile": 94.44, "max_pain": 180.0, "gex_net": 1737209, "dex_net": -19558794}, {"date": "2026-03-27", "tag": "27mar", "display": "27/Mar", "spot_close": 177.74, "oi_call": 89799900, "oi_put": 99856160, "oi_total": 189656060, "oi_pcr": 1.11, "vol_call": 73827110, "vol_put": 55426250, "vol_total": 129253360, "vol_pcr": 0.75, "iv_atm": 0.3054, "iv_rank": 100.0, "iv_percentile": 94.74, "max_pain": 180.0, "gex_net": -17157155, "dex_net": -135810143}, {"date": "2026-03-30", "tag": "30mar", "display": "30/Mar", "spot_close": 179.0, "oi_call": 86550250, "oi_put": 89553130, "oi_total": 176103380, "oi_pcr": 1.03, "vol_call": 113564210, "vol_put": 62945130, "vol_total": 176509340, "vol_pcr": 0.55, "iv_atm": 0.2908, "iv_rank": 81.54, "iv_percentile": 80.0, "max_pain": 180.0, "gex_net": 764641, "dex_net": 788348811}, {"date": "2026-03-31", "tag": "31mar", "display": "31/Mar", "spot_close": 184.28, "oi_call": 96442410, "oi_put": 82366150, "oi_total": 178808560, "oi_pcr": 0.85, "vol_call": 106474180, "vol_put": 60265650, "vol_total": 166739830, "vol_pcr": 0.57, "iv_atm": 0.2442, "iv_rank": 22.63, "iv_percentile": 4.76, "max_pain": 180.0, "gex_net": 63603116, "dex_net": 5597917160}, {"date": "2026-04-01", "tag": "1abr", "display": "1/Abr", "spot_close": 184.18, "oi_call": 96190160, "oi_put": 83032200, "oi_total": 179222360, "oi_pcr": 0.86, "vol_call": 93561840, "vol_put": 44989690, "vol_total": 138551530, "vol_pcr": 0.48, "iv_atm": 0.2555, "iv_rank": 36.92, "iv_percentile": 18.18, "max_pain": 180.0, "gex_net": 63370442, "dex_net": 5835942203}, {"date": "2026-04-02", "tag": "2abr", "display": "2/Abr", "spot_close": 184.37, "oi_call": 91025567, "oi_put": 80712570, "oi_total": 171738137, "oi_pcr": 0.89, "vol_call": 72495844, "vol_put": 47712559, "vol_total": 120208403, "vol_pcr": 0.66, "iv_atm": 0.261, "iv_rank": 43.87, "iv_percentile": 21.74, "max_pain": 180.0, "gex_net": 41541893, "dex_net": 5749817013}, {"date": "2026-04-06", "tag": "6abr", "display": "6/Abr", "spot_close": 184.56, "oi_call": 90354179, "oi_put": 84722782, "oi_total": 175076961, "oi_pcr": 0.94, "vol_call": 77572564, "vol_put": 49955049, "vol_total": 127527613, "vol_pcr": 0.64, "iv_atm": 0.275, "iv_rank": 61.57, "iv_percentile": 54.17, "max_pain": 180.0, "gex_net": 28527842, "dex_net": 5524356349}, {"date": "2026-04-07", "tag": "7abr", "display": "7/Abr", "spot_close": 185.0, "oi_call": 86928952, "oi_put": 84978076, "oi_total": 171907028, "oi_pcr": 0.98, "vol_call": 71918728, "vol_put": 56017078, "vol_total": 127935806, "vol_pcr": 0.78, "iv_atm": 0.277, "iv_rank": 64.1, "iv_percentile": 60.0, "max_pain": 180.0, "gex_net": 16275651, "dex_net": 5805249319}];
+let charts = [];
+(function(){
+  const saved = localStorage.getItem('bova11-theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme','dark');
+})();
+function toggleTheme(){
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if (dark) { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('bova11-theme','light'); }
+  else { document.documentElement.setAttribute('data-theme','dark'); localStorage.setItem('bova11-theme','dark'); }
+}
+function fmtInt(n){ return Math.round(n).toLocaleString('pt-BR'); }
+function fmtB(v){
+  const abs = Math.abs(v);
+  if (abs >= 1e9) return (v/1e9).toFixed(2)+'B';
+  if (abs >= 1e6) return (v/1e6).toFixed(1)+'M';
+  return Math.round(v).toLocaleString('pt-BR');
+}
+function cutByRange(arr, range){
+  if (!arr.length) return arr;
+  if (range === 'MAX') return arr;
+  if (range === '5D') return arr.slice(-5);
+  if (range === '1M') return arr.slice(-21);
+  if (range === '3M') return arr.slice(-63);
+  if (range === 'YTD') {
+    const year = arr[arr.length-1].date.slice(0,4);
+    return arr.filter(x => x.date.startsWith(year));
+  }
+  return arr;
+}
+function destroyCharts(){ charts.forEach(c=>c.destroy()); charts=[]; }
+function render(range){
+  const data = cutByRange(FULL, range);
+  const labels = data.map(x=>x.display);
+  const latest = data[data.length-1] || null;
+  const cards = document.getElementById('cards');
+  cards.innerHTML = latest ? `
+    <div class="card"><h3>Data</h3><div class="v">${latest.display}</div></div>
+    <div class="card"><h3>Spot</h3><div class="v">R$ ${latest.spot_close.toFixed(2)}</div></div>
+    <div class="card"><h3>OI Put/Call</h3><div class="v">${latest.oi_pcr.toFixed(2)}</div></div>
+    <div class="card"><h3>Vol Put/Call</h3><div class="v">${latest.vol_pcr.toFixed(2)}</div></div>
+    <div class="card"><h3>IV ATM</h3><div class="v">${(latest.iv_atm*100).toFixed(2)}%</div></div>
+    <div class="card"><h3>Max Pain</h3><div class="v">${latest.max_pain ? 'R$ '+latest.max_pain.toFixed(2) : 'N/A'}</div></div>` : '';
+  document.querySelectorAll('#range-buttons .btn').forEach(btn => btn.classList.toggle('active', btn.dataset.range === range));
+  destroyCharts();
+  const common = {responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false}};
+  charts.push(new Chart(document.getElementById('c1'), {
+    type:'line', data:{labels, datasets:[
+      {label:'OI Put-Call Ratio', data:data.map(x=>x.oi_pcr), borderColor:'#2E6BBF', yAxisID:'y'},
+      {label:'Call OI', data:data.map(x=>x.oi_call), borderColor:'#148A63', yAxisID:'y1'},
+      {label:'Put OI', data:data.map(x=>x.oi_put), borderColor:'#B33530', yAxisID:'y1'},
+    ]}, options:{...common, scales:{ y:{position:'left'}, y1:{position:'right', grid:{drawOnChartArea:false}} }}
+  }));
+  charts.push(new Chart(document.getElementById('c2'), {
+    type:'line', data:{labels, datasets:[
+      {label:'Volume Put-Call Ratio', data:data.map(x=>x.vol_pcr), borderColor:'#2563eb', yAxisID:'y'},
+      {label:'Call Volume', data:data.map(x=>x.vol_call), borderColor:'#15803d', yAxisID:'y1'},
+      {label:'Put Volume', data:data.map(x=>x.vol_put), borderColor:'#c2413b', yAxisID:'y1'},
+    ]}, options:{...common, scales:{ y:{position:'left'}, y1:{position:'right', grid:{drawOnChartArea:false}} }}
+  }));
+  charts.push(new Chart(document.getElementById('c3'), {
+    type:'line', data:{labels, datasets:[
+      {label:'IV ATM', data:data.map(x=>x.iv_atm*100), borderColor:'#d946ef', yAxisID:'y'},
+      {label:'IV Rank', data:data.map(x=>x.iv_rank), borderColor:'#7c3aed', yAxisID:'y1'},
+    ]}, options:{...common, scales:{ y:{position:'left'}, y1:{position:'right', min:0, max:100, grid:{drawOnChartArea:false}} }}
+  }));
+  charts.push(new Chart(document.getElementById('c4'), {
+    data:{labels, datasets:[
+      {type:'line', label:'Spot', data:data.map(x=>x.spot_close), borderColor:'#111827', yAxisID:'price'},
+      {type:'line', label:'Max Pain', data:data.map(x=>x.max_pain), borderColor:'#b8720a', yAxisID:'price'},
+      {type:'bar', label:'GEX Net', data:data.map(x=>x.gex_net), backgroundColor:'rgba(37,99,235,.35)', yAxisID:'flow'},
+      {type:'bar', label:'DEX Net', data:data.map(x=>x.dex_net), backgroundColor:'rgba(148,163,184,.35)', yAxisID:'flow'},
+    ]}, options:{...common, scales:{ price:{position:'left'}, flow:{position:'right', grid:{drawOnChartArea:false}} }}
+  }));
+  const rows = document.getElementById('rows');
+  rows.innerHTML = data.slice().reverse().map(x => `
+    <tr><td>${x.date}</td><td>R$ ${x.spot_close.toFixed(2)}</td><td>${fmtInt(x.vol_total)}</td><td>${x.vol_pcr.toFixed(2)}</td>
+    <td>${fmtInt(x.oi_total)}</td><td>${x.oi_pcr.toFixed(2)}</td><td>${(x.iv_atm*100).toFixed(2)}%</td><td>${x.iv_rank.toFixed(2)}%</td>
+    <td>${x.max_pain ? x.max_pain.toFixed(2) : '-'}</td><td>${fmtB(x.gex_net)}</td><td>${fmtB(x.dex_net)}</td></tr>`).join('');
+}
+document.querySelectorAll('#range-buttons .btn').forEach(btn => btn.addEventListener('click', () => render(btn.dataset.range)));
+render('1M');
+</script>
+</body>
+</html>
