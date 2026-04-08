@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEX DEX VEX — 7/Abr vs 8/Abr</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg:   #ffffff; --bg2:  #f6f8fa; --bg3:  #eaeef2;
+            --text: #1f2328; --text2: #636c76; --border: #d0d7de;
+            --grn:  #1a7f37; --red:  #cf222e; --blu:  #0969da;
+            --yel:  #9a6700; --pur:  #8250df;
+        }
+        [data-theme="dark"] {
+            --bg:   #0d1117; --bg2:  #161b22; --bg3:  #21262d;
+            --text: #c9d1d9; --text2: #8b949e; --border: #30363d;
+            --grn:  #3fb950; --red:  #f85149; --blu:  #58a6ff;
+            --yel:  #d29922; --pur:  #bc8cff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 30px;
+            line-height: 1.6;
+        }
+
+        header {
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .header-meta {
+            font-size: 0.95rem;
+            color: var(--text2);
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .card-label {
+            font-size: 0.85rem;
+            color: var(--text2);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .chart-section {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .legend {
+            font-size: 0.9rem;
+            color: var(--text2);
+            margin-bottom: 16px;
+            font-style: italic;
+        }
+
+
+        .mechanic-box {
+            background: var(--bg3);
+            border-left: 4px solid var(--blu);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        .mechanic-title {
+            font-weight: bold;
+            color: var(--blu);
+            margin-bottom: 10px;
+        }
+
+        .mechanic-positive {
+            color: var(--grn);
+            font-weight: 500;
+        }
+
+        .mechanic-negative {
+            color: var(--red);
+            font-weight: 500;
+        }
+
+        canvas {
+            max-height: 300px;
+        }
+
+        .context-box {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-left: 4px solid;
+            border-radius: 8px;
+            padding: 24px;
+            margin-top: 30px;
+        }
+
+        .iv-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin: 16px 0;
+        }
+
+        .iv-item {
+            padding: 12px;
+            background: var(--bg3);
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .iv-item-label {
+            font-size: 0.85rem;
+            color: var(--text2);
+            margin-bottom: 6px;
+        }
+
+        .iv-item-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .interpretation {
+            margin: 16px 0;
+            padding: 12px;
+            background: var(--bg3);
+            border-radius: 6px;
+            border-left: 3px solid var(--blu);
+        }
+
+        .strategy-chips {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        .chip {
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .chip-buy {
+            background: rgba(63, 185, 80, 0.2);
+            color: var(--grn);
+            border: 1px solid var(--grn);
+        }
+
+        .chip-sell {
+            background: rgba(248, 81, 73, 0.2);
+            color: var(--red);
+            border: 1px solid var(--red);
+        }
+
+        .chip-neutral {
+            background: rgba(88, 166, 255, 0.2);
+            color: var(--blu);
+            border: 1px solid var(--blu);
+        }
+
+        .exp-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            padding: 16px;
+            background: var(--bg2);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .exp-tab {
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            border-radius: 8px;
+            color: var(--text2);
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .exp-tab:hover {
+            border-color: var(--text2);
+        }
+
+        .exp-tab.on {
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 2px 8px rgba(0,0,0,.3);
+        }
+
+        .exp-tab.agg {
+            background: linear-gradient(135deg,#1a237e,#283593);
+            color: #fff;
+            border-color: #3949ab;
+        }
+    </style>
+</head>
+<body>
+<button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="position:fixed;top:12px;right:16px;z-index:9999;background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:1rem;line-height:1;transition:all 0.2s;">◐</button>
+    <header>
+        <h1>TEX | DEX | VEX — Exposição de Gregos por Strike</h1>
+        <div class="header-meta">
+            📅 7/Abr vs 8/Abr  •  Spot: 185.00 → 188.44
+        </div>
+    </header>
+
+    <div class="exp-tabs" id="expTabs"></div>
+
+    <div class="cards-grid">
+        <div class="card">
+            <div class="card-label">TEX Total</div>
+            <div class="card-value" style="color: var(--red)">-32.4M</div>
+        </div>
+        <div class="card">
+            <div class="card-label">TEX Max+</div>
+            <div class="card-value">K197</div>
+        </div>
+        <div class="card">
+            <div class="card-label">TEX Max−</div>
+            <div class="card-value">K185</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">DEX Total</div>
+            <div class="card-value" style="color: var(--grn)">3k</div>
+        </div>
+        <div class="card">
+            <div class="card-label">DEX Max+</div>
+            <div class="card-value">K185</div>
+        </div>
+        <div class="card">
+            <div class="card-label">DEX Max−</div>
+            <div class="card-value">K192</div>
+        </div>
+
+        <div class="card">
+            <div class="card-label">VEX Total</div>
+            <div class="card-value" style="color: var(--grn)">2.7B</div>
+        </div>
+        <div class="card">
+            <div class="card-label">VEX Max+</div>
+            <div class="card-value">K185</div>
+        </div>
+        <div class="card">
+            <div class="card-label">VEX Max−</div>
+            <div class="card-value">K197</div>
+        </div>
+    </div>
+
+    <!-- TEX Section -->
+    <div class="chart-section">
+        <h2>TEX — Theta Exposure</h2>
+        <div class="mechanic-box">
+            <div class="mechanic-title">Mecânica do Theta</div>
+            <div>
+                <div><span class="mechanic-positive">TEX Positivo (+)</span></div>
+                <ul style="margin: 8px 0 12px 20px; color: var(--text2);">
+                    <li>Market makers <strong>ganham dinheiro</strong> com a passagem do tempo</li>
+                    <li>Venderam opções (coletam theta)</li>
+                    <li>Cada dia que passa = lucro automático</li>
+                    <li>Tempo é o melhor amigo dos vendedores</li>
+                </ul>
+                <div><span class="mechanic-negative">TEX Negativo (−)</span></div>
+                <ul style="margin: 8px 0 0 20px; color: var(--text2);">
+                    <li>Market makers <strong>perdem dinheiro</strong> com a passagem do tempo</li>
+                    <li>Compraram opções (pagam theta)</li>
+                    <li>Cada dia que passa = sangramento automático</li>
+                    <li>Tempo é o pior inimigo dos compradores</li>
+                </ul>
+            </div>
+        </div>
+        <h3 style="margin-top: 20px; margin-bottom: 12px;">TEX por Strike</h3>
+        <canvas id="chartTEX" height="250"></canvas>
+    </div>
+
+    <!-- DEX Section -->
+    <div class="chart-section">
+        <h2>DEX — Delta Exposure (Gamma Hedging)</h2>
+        <div class="mechanic-box">
+            <div class="mechanic-title">Mecânica do Delta Hedging</div>
+            <div>
+                <div><span class="mechanic-positive">DEX Positivo (+)</span></div>
+                <ul style="margin: 8px 0 12px 20px; color: var(--text2);">
+                    <li>Market makers vão ter que <strong>COMPRAR ações</strong> se preço chegar naquele strike</li>
+                    <li>Geralmente calls vendidas ou puts compradas</li>
+                    <li>Cria <strong>pressão compradora</strong> conforme preço se aproxima</li>
+                    <li>Mais alto = mais combustível para movimento</li>
+                </ul>
+                <div><span class="mechanic-negative">DEX Negativo (−)</span></div>
+                <ul style="margin: 8px 0 0 20px; color: var(--text2);">
+                    <li>Market makers vão ter que <strong>VENDER ações</strong> se preço chegar naquele strike</li>
+                    <li>Geralmente puts vendidas ou calls compradas</li>
+                    <li>Cria <strong>pressão vendedora</strong> conforme preço se aproxima</li>
+                    <li>Mais baixo = mais resistência ao movimento</li>
+                </ul>
+            </div>
+        </div>
+        <h3 style="margin-top: 20px; margin-bottom: 12px;">DEX por Strike</h3>
+        <canvas id="chartDEX" height="250"></canvas>
+    </div>
+
+    <!-- VEX Section -->
+    <div class="chart-section">
+        <h2>VEX — Vega Exposure (Volatilidade)</h2>
+        <div class="mechanic-box">
+            <div class="mechanic-title">Mecânica do Vega com Contexto Histórico</div>
+            <div>
+                <div><span class="mechanic-positive">VEX Positivo + IV Baixa vs Histórico</span></div>
+                <ul style="margin: 8px 0 12px 20px; color: var(--text2);">
+                    <li>Setup ideal para <strong>comprar volatilidade</strong></li>
+                    <li>MMs vulneráveis (short vega descoberto)</li>
+                    <li>IV comprimida vs média histórica</li>
+                    <li>Opções relativamente baratas</li>
+                    <li><strong>Estratégia:</strong> Long straddles/strangles</li>
+                </ul>
+                <div><span class="mechanic-negative">VEX Negativo + IV Alta vs Histórico</span></div>
+                <ul style="margin: 8px 0 0 20px; color: var(--text2);">
+                    <li>Setup ideal para <strong>vender volatilidade</strong></li>
+                    <li>MMs long vega (querem IV alta)</li>
+                    <li>IV inflada vs média histórica</li>
+                    <li>Opções relativamente caras</li>
+                    <li><strong>Estratégia:</strong> Short straddles/iron condors</li>
+                </ul>
+            </div>
+        </div>
+        <h3 style="margin-top: 20px; margin-bottom: 12px;">VEX por Strike</h3>
+        <canvas id="chartVEX" height="250"></canvas>
+    </div>
+
+    <!-- IV Context -->
+    <div class="context-box" style="border-left-color: #3fb950">
+        <h3>Contexto de Volatilidade Implícita ↓</h3>
+        <div class="iv-summary">
+            <div class="iv-item">
+                <div class="iv-item-label">IV D-1 (média)</div>
+                <div class="iv-item-value">26.72%</div>
+            </div>
+            <div class="iv-item">
+                <div class="iv-item-label">IV D (média)</div>
+                <div class="iv-item-value">23.76%</div>
+            </div>
+            <div class="iv-item" style="border-color: #3fb950; border-width: 2px;">
+                <div class="iv-item-label">Direção</div>
+                <div class="iv-item-value" style="color: #3fb950">23.76%pp</div>
+            </div>
+        </div>
+        <p class="interpretation" style="border-left-color: #3fb950">
+            <strong style="color: #3fb950">COMPRAR volatilidade — IV abaixo do recente</strong><br>
+            IV caiu de 26.72% para 23.76% (-2.96pp)
+        </p>
+        <div class="strategy-chips">
+            <span class="chip chip-buy">📈 LONG VOL (straddle/strangle)</span>
+            
+            
+        </div>
+    </div>
+
+    <script>
+        function fmtM(v) {
+            if (v === null || v === undefined) return '';
+            const abs = Math.abs(v);
+            const sign = v < 0 ? '-' : '';
+            if (abs >= 1000) return sign + (abs/1000).toFixed(1) + 'B';
+            if (abs >= 1)    return sign + abs.toFixed(1) + 'M';
+            return sign + (abs * 1000).toFixed(0) + 'k';
+        }
+
+        const COMMON_OPTS = {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: {mode: 'index', intersect: false},
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {color: '#c9d1d9', boxWidth: 14, padding: 16}
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ` ${ctx.dataset.label}: ${fmtM(ctx.parsed.y)}`
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {color: 'rgba(88,166,255,0.06)'},
+                    ticks: {color: '#8b949e', maxRotation: 0},
+                },
+                y: {
+                    grid: {color: 'rgba(88,166,255,0.06)'},
+                    ticks: {
+                        color: '#8b949e',
+                        callback: (v) => fmtM(v)
+                    },
+                    title: {display: true, text: 'Milhões (R$)', color: '#8b949e', font: {size: 11}},
+                },
+            },
+        };
+
+        const PER_EXP = {"10 abr W2": [{"strike": 183.0, "tex_call": -534000361000.0, "tex_put": -342634087000.0, "tex_net": -876634448000.0, "dex_call": 208930050.0, "dex_put": -54986720.0, "dex_net": 153943330.0, "vex_call": 24506229735000.0, "vex_put": 26531484776000.0, "vex_net": 51037714511000.0}, {"strike": 184.0, "tex_call": -934373170000.0, "tex_put": -382582498000.0, "tex_net": -1316955668000.0, "dex_call": 321729790.0, "dex_put": -75745070.0, "dex_net": 245984720.0, "vex_call": 44707553258000.0, "vex_put": 37441210313000.0, "vex_net": 82148763571000.0}, {"strike": 185.0, "tex_call": -2095418276000.0, "tex_put": -1182081630000.0, "tex_net": -3277499906000.0, "dex_call": 634683460.0, "dex_put": -247975180.0, "dex_net": 386708280.0, "vex_call": 99320416122000.0, "vex_put": 102606346699000.0, "vex_net": 201926762821000.0}, {"strike": 186.0, "tex_call": -984233328100.0, "tex_put": -510909096000.0, "tex_net": -1495142424100.0, "dex_call": 260385758.0, "dex_put": -115027280.0, "dex_net": 145358478.0, "vex_call": 44806918277300.0, "vex_put": 41575321850000.0, "vex_net": 86382240127300.0}, {"strike": 187.0, "tex_call": -937532090000.0, "tex_put": -253527071000.0, "tex_net": -1191059161000.0, "dex_call": 221581000.0, "dex_put": -71890320.0, "dex_net": 149690680.0, "vex_call": 46539273792000.0, "vex_put": 28385757752000.0, "vex_net": 74925031544000.0}, {"strike": 188.0, "tex_call": -888612053000.0, "tex_put": -286891092000.0, "tex_net": -1175503145000.0, "dex_call": 173334340.0, "dex_put": -69405000.0, "dex_net": 103929340.0, "vex_call": 39076323008000.0, "vex_put": 19261678550000.0, "vex_net": 58338001558000.0}, {"strike": 189.0, "tex_call": -520796343000.0, "tex_put": -124707731000.0, "tex_net": -645504074000.0, "dex_call": 96565190.0, "dex_put": -42206360.0, "dex_net": 54358830.0, "vex_call": 25663465754000.0, "vex_put": 11624663658000.0, "vex_net": 37288129412000.0}, {"strike": 190.0, "tex_call": -1009149729000.0, "tex_put": -225250457000.0, "tex_net": -1234400186000.0, "dex_call": 202909500.0, "dex_put": -108952360.0, "dex_net": 93957140.0, "vex_call": 65725731006000.0, "vex_put": 32210377516000.0, "vex_net": 97936108522000.0}, {"strike": 191.0, "tex_call": -775539486000.0, "tex_put": -150409003000.0, "tex_net": -925948489000.0, "dex_call": 115004900.0, "dex_put": -79278150.0, "dex_net": 35726750.0, "vex_call": 36779195468000.0, "vex_put": 17176413457000.0, "vex_net": 53955608925000.0}, {"strike": 192.0, "tex_call": -1477660104000.0, "tex_put": -580196745000.0, "tex_net": -2057856849000.0, "dex_call": 243960100.0, "dex_put": -378768920.0, "dex_net": -134808820.0, "vex_call": 89499694182000.0, "vex_put": 67269295252000.0, "vex_net": 156768989434000.0}, {"strike": 193.0, "tex_call": -773954660000.0, "tex_put": -151291198000.0, "tex_net": -925245858000.0, "dex_call": 101056250.0, "dex_put": -133225610.0, "dex_net": -32169360.0, "vex_call": 39504487218000.0, "vex_put": 23309742412000.0, "vex_net": 62814229630000.0}, {"strike": 194.0, "tex_call": -29827872000.0, "tex_put": -26660000.0, "tex_net": -29854532000.0, "dex_call": 2202480.0, "dex_put": -7200.0, "dex_net": 2195280.0, "vex_call": 454521078000.0, "vex_put": 577830000.0, "vex_net": 455098908000.0}, {"strike": 195.0, "tex_call": -642158000000.0, "tex_put": -18222394000.0, "tex_net": -660380394000.0, "dex_call": 42420000.0, "dex_put": -7032580.0, "dex_net": 35387420.0, "vex_call": 9892142000000.0, "vex_put": 435939842000.0, "vex_net": 10328081842000.0}, {"strike": 196.0, "tex_call": -27050325000.0, "tex_put": 0.0, "tex_net": -27050325000.0, "dex_call": 1606950.0, "dex_put": 0.0, "dex_net": 1606950.0, "vex_call": 420367407000.0, "vex_put": 0.0, "vex_net": 420367407000.0}, {"strike": 197.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}, {"strike": 198.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}, {"strike": 199.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}], "15 mai Mensal": [{"strike": 183.0, "tex_call": -77629851000.0, "tex_put": -17816700000.0, "tex_net": -95446551000.0, "dex_call": 35926260.0, "dex_put": -8422440.0, "dex_net": 27503820.0, "vex_call": 9357965397000.0, "vex_put": 6244040682000.0, "vex_net": 15602006079000.0}, {"strike": 184.0, "tex_call": -112825515000.0, "tex_put": -46648833000.0, "tex_net": -159474348000.0, "dex_call": 49601310.0, "dex_put": -24114370.0, "dex_net": 25486940.0, "vex_call": 14115135606000.0, "vex_put": 16800731038000.0, "vex_net": 30915866644000.0}, {"strike": 185.0, "tex_call": -144700992000.0, "tex_put": -64524000000.0, "tex_net": -209224992000.0, "dex_call": 60514560.0, "dex_put": -36480000.0, "dex_net": 24034560.0, "vex_call": 18727387488000.0, "vex_put": 23990046000000.0, "vex_net": 42717433488000.0}, {"strike": 186.0, "tex_call": -49631330000.0, "tex_put": -15465384000.0, "tex_net": -65096714000.0, "dex_call": 20083800.0, "dex_put": -9290160.0, "dex_net": 10793640.0, "vex_call": 6627927870000.0, "vex_put": 5951413116000.0, "vex_net": 12579340986000.0}, {"strike": 187.0, "tex_call": -103767482000.0, "tex_put": -37532880000.0, "tex_net": -141300362000.0, "dex_call": 40081860.0, "dex_put": -24798510.0, "dex_net": 15283350.0, "vex_call": 14254445478000.0, "vex_put": 15011007264000.0, "vex_net": 29265452742000.0}, {"strike": 188.0, "tex_call": -95804632000.0, "tex_put": -12364388000.0, "tex_net": -108169020000.0, "dex_call": 35395800.0, "dex_put": -9041600.0, "dex_net": 26354200.0, "vex_call": 13513467517000.0, "vex_put": 5177875676000.0, "vex_net": 18691343193000.0}, {"strike": 189.0, "tex_call": -58780557000.0, "tex_put": -8440608000.0, "tex_net": -67221165000.0, "dex_call": 20797590.0, "dex_put": -6873980.0, "dex_net": 13923610.0, "vex_call": 8494319548000.0, "vex_put": 3721604744000.0, "vex_net": 12215924292000.0}, {"strike": 190.0, "tex_call": -181488000000.0, "tex_put": -32481225000.0, "tex_net": -213969225000.0, "dex_call": 61560000.0, "dex_put": -29704500.0, "dex_net": 31855500.0, "vex_call": 26813940000000.0, "vex_put": 15188685750000.0, "vex_net": 42002625750000.0}, {"strike": 191.0, "tex_call": -67513392000.0, "tex_put": -6405512000.0, "tex_net": -73918904000.0, "dex_call": 21987120.0, "dex_put": -6649790.0, "dex_net": 15337330.0, "vex_call": 10185899792000.0, "vex_put": 3206365886000.0, "vex_net": 13392265678000.0}, {"strike": 192.0, "tex_call": -115252405000.0, "tex_put": -8522955000.0, "tex_net": -123775360000.0, "dex_call": 36039840.0, "dex_put": -10188360.0, "dex_net": 25851480.0, "vex_call": 17717710925000.0, "vex_put": 4623458175000.0, "vex_net": 22341169100000.0}, {"strike": 193.0, "tex_call": -60275026000.0, "tex_put": -9906624000.0, "tex_net": -70181650000.0, "dex_call": 18106650.0, "dex_put": -13899600.0, "dex_net": 4207050.0, "vex_call": 9430104268000.0, "vex_put": 5922847008000.0, "vex_net": 15352951276000.0}, {"strike": 194.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}, {"strike": 195.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}, {"strike": 196.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}, {"strike": 197.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}, {"strike": 198.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}, {"strike": 199.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}], "17 abr Mensal": [{"strike": 183.0, "tex_call": -443215611000.0, "tex_put": -267090198000.0, "tex_net": -710305809000.0, "dex_call": 171336660.0, "dex_put": -50461500.0, "dex_net": 120875160.0, "vex_call": 23594312828000.0, "vex_put": 25086501489000.0, "vex_net": 48680814317000.0}, {"strike": 184.0, "tex_call": -813489003000.0, "tex_put": -288537188000.0, "tex_net": -1102026191000.0, "dex_call": 282936750.0, "dex_put": -69033950.0, "dex_net": 213902800.0, "vex_call": 43289811756000.0, "vex_put": 35620822862000.0, "vex_net": 78910634618000.0}, {"strike": 185.0, "tex_call": -1945133860000.0, "tex_put": -1023889900000.0, "tex_net": -2969023760000.0, "dex_call": 597316880.0, "dex_put": -235330000.0, "dex_net": 361986880.0, "vex_call": 97380197100000.0, "vex_put": 99239976600000.0, "vex_net": 196620173700000.0}, {"strike": 186.0, "tex_call": -825030823300.0, "tex_put": -438830536000.0, "tex_net": -1263861359300.0, "dex_call": 229293025.0, "dex_put": -108142480.0, "dex_net": 121150545.0, "vex_call": 42540136969300.0, "vex_put": 40144707778000.0, "vex_net": 82684844747300.0}, {"strike": 187.0, "tex_call": -715407004000.0, "tex_put": -180318326000.0, "tex_net": -895725330000.0, "dex_call": 187205320.0, "dex_put": -63252120.0, "dex_net": 123953200.0, "vex_call": 43196285942000.0, "vex_put": 26888085368000.0, "vex_net": 70084371310000.0}, {"strike": 188.0, "tex_call": -492413193000.0, "tex_put": -141265972000.0, "tex_net": -633679165000.0, "dex_call": 122922440.0, "dex_put": -48113900.0, "dex_net": 74808540.0, "vex_call": 32868860582000.0, "vex_put": 16173801850000.0, "vex_net": 49042662432000.0}, {"strike": 189.0, "tex_call": -344563182000.0, "tex_put": -87898982000.0, "tex_net": -432462164000.0, "dex_call": 78064870.0, "dex_put": -35210180.0, "dex_net": 42854690.0, "vex_call": 22830411296000.0, "vex_put": 10816375044000.0, "vex_net": 33646786340000.0}, {"strike": 190.0, "tex_call": -905490411000.0, "tex_put": -208201350000.0, "tex_net": -1113691761000.0, "dex_call": 193641120.0, "dex_put": -104590660.0, "dex_net": 89050460.0, "vex_call": 64018900986000.0, "vex_put": 31811931758000.0, "vex_net": 95830832744000.0}, {"strike": 191.0, "tex_call": -483987286000.0, "tex_put": -143614083000.0, "tex_net": -627601369000.0, "dex_call": 92634740.0, "dex_put": -76799790.0, "dex_net": 15834950.0, "vex_call": 31917388602000.0, "vex_put": 17000271593000.0, "vex_net": 48917660195000.0}, {"strike": 192.0, "tex_call": -1462731822000.0, "tex_put": -577866860000.0, "tex_net": -2040598682000.0, "dex_call": 243073860.0, "dex_put": -378026900.0, "dex_net": -134953040.0, "vex_call": 89217430052000.0, "vex_put": 67186644224000.0, "vex_net": 156404074276000.0}, {"strike": 193.0, "tex_call": -544180423000.0, "tex_put": -149296896000.0, "tex_net": -693477319000.0, "dex_call": 86976250.0, "dex_put": -131259600.0, "dex_net": -44283350.0, "vex_call": 35577527449000.0, "vex_put": 23225022864000.0, "vex_net": 58802550313000.0}, {"strike": 194.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}, {"strike": 195.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}, {"strike": 196.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}, {"strike": 197.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}, {"strike": 198.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}, {"strike": 199.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}], "24 abr W2": [{"strike": 183.0, "tex_call": -77986791000.0, "tex_put": -18023198000.0, "tex_net": -96009989000.0, "dex_call": 36066660.0, "dex_put": -8473730.0, "dex_net": 27592930.0, "vex_call": 9379164897000.0, "vex_put": 6270323239000.0, "vex_net": 15649488136000.0}, {"strike": 184.0, "tex_call": -119289003000.0, "tex_put": -51231671000.0, "tex_net": -170520674000.0, "dex_call": 51936750.0, "dex_put": -25333950.0, "dex_net": 26602800.0, "vex_call": 14518832190000.0, "vex_put": 17404837291000.0, "vex_net": 31923669481000.0}, {"strike": 185.0, "tex_call": -145397860000.0, "tex_put": -69575900000.0, "tex_net": -214973760000.0, "dex_call": 60746960.0, "dex_put": -37950000.0, "dex_net": 22796960.0, "vex_call": 18772852232000.0, "vex_put": 24661399900000.0, "vex_net": 43434252132000.0}, {"strike": 186.0, "tex_call": -73994000600.0, "tex_put": -19102536000.0, "tex_net": -93096536600.0, "dex_call": 27623025.0, "dex_put": -10462480.0, "dex_net": 17160545.0, "vex_call": 8279542081400.0, "vex_put": 6451096178000.0, "vex_net": 14730638259400.0}, {"strike": 187.0, "tex_call": -104167010000.0, "tex_put": -39070857000.0, "tex_net": -143237867000.0, "dex_call": 40195320.0, "dex_put": -25368510.0, "dex_net": 14826810.0, "vex_call": 14282433084000.0, "vex_put": 15241781127000.0, "vex_net": 29524214211000.0}, {"strike": 188.0, "tex_call": -96425968000.0, "tex_put": -12799398000.0, "tex_net": -109225366000.0, "dex_call": 35562440.0, "dex_put": -9217900.0, "dex_net": 26344540.0, "vex_call": 13559082425000.0, "vex_put": 5241158766000.0, "vex_net": 18800241191000.0}, {"strike": 189.0, "tex_call": -59868181000.0, "tex_put": -8661843000.0, "tex_net": -68530024000.0, "dex_call": 21064870.0, "dex_put": -6977180.0, "dex_net": 14087690.0, "vex_call": 8574771342000.0, "vex_put": 3755253964000.0, "vex_net": 12330025306000.0}, {"strike": 190.0, "tex_call": -187524492000.0, "tex_put": -34283485000.0, "tex_net": -221807977000.0, "dex_call": 62961120.0, "dex_put": -30670660.0, "dex_net": 32290460.0, "vex_call": 27270690525000.0, "vex_put": 15479380998000.0, "vex_net": 42750071523000.0}, {"strike": 191.0, "tex_call": -67782464000.0, "tex_put": -6405512000.0, "tex_net": -74187976000.0, "dex_call": 22044740.0, "dex_put": -6649790.0, "dex_net": 15394950.0, "vex_call": 10206621284000.0, "vex_put": 3206365886000.0, "vex_net": 13412987170000.0}, {"strike": 192.0, "tex_call": -115862011000.0, "tex_put": -8534239000.0, "tex_net": -124396250000.0, "dex_call": 36163860.0, "dex_put": -10196900.0, "dex_net": 25966960.0, "vex_call": 17765578193000.0, "vex_put": 4625563845000.0, "vex_net": 22391142038000.0}, {"strike": 193.0, "tex_call": -64706066000.0, "tex_put": -9906624000.0, "tex_net": -74612690000.0, "dex_call": 18960650.0, "dex_put": -13899600.0, "dex_net": 5061050.0, "vex_call": 9783491908000.0, "vex_put": 5922847008000.0, "vex_net": 15706338916000.0}, {"strike": 194.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}, {"strike": 195.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}, {"strike": 196.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}, {"strike": 197.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}, {"strike": 198.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}, {"strike": 199.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}], "30 abr W5": [{"strike": 183.0, "tex_call": -77629851000.0, "tex_put": -17816700000.0, "tex_net": -95446551000.0, "dex_call": 35926260.0, "dex_put": -8422440.0, "dex_net": 27503820.0, "vex_call": 9361363827000.0, "vex_put": 6246308262000.0, "vex_net": 15607672089000.0}, {"strike": 184.0, "tex_call": -112825515000.0, "tex_put": -46811433000.0, "tex_net": -159636948000.0, "dex_call": 49601310.0, "dex_put": -24168370.0, "dex_net": 25432940.0, "vex_call": 14119676571000.0, "vex_put": 16836458583000.0, "vex_net": 30956135154000.0}, {"strike": 185.0, "tex_call": -144700992000.0, "tex_put": -64524000000.0, "tex_net": -209224992000.0, "dex_call": 60514560.0, "dex_put": -36480000.0, "dex_net": 24034560.0, "vex_call": 18732638016000.0, "vex_put": 23996772000000.0, "vex_net": 42729410016000.0}, {"strike": 186.0, "tex_call": -49660736600.0, "tex_put": -15525234000.0, "tex_net": -65185970600.0, "dex_call": 20093745.0, "dex_put": -9313960.0, "dex_net": 10779785.0, "vex_call": 6632037181400.0, "vex_put": 5964547436000.0, "vex_net": 12596584617400.0}, {"strike": 187.0, "tex_call": -103767482000.0, "tex_put": -37465857000.0, "tex_net": -141233339000.0, "dex_call": 40081860.0, "dex_put": -24798510.0, "dex_net": 15283350.0, "vex_call": 14256990358000.0, "vex_put": 15019117047000.0, "vex_net": 29276107405000.0}, {"strike": 188.0, "tex_call": -95843052000.0, "tex_put": -12364388000.0, "tex_net": -108207440000.0, "dex_call": 35407400.0, "dex_put": -9041600.0, "dex_net": 26365800.0, "vex_call": 13518828607000.0, "vex_put": 5178553796000.0, "vex_net": 18697382403000.0}, {"strike": 189.0, "tex_call": -58780557000.0, "tex_put": -8440608000.0, "tex_net": -67221165000.0, "dex_call": 20797590.0, "dex_put": -6873980.0, "dex_net": 13923610.0, "vex_call": 8494976314000.0, "vex_put": 3721892492000.0, "vex_net": 12216868806000.0}, {"strike": 190.0, "tex_call": -181374000000.0, "tex_put": -32481225000.0, "tex_net": -213855225000.0, "dex_call": 61560000.0, "dex_put": -29704500.0, "dex_net": 31855500.0, "vex_call": 26814396000000.0, "vex_put": 15188944050000.0, "vex_net": 42003340050000.0}, {"strike": 191.0, "tex_call": -67513392000.0, "tex_put": -6405512000.0, "tex_net": -73918904000.0, "dex_call": 21987120.0, "dex_put": -6649790.0, "dex_net": 15337330.0, "vex_call": 10185511784000.0, "vex_put": 3206243747000.0, "vex_net": 13391755531000.0}, {"strike": 192.0, "tex_call": -115177322000.0, "tex_put": -8503362000.0, "tex_net": -123680684000.0, "dex_call": 36039840.0, "dex_put": -10188360.0, "dex_net": 25851480.0, "vex_call": 17716059099000.0, "vex_put": 4623027129000.0, "vex_net": 22339086228000.0}, {"strike": 193.0, "tex_call": -60194552000.0, "tex_put": -9881352000.0, "tex_net": -70075904000.0, "dex_call": 18106650.0, "dex_put": -13899600.0, "dex_net": 4207050.0, "vex_call": 9427126730000.0, "vex_put": 5921911944000.0, "vex_net": 15349038674000.0}, {"strike": 194.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}, {"strike": 195.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}, {"strike": 196.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}, {"strike": 197.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}, {"strike": 198.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}, {"strike": 199.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}]};
+        const EXP_KEYS = ["10 abr W2", "17 abr Mensal", "24 abr W2", "30 abr W5", "15 mai Mensal"];
+        const PALETTE = ["#f85149", "#58a6ff", "#3fb950", "#d29922", "#bc8cff", "#ffa657", "#79c0ff"];
+        const AGG_DATA = [{"strike": 183.0, "tex_call": -1210462465000.0, "tex_put": -663380883000.0, "tex_net": -1873843348000.0, "dex_call": 488185890.0, "dex_put": -130766830.0, "dex_net": 357419060.0, "vex_call": 76199036684000.0, "vex_put": 70378658448000.0, "vex_net": 146577695132000.0}, {"strike": 184.0, "tex_call": -2092802206000.0, "tex_put": -815811623000.0, "tex_net": -2908613829000.0, "dex_call": 755805910.0, "dex_put": -218395710.0, "dex_net": 537410200.0, "vex_call": 130751009381000.0, "vex_put": 124104060087000.0, "vex_net": 254855069468000.0}, {"strike": 185.0, "tex_call": -4475351980000.0, "tex_put": -2404595430000.0, "tex_net": -6879947410000.0, "dex_call": 1413776420.0, "dex_put": -594215180.0, "dex_net": 819561240.0, "vex_call": 252933490958000.0, "vex_put": 274494541199000.0, "vex_net": 527428032157000.0}, {"strike": 186.0, "tex_call": -1982550218600.0, "tex_put": -999832786000.0, "tex_net": -2982383004600.0, "dex_call": 557479353.0, "dex_put": -252236360.0, "dex_net": 305242993.0, "vex_call": 108886562379400.0, "vex_put": 100087086358000.0, "vex_net": 208973648737400.0}, {"strike": 187.0, "tex_call": -1964641068000.0, "tex_put": -547914991000.0, "tex_net": -2512556059000.0, "dex_call": 529145360.0, "dex_put": -210107970.0, "dex_net": 319037390.0, "vex_call": 132529428654000.0, "vex_put": 100545748558000.0, "vex_net": 233075177212000.0}, {"strike": 188.0, "tex_call": -1669098898000.0, "tex_put": -465685238000.0, "tex_net": -2134784136000.0, "dex_call": 402622420.0, "dex_put": -144820000.0, "dex_net": 257802420.0, "vex_call": 112536562139000.0, "vex_put": 51033068638000.0, "vex_net": 163569630777000.0}, {"strike": 189.0, "tex_call": -1042788820000.0, "tex_put": -238149772000.0, "tex_net": -1280938592000.0, "dex_call": 237290110.0, "dex_put": -98141680.0, "dex_net": 139148430.0, "vex_call": 74057944254000.0, "vex_put": 33639789902000.0, "vex_net": 107697734156000.0}, {"strike": 190.0, "tex_call": -2465026632000.0, "tex_put": -532697742000.0, "tex_net": -2997724374000.0, "dex_call": 582631740.0, "dex_put": -303622680.0, "dex_net": 279009060.0, "vex_call": 210643658517000.0, "vex_put": 109879320072000.0, "vex_net": 320522978589000.0}, {"strike": 191.0, "tex_call": -1462336020000.0, "tex_put": -313239622000.0, "tex_net": -1775575642000.0, "dex_call": 273658620.0, "dex_put": -176027310.0, "dex_net": 97631310.0, "vex_call": 99274616930000.0, "vex_put": 43795660569000.0, "vex_net": 143070277499000.0}, {"strike": 192.0, "tex_call": -3286683664000.0, "tex_put": -1183624161000.0, "tex_net": -4470307825000.0, "dex_call": 595277500.0, "dex_put": -787369440.0, "dex_net": -192091940.0, "vex_call": 231916472451000.0, "vex_put": 148327988625000.0, "vex_net": 380244461076000.0}, {"strike": 193.0, "tex_call": -1503310727000.0, "tex_put": -330282694000.0, "tex_net": -1833593421000.0, "dex_call": 243206450.0, "dex_put": -306184010.0, "dex_net": -62977560.0, "vex_call": 103722737573000.0, "vex_put": 64302371236000.0, "vex_net": 168025108809000.0}, {"strike": 194.0, "tex_call": -29827872000.0, "tex_put": -26660000.0, "tex_net": -29854532000.0, "dex_call": 2202480.0, "dex_put": -7200.0, "dex_net": 2195280.0, "vex_call": 454521078000.0, "vex_put": 577830000.0, "vex_net": 455098908000.0}, {"strike": 195.0, "tex_call": -642158000000.0, "tex_put": -18222394000.0, "tex_net": -660380394000.0, "dex_call": 42420000.0, "dex_put": -7032580.0, "dex_net": 35387420.0, "vex_call": 9892142000000.0, "vex_put": 435939842000.0, "vex_net": 10328081842000.0}, {"strike": 196.0, "tex_call": -27050325000.0, "tex_put": 0.0, "tex_net": -27050325000.0, "dex_call": 1606950.0, "dex_put": 0.0, "dex_net": 1606950.0, "vex_call": 420367407000.0, "vex_put": 0.0, "vex_net": 420367407000.0}, {"strike": 197.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}, {"strike": 198.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}, {"strike": 199.0, "tex_call": 0.0, "tex_put": 0.0, "tex_net": 0.0, "dex_call": 0.0, "dex_put": 0.0, "dex_net": 0.0, "vex_call": 0.0, "vex_put": 0.0, "vex_net": 0.0}];
+
+        let curExp = 'AGG';
+        let chartTEX = null;
+        let chartDEX = null;
+        let chartVEX = null;
+
+        const STRIKES = ["183", "184", "185", "186", "187", "188", "189", "190", "191", "192", "193", "194", "195", "196", "197", "198", "199"];
+        const TEX_CALL = [-1210462.465, -2092802.206, -4475351.98, -1982550.2186, -1964641.068, -1669098.898, -1042788.82, -2465026.632, -1462336.02, -3286683.664, -1503310.727, -29827.872, -642158.0, -27050.325, 0.0, 0.0, 0.0];
+        const TEX_PUT = [-663380.883, -815811.623, -2404595.43, -999832.786, -547914.991, -465685.238, -238149.772, -532697.742, -313239.622, -1183624.161, -330282.694, -26.66, -18222.394, 0.0, 0.0, 0.0, 0.0];
+        const TEX_NET = [-1873843.348, -2908613.829, -6879947.41, -2982383.0046, -2512556.059, -2134784.136, -1280938.592, -2997724.374, -1775575.642, -4470307.825, -1833593.421, -29854.532, -660380.394, -27050.325, 0.0, 0.0, 0.0];
+
+        const DEX_CALL = [488.1859, 755.8059, 1413.7764, 557.4794, 529.1454, 402.6224, 237.2901, 582.6317, 273.6586, 595.2775, 243.2065, 2.2025, 42.42, 1.607, 0.0, 0.0, 0.0];
+        const DEX_PUT = [-130.7668, -218.3957, -594.2152, -252.2364, -210.108, -144.82, -98.1417, -303.6227, -176.0273, -787.3694, -306.184, -0.0072, -7.0326, 0.0, 0.0, 0.0, 0.0];
+        const DEX_NET = [357.4191, 537.4102, 819.5612, 305.243, 319.0374, 257.8024, 139.1484, 279.0091, 97.6313, -192.0919, -62.9776, 2.1953, 35.3874, 1.607, 0.0, 0.0, 0.0];
+
+        const VEX_CALL = [76199036.684, 130751009.381, 252933490.958, 108886562.3794, 132529428.654, 112536562.139, 74057944.254, 210643658.517, 99274616.93, 231916472.451, 103722737.573, 454521.078, 9892142.0, 420367.407, 0.0, 0.0, 0.0];
+        const VEX_PUT = [70378658.448, 124104060.087, 274494541.199, 100087086.358, 100545748.558, 51033068.638, 33639789.902, 109879320.072, 43795660.569, 148327988.625, 64302371.236, 577.83, 435939.842, 0.0, 0.0, 0.0, 0.0];
+        const VEX_NET = [146577695.132, 254855069.468, 527428032.157, 208973648.7374, 233075177.212, 163569630.777, 107697734.156, 320522978.589, 143070277.499, 380244461.076, 168025108.809, 455098.908, 10328081.842, 420367.407, 0.0, 0.0, 0.0];
+
+        function renderExpTabs() {
+            const el = document.getElementById('expTabs');
+            el.innerHTML = EXP_KEYS.map((k, i) =>
+                `<div class="exp-tab ${k === curExp ? 'on' : ''}" style="${k === curExp ? 'background:' + PALETTE[i % PALETTE.length] : ''}" data-k="${k}">${k}</div>`
+            ).join('') +
+                `<div class="exp-tab agg ${curExp === 'AGG' ? 'on' : ''}" data-k="AGG">🔗 AGREGADO</div>`;
+            el.querySelectorAll('.exp-tab').forEach(t => t.onclick = () => {
+                curExp = t.dataset.k;
+                renderExpTabs();
+                updateCharts();
+            });
+        }
+
+        function getDataForExp(expName) {
+            if (expName === 'AGG') {
+                return AGG_DATA;
+            }
+            return PER_EXP[expName] || [];
+        }
+
+        function updateCharts() {
+            const data = getDataForExp(curExp);
+            const strikes = data.map(r => String(Math.round(r.strike)));
+            const texCall = data.map(r => r.tex_call / 1e6);
+            const texPut = data.map(r => r.tex_put / 1e6);
+            const texNet = data.map(r => r.tex_net / 1e6);
+            const dexCall = data.map(r => r.dex_call / 1e6);
+            const dexPut = data.map(r => r.dex_put / 1e6);
+            const dexNet = data.map(r => r.dex_net / 1e6);
+            const vexCall = data.map(r => r.vex_call / 1e6);
+            const vexPut = data.map(r => r.vex_put / 1e6);
+            const vexNet = data.map(r => r.vex_net / 1e6);
+
+            if (chartTEX) {
+                chartTEX.data.labels = strikes;
+                chartTEX.data.datasets[0].data = texCall;
+                chartTEX.data.datasets[1].data = texPut;
+                chartTEX.data.datasets[2].data = texNet;
+                chartTEX.update();
+            }
+
+            if (chartDEX) {
+                chartDEX.data.labels = strikes;
+                chartDEX.data.datasets[0].data = dexCall;
+                chartDEX.data.datasets[1].data = dexPut;
+                chartDEX.data.datasets[2].data = dexNet;
+                chartDEX.update();
+            }
+
+            if (chartVEX) {
+                chartVEX.data.labels = strikes;
+                chartVEX.data.datasets[0].data = vexCall;
+                chartVEX.data.datasets[1].data = vexPut;
+                chartVEX.data.datasets[2].data = vexNet;
+                chartVEX.update();
+            }
+
+            updateSummaryCards(data);
+        }
+
+        function updateSummaryCards(data) {
+            if (!data || data.length === 0) return;
+
+            const totalTexNet = data.reduce((s, r) => s + r.tex_net, 0) / 1e6;
+            const totalDexNet = data.reduce((s, r) => s + r.dex_net, 0) / 1e6;
+            const totalVexNet = data.reduce((s, r) => s + r.vex_net, 0) / 1e6;
+
+            const maxTexStrike = data.reduce((max, r) => r.tex_net > max.tex_net ? r : max).strike;
+            const minTexStrike = data.reduce((min, r) => r.tex_net < min.tex_net ? r : min).strike;
+
+            const maxDexStrike = data.reduce((max, r) => r.dex_net > max.dex_net ? r : max).strike;
+            const minDexStrike = data.reduce((min, r) => r.dex_net < min.dex_net ? r : min).strike;
+
+            const maxVexStrike = data.reduce((max, r) => r.vex_net > max.vex_net ? r : max).strike;
+            const minVexStrike = data.reduce((min, r) => r.vex_net < min.vex_net ? r : min).strike;
+
+            // Atualiza os cards (sem re-renderização de HTML, apenas update de valores)
+            const cards = document.querySelectorAll('.card-value');
+            const formatNum = (v) => {
+                if (v === 0 || !v) return '—';
+                const sign = v < 0 ? '-' : '';
+                const abs_v = Math.abs(v);
+                if (abs_v >= 1e9) return sign + (abs_v/1e9).toFixed(1) + 'B';
+                if (abs_v >= 1e6) return sign + (abs_v/1e6).toFixed(1) + 'M';
+                if (abs_v >= 1e3) return sign + (abs_v/1e3).toFixed(0) + 'k';
+                return sign + abs_v.toFixed(0);
+            };
+
+            cards[0].textContent = formatNum(totalTexNet);
+            cards[0].style.color = totalTexNet >= 0 ? 'var(--grn)' : 'var(--red)';
+            cards[1].textContent = 'K' + maxTexStrike.toFixed(0);
+            cards[2].textContent = 'K' + minTexStrike.toFixed(0);
+
+            cards[3].textContent = formatNum(totalDexNet);
+            cards[3].style.color = totalDexNet >= 0 ? 'var(--grn)' : 'var(--red)';
+            cards[4].textContent = 'K' + maxDexStrike.toFixed(0);
+            cards[5].textContent = 'K' + minDexStrike.toFixed(0);
+
+            cards[6].textContent = formatNum(totalVexNet);
+            cards[6].style.color = totalVexNet >= 0 ? 'var(--grn)' : 'var(--red)';
+            cards[7].textContent = 'K' + maxVexStrike.toFixed(0);
+            cards[8].textContent = 'K' + minVexStrike.toFixed(0);
+        }
+
+        function makeBarDatasets(callData, putData, netData, stackId) {
+            return [
+                {
+                    type: 'bar',
+                    label: 'Call',
+                    data: callData,
+                    backgroundColor: 'rgba(63, 185, 80, 0.82)',
+                    borderColor: 'rgba(63, 185, 80, 1)',
+                    borderWidth: 1,
+                    stack: stackId,
+                    borderRadius: 2,
+                },
+                {
+                    type: 'bar',
+                    label: 'Put',
+                    data: putData,
+                    backgroundColor: 'rgba(248, 81, 73, 0.82)',
+                    borderColor: 'rgba(248, 81, 73, 1)',
+                    borderWidth: 1,
+                    stack: stackId,
+                    borderRadius: 2,
+                },
+                {
+                    type: 'line',
+                    label: 'Net',
+                    data: netData,
+                    borderColor: '#f0c040',
+                    backgroundColor: 'rgba(240, 192, 64, 0.12)',
+                    borderWidth: 2.5,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#f0c040',
+                    pointBorderColor: '#0d1117',
+                    pointBorderWidth: 1,
+                    tension: 0.3,
+                    fill: false,
+                    yAxisID: 'y',
+                },
+            ];
+        }
+
+        // TEX Chart
+        const ctxTEX = document.getElementById('chartTEX').getContext('2d');
+        chartTEX = new Chart(ctxTEX, {
+            type: 'bar',
+            data: { labels: STRIKES, datasets: makeBarDatasets(TEX_CALL, TEX_PUT, TEX_NET, 'stack0') },
+            options: COMMON_OPTS
+        });
+
+        // DEX Chart
+        const ctxDEX = document.getElementById('chartDEX').getContext('2d');
+        chartDEX = new Chart(ctxDEX, {
+            type: 'bar',
+            data: { labels: STRIKES, datasets: makeBarDatasets(DEX_CALL, DEX_PUT, DEX_NET, 'stack1') },
+            options: COMMON_OPTS
+        });
+
+        // VEX Chart
+        const ctxVEX = document.getElementById('chartVEX').getContext('2d');
+        chartVEX = new Chart(ctxVEX, {
+            type: 'bar',
+            data: { labels: STRIKES, datasets: makeBarDatasets(VEX_CALL, VEX_PUT, VEX_NET, 'stack2') },
+            options: COMMON_OPTS
+        });
+
+        // Initialize tabs
+        renderExpTabs();
+    </script>
+<script>
+(function(){
+  const saved = localStorage.getItem('bova11-theme');
+  const btn = document.getElementById('theme-toggle');
+  if(saved === 'dark'){
+    document.documentElement.setAttribute('data-theme','dark');
+    if(btn) btn.textContent = '◐';
+  }
+})();
+function toggleTheme(){
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const btn = document.getElementById('theme-toggle');
+  if(isDark){
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('bova11-theme','light');
+    btn.textContent = '◐';
+  } else {
+    document.documentElement.setAttribute('data-theme','dark');
+    localStorage.setItem('bova11-theme','dark');
+    btn.textContent = '◐';
+  }
+}
+</script>
+</body>
+</html>
