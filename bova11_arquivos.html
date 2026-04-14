@@ -122,8 +122,8 @@
     <script>
         const files = ["bova11_2026-04-13", "bova11_2026-04-10", "bova11_2026-04-09", "bova11_2026-04-08", "bova11_2026-04-07", "bova11_2026-04-06", "bova11_2026-04-02", "bova11_2026-04-01", "bova11_2026-03-31", "bova11_2026-03-30", "bova11_2026-03-27"];
         const fullText = `# Arquivo de Conhecimento BOVA11 — 2026-04-13
-**Gerado em:** 2026-04-13 17:05:38
-**Preço D:** 194.34 | **Preço D-1:** 193.84
+**Gerado em:** 2026-04-13 21:15:01
+**Preço D:** 194.3 | **Preço D-1:** 193.84
 ---
 Este arquivo é projetado primariamente como input para IA.
 Ele contém os dados extraídos de todos os relatórios processados hoje, bem como os conceitos fundamentais do sistema BOVA11.
@@ -132,13 +132,15 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 ## CONCEITOS E FÓRMULAS VITAIS (Para entendimento da IA)
 
 ### 1. Demanda Institucional e PDI (Módulo 17)
-- **ADI (Aggregate Demand Index)**: Mede o fluxo total (0.4*Skew + 0.3*Premium_Imbalance + 0.2*OI_Flow + 0.1*Vol_Imbalance). 
+- **ADI (Aggregate Demand Index)**: Mede o fluxo total \`0.4*ΔSPS + 0.3*PIC + 0.2*OIF + 0.1*VIC\`.
+  * SPS usa puts OTM abaixo de \`spot*0.99\`, calls OTM acima de \`spot*1.01\`, e \`spot_d\` / \`spot_d1\` corretos por dia.
+  * PIC/VIC/OIF usam a massa combinada \`D + D-1\` no denominador para manter os ratios na escala interpretável.
   * > +0.02 = Puts demand, Hedging (Bearish/Proteção).
   * < -0.02 = Calls demand, Risk-on (Bullish).
 - **PDI (Put Demand Index)**: \`ΔSkew * ΔIV_ATM\`. Avalia a aceleração na demanda por proteção.
   * Hedge: Puts em demanda + IV subindo (medo agudo).
   * Defensive: Puts em demanda mas IV caindo.
-- **IDS (Institutional Demand Score)**: Z-score integrado de 7 variáveis (Skew, Premium, OI, IV, GEX, Charm, Vanna). \`> +0.5 = Bear, < -0.5 = Bull\`.
+- **IDS (Institutional Demand Score)**: Z-score robusto integrado de 7 variáveis (Skew, Premium, OI, IV, GEX, Charm, Vanna), com clipping de extremos, cobertura mínima e renormalização dos pesos ativos quando IV estiver ausente. \`> +0.5 = Bear, < -0.5 = Bull\`.
 - **DFP (Delta Flow Proxy)**: Proxy do Delta-adjusted flow em Notional Net.
 
 ### 2. Max Pain e Gravitação (Módulos 11 e 12)
@@ -151,14 +153,15 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 
 ### 3. Convexidade e Gregos (Módulos 4 e 7 - GEX, Vanna, Charm, TEX, DEX, VEX)
 - **GEX (Gamma Exposure)**: Exposição de Gamma líquida dos Dealers. 
+  * Fórmula canônica: \`GEX = gamma * OI * spot² / 100\`, calls positivas e puts negativas.
   * GEX Positivo (>0): Dealers vendem na alta, compram na baixa. Comprime a volatilidade e consolida o mercado.
   * GEX Negativo (<0): Dealers compram na alta, vendem na baixa. Aumenta a volatilidade e gera "squeezes".
   * **GEX Flip**: Preço exato onde o GEX muda de sinal (regime de volatilidade inverte).
-- **DEX (Delta Exposure)**: Exposição direcional por strike. Delta agrupado projeta "Walls".
+- **DEX (Delta Exposure)**: \`delta * OI * spot\`, usando \`put_delta\` assinado. Delta agrupado projeta "Walls".
 - **VEX (Vega Exposure)**: Exposição de volatilidade a variações de IV.
 - **TEX (Theta Exposure)**: Fluxo de dinheiro diário por decaimento de tempo.
-- **Vanna**: Mudança de Delta em função da Volatilidade. Mede risco não-linear direcional.
-- **Charm**: Mudança de Delta em função do Tempo. Causa o "Charm rally" em que puts expiram worthless. Vanna + Charm = Ventos favoráveis (Tailwinds) do Gamma.
+- **Vanna**: Mudança de Delta em função da Volatilidade. A decomposição atual usa aproximação Black-Scholes local por \`spot\`, \`strike\`, \`IV\`, \`DTE\` e \`r=0\`.
+- **Charm**: Mudança de Delta em função do Tempo. Agora é separado explicitamente do residual; a parte não explicada pelos drivers locais fica em **Residual**.
 
 ### 4. Trade Score Institucional (Módulo 5 e 6)
 - Avalia cada Opção listada em vários eixos (Liquidez, OI Edge, Vol Edge, GEX Imbalance, Delta/Teta, Distância do Max Pain).
@@ -309,7 +312,7 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   189.0,
   191.7,
   193.84,
-  194.46
+  194.3
 ]
 \`\`\`
 
@@ -413,16 +416,16 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 \`\`\`json
 {
   "17 abr Mensal": {
-    "adi": 0.094444,
+    "adi": 0.096647,
     "pdi": -0.083458,
-    "ids": 4.663088,
-    "dfp_net_M": 197.5962,
+    "ids": 0.123907,
+    "dfp_net_M": 198.3276,
     "bias_adi": "Puts",
-    "bias_ids": "Bear",
+    "bias_ids": "Base",
     "quadrant": "Defensive",
     "atm_strike": 194.0,
-    "sps_d": 0.150073,
-    "sps_d1": -0.017347,
+    "sps_d": 0.187862,
+    "sps_d1": -0.034704,
     "iv_skew_d": -0.027996070726915536,
     "iv_atm_d": 20.36,
     "delta_iv_atm": -0.5900000000000034,
@@ -430,136 +433,137 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "nds_list": [
       {
         "strike": 178.0,
-        "nds": 0.063,
-        "ids_s": 22.2451,
+        "nds": -0.1873,
+        "ids_s": 1.7953,
         "dfp_net": 0.2495
       },
       {
         "strike": 180.0,
-        "nds": 0.5992,
-        "ids_s": -93.6392,
+        "nds": -0.1673,
+        "ids_s": 0.8092,
         "dfp_net": 104.1867
       },
       {
         "strike": 182.0,
-        "nds": 0.0591,
-        "ids_s": -252.3208,
+        "nds": -0.1673,
+        "ids_s": -0.0027,
         "dfp_net": 0.0179
       },
       {
         "strike": 184.0,
-        "nds": -7.771,
-        "ids_s": -80.0694,
+        "nds": -0.1673,
+        "ids_s": 3.0063,
         "dfp_net": 0.0004
       },
       {
         "strike": 186.0,
-        "nds": -0.131,
-        "ids_s": 0.2097,
-        "dfp_net": 9.8698
+        "nds": 0.9245,
+        "ids_s": 0.5231,
+        "dfp_net": 9.9026
       },
       {
         "strike": 187.0,
-        "nds": -1.9026,
-        "ids_s": 0.3819,
-        "dfp_net": 14.8873
+        "nds": -2.6578,
+        "ids_s": 0.4833,
+        "dfp_net": 14.9609
       },
       {
         "strike": 188.0,
-        "nds": -3.4247,
-        "ids_s": 0.1465,
-        "dfp_net": 26.0322
+        "nds": -5.7582,
+        "ids_s": -0.0153,
+        "dfp_net": 26.1597
       },
       {
         "strike": 189.0,
-        "nds": 2.2545,
-        "ids_s": -0.2729,
-        "dfp_net": 10.1478
+        "nds": 5.5301,
+        "ids_s": -0.1504,
+        "dfp_net": 10.214
       },
       {
         "strike": 190.0,
-        "nds": 2.7276,
-        "ids_s": 0.3887,
-        "dfp_net": 23.058
+        "nds": 6.3998,
+        "ids_s": 0.2903,
+        "dfp_net": 23.1674
       },
       {
         "strike": 191.0,
-        "nds": -0.2929,
-        "ids_s": -0.5061,
-        "dfp_net": 8.2044
+        "nds": 0.2632,
+        "ids_s": -1.7608,
+        "dfp_net": 8.2747
       },
       {
         "strike": 192.0,
-        "nds": -0.1621,
-        "ids_s": -0.1499,
-        "dfp_net": 8.0757
+        "nds": 0.4312,
+        "ids_s": -0.2261,
+        "dfp_net": 8.1332
       },
       {
         "strike": 193.0,
-        "nds": 0.3977,
-        "ids_s": 0.2743,
-        "dfp_net": 3.6185
+        "nds": 1.4486,
+        "ids_s": 0.1461,
+        "dfp_net": 3.6669
       },
       {
         "strike": 194.0,
-        "nds": 0.3184,
-        "ids_s": -0.4222,
-        "dfp_net": 0.5809
+        "nds": 1.1895,
+        "ids_s": -0.5383,
+        "dfp_net": 0.6063
       },
       {
         "strike": 195.0,
-        "nds": 1.8647,
-        "ids_s": -0.1254,
-        "dfp_net": 0.2379
+        "nds": 4.19,
+        "ids_s": -0.2226,
+        "dfp_net": 0.2658
       },
       {
         "strike": 196.0,
-        "nds": -0.1648,
-        "ids_s": -0.4161,
-        "dfp_net": -0.6081
+        "nds": 0.0528,
+        "ids_s": -0.5978,
+        "dfp_net": -0.5886
       },
       {
         "strike": 197.0,
-        "nds": 0.1192,
-        "ids_s": -0.8712,
-        "dfp_net": -0.9534
+        "nds": 0.5558,
+        "ids_s": -0.9977,
+        "dfp_net": -0.9388
       },
       {
         "strike": 198.0,
-        "nds": -1.084,
-        "ids_s": -1.3156,
-        "dfp_net": -0.6545
+        "nds": -1.8949,
+        "ids_s": -1.4732,
+        "dfp_net": -0.6472
       },
       {
         "strike": 199.0,
-        "nds": -0.8931,
-        "ids_s": 0.4018,
-        "dfp_net": -0.66
+        "nds": -1.5371,
+        "ids_s": 0.423,
+        "dfp_net": -0.6532
       },
       {
         "strike": 200.0,
-        "nds": -2.5356,
-        "ids_s": 21.5705,
-        "dfp_net": -1.7714
+        "nds": -4.8237,
+        "ids_s": -0.5762,
+        "dfp_net": -1.7545
       },
       {
         "strike": 205.0,
-        "nds": -0.8813,
-        "ids_s": -0.3104,
-        "dfp_net": -5.4463
+        "nds": -1.5013,
+        "ids_s": -1.1792,
+        "dfp_net": -5.4226
       },
       {
         "strike": 210.0,
-        "nds": 15.2682,
-        "ids_s": 169.4971,
-        "dfp_net": -1.4769
+        "nds": 19.7702,
+        "ids_s": 1.4949,
+        "dfp_net": -1.4735
       },
       {
         "strike": 220.0,
-        "nds": 8.5433,
-        "ids_s": 304.8031,
+        "nds": -0.1671,
+        "ids_s": 1.7238,
         "dfp_net": 0.0
-     
+      },
+   
 ... [DADOS EXCESSIVOS TRUNCADOS]
 \`\`\`
 
@@ -729,6 +733,185 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   "#ffa657",
   "#ff7b72"
 ]
+\`\`\`
+
+**sorted**:
+\`\`\`
+[...d.nds_list].sort((a,b) => b.strike - a.strike);
+  const maxAbs = Math.max(...sorted.map(r => Math.abs(r.nds)), 0.01);
+  tbody.innerHTML = sorted.map(r => {
+    const bg = ndsColor(r.nds, maxAbs);
+    const barW = Math.round(Math.min(Math.abs(r.nds) / maxAbs, 1.0) * 50);
+    const barColor = r.nds > 0 ? '#f85149' : '#3fb950';
+    return \`<tr style="background:\${bg}">
+      <td><strong>\${r.strike.toFixed(0)}</strong></td>
+      <td>\${fmtNum(r.nds,3)}
+        <span class="nds-bar" style="width:... (dados complexos)
+\`\`\`
+
+**Variable:** \`metricLabels\`
+\`\`\`json
+{
+  "adi": "ADI",
+  "pdi": "PDI",
+  "ids": "IDS"
+}
+\`\`\`
+
+### bova11_diagnostico_4d.html
+**Variable:** \`labels\`
+\`\`\`json
+[
+  178.0,
+  180.0,
+  182.0,
+  184.0,
+  186.0,
+  187.0,
+  188.0,
+  189.0,
+  190.0,
+  191.0,
+  192.0,
+  193.0,
+  194.0,
+  195.0,
+  196.0,
+  197.0,
+  198.0,
+  199.0,
+  200.0,
+  205.0,
+  210.0,
+  220.0,
+  230.0,
+  240.0
+]
+\`\`\`
+
+**Variable:** \`gexNet\`
+\`\`\`json
+[
+  0.1112,
+  -4.3974,
+  -2.3508,
+  -0.2877,
+  -20.249,
+  -4.3821,
+  -4.6339,
+  -17.3554,
+  2.2872,
+  -5.3098,
+  38.1926,
+  26.4345,
+  24.8692,
+  121.847,
+  54.0437,
+  81.1702,
+  81.0353,
+  34.7161,
+  116.6761,
+  107.1848,
+  50.6316,
+  0.0008,
+  0.0,
+  0.0
+]
+\`\`\`
+
+**Variable:** \`dexNet\`
+\`\`\`json
+[
+  11.219,
+  5466.203,
+  -5.9417,
+  -0.9256,
+  643.0811,
+  738.7653,
+  564.2033,
+  431.3472,
+  778.5758,
+  398.2919,
+  3740.1775,
+  841.14,
+  1440.4964,
+  990.4792,
+  334.4816,
+  404.0851,
+  269.3563,
+  145.4155,
+  335.2743,
+  455.8213,
+  -1304.7183,
+  0.0023,
+  0.0,
+  0.0
+]
+\`\`\`
+
+**Variable:** \`vexNet\`
+\`\`\`json
+[
+  40.3628,
+  41477.5328,
+  369.154,
+  45.0928,
+  10902.8125,
+  16224.5083,
+  14120.3695,
+  16919.4087,
+  28295.2786,
+  16479.2765,
+  190572.4176,
+  48823.6669,
+  161412.042,
+  35358.5607,
+  12045.3415,
+  14884.0638,
+  9525.688,
+  10647.7816,
+  31644.173,
+  19913.3462,
+  12144.0489,
+  0.1217,
+  0.0,
+  0.0
+]
+\`\`\`
+
+**Variable:** \`texNet\`
+\`\`\`json
+[
+  -0.8487,
+  -555.296,
+  -2.0456,
+  -0.2409,
+  -125.9043,
+  -147.3168,
+  -131.1645,
+  -147.9026,
+  -252.0513,
+  -172.5472,
+  -1640.8065,
+  -391.6708,
+  -1139.4812,
+  -283.3192,
+  -112.8549,
+  -151.667,
+  -125.8496,
+  -81.8446,
+  -238.446,
+  -140.3197,
+  10.5292,
+  -0.0009,
+  0.0,
+  0.0
+]
+\`\`\`
+
+**Variable:** \`charts\`
+\`\`\`json
+{}
 \`\`\`
 
 ### bova11_flow_history.html
@@ -949,6 +1132,34 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 ]
 \`\`\`
 
+**Variable:** \`datesByMonth\`
+\`\`\`json
+{}
+\`\`\`
+
+**Variable:** \`months_order\`
+\`\`\`json
+[
+  "fev",
+  "mar",
+  "abr",
+  "mai",
+  "jun",
+  "jul",
+  "ago",
+  "set",
+  "out",
+  "nov",
+  "dez",
+  "jan"
+]
+\`\`\`
+
+**Variable:** \`result\`
+\`\`\`json
+{}
+\`\`\`
+
 ### bova11_gex_history.html
 **Variable:** \`ALL_DATA\`
 \`\`\`json
@@ -957,6 +1168,7 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "tag": "13abr",
     "iso_date": "2026-04-13",
     "display": "13/Abr",
+    "spot": 194.3,
     "strikes": [
       178.0,
       180.0,
@@ -984,133 +1196,113 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
       240.0
     ],
     "gex_call": [
-      50184.0,
-      35884800.0,
-      13524.0,
-      1480.0,
-      9556934.340000002,
-      13929523.799999999,
-      13019579.3,
-      14542517.3,
-      28686599.3,
-      19697165.5,
-      199874922.09999996,
-      50372031.599999994,
-      147673264.1,
-      47098721.55,
-      19905564.0,
-      28192604.100000005,
-      25682204.100000016,
-      14633244.8,
-      45372246.0,
-      29683200.0,
-      16361362.200000001,
-      216.0,
+      189457.09581600004,
+      135474055.31520003,
+      51056.46747600001,
+      5587.368520000001,
+      36079806.81015066,
+      52587420.79642619,
+      49152153.7327457,
+      54901623.89430772,
+      108299055.32072572,
+      74361704.35670952,
+      754577599.7831029,
+      190166961.92586845,
+      557503342.620261,
+      177809401.432916,
+      75148460.58543602,
+      106434100.43592091,
+      96956715.3463209,
+      55244142.797955215,
+      171291526.339254,
+      112061471.11680001,
+      61768216.28418782,
+      815.4537840000002,
       0.0,
       0.0
     ],
     "gex_put": [
-      20729.600000000002,
-      37049600.0,
-      636216.0,
-      77700.0,
-      14920542.0,
-      15090256.0,
-      14247030.639999999,
-      19139660.53,
-      28080761.7,
-      21103652.759999998,
-      189758354.29999998,
-      43369971.4,
-      141085820.18,
-      14823493.7,
-      5590291.42,
-      6691985.0,
-      4217316.5,
-      5437522.3,
-      14466708.2,
-      1291756.7999999998,
-      2949915.2999999993,
+      -78259.40167040002,
+      -139871465.35040003,
+      -2401873.817784,
+      -293336.8473,
+      -56328761.264958,
+      -56969473.87374401,
+      -53786088.176629364,
+      -72256984.27622199,
+      -106011867.52716331,
+      -79671543.97853725,
+      -716385037.3127207,
+      -163732441.15787864,
+      -532634101.5487249,
+      -55962379.76743131,
+      -21104742.09306358,
+      -25263909.679265,
+      -15921419.8993085,
+      -20528000.625552703,
+      -54615425.66534181,
+      -4876703.5674432,
+      -11136664.786409702,
       0.0,
       0.0,
       0.0
     ],
     "gex_net": [
-      29454.399999999998,
-      -1164800.0,
-      -622692.0,
-      -76220.0,
-      -5363607.66,
-      -1160732.2000000018,
-      -1227451.3399999999,
-      -4597143.2299999995,
-      605837.6000000001,
-      -1406487.2600000005,
-      10116567.8,
-      7002060.200000001,
-      6587443.920000002,
-      32275227.85,
-      14315272.579999998,
-      21500619.1,
-      21464887.60000001,
-      9195722.500000002,
-      30905537.8,
-      28391443.200000003,
-      13411446.9,
-      216.0,
+      111197.69414560002,
+      -4397410.0352,
+      -2350817.350308,
+      -287749.47878,
+      -20248954.45480734,
+      -4382053.077317808,
+      -4633934.443883665,
+      -17355360.381914265,
+      2287187.793562401,
+      -5309839.621827739,
+      38192562.470382266,
+      26434520.7679898,
+      24869241.071536086,
+      121847021.66548467,
+      54043718.49237242,
+      81170190.7566559,
+      81035295.4470124,
+      34716142.17240251,
+      116676100.6739122,
+      107184767.54935682,
+      50631551.49777812,
+      815.4537840000002,
       0.0,
       0.0
     ],
     "cum_gex": [
-      29454.399999999998,
-      -1135345.6,
-      -1758037.6,
-      -1834257.6,
-      -7197865.26,
-      -8358597.460000002,
-      -9586048.8,
-      -14183192.030000001,
-      -13577354.430000002,
-      -14983841.690000001,
-      -4867273.890000001,
-      2134786.3100000005,
-      8722230.230000002,
-      40997458.080000006,
-      55312730.660000004,
-      76813349.76,
-      98278237.36000001,
-      107473959.86000001,
-      138379497.66000003,
-      166770940.86,
-      180182387.76000002,
-      180182603.76000002,
-      180182603.76000002,
-      180182603.76000002
+      111197.69414560002,
+      -4286212.3410543995,
+      -6637029.6913624,
+      -6924779.170142399,
+      -27173733.62494974,
+      -31555786.702267546,
+      -36189721.146151215,
+      -53545081.52806548,
+      -51257893.734503075,
+      -56567733.35633081,
+      -18375170.885948546,
+      8059349.882041253,
+      32928590.95357734,
+      154775612.619062,
+      208819331.11143443,
+      289989521.86809033,
+      371024817.3151027,
+      405740959.4875052,
+      522417060.16141737,
+      629601827.7107742,
+      680233379.2085524,
+      680234194.6623363,
+      680234194.6623363,
+      680234194.6623363
     ],
     "gamma_flip": 178.05057417582418,
-    "total_gex_b": 0.18018260376000003,
-    "gex_descoberto_b": 0.015619133690000004,
-    "regime": "Long Gamma",
-    "top5": [
-      {
-        "strike": 195.0,
-        "gex_net": 32275227.85
-      },
-      {
-        "strike": 200.0,
-        "gex_net": 30905537.8
-      },
-      {
-        "strike": 205.0,
-        "gex_net": 28391443.200000003
-      },
-      {
-        "strike": 197.0,
-        "gex_net": 21500619.1
-      },
-      {
-        "strike": 198.0,
- 
+    "total_gex_b": 0.6802341946623364,
+    "gex_descoberto_b": 0.05896611884403882,
+    "regime": "Long G
 ... [DADOS EXCESSIVOS TRUNCADOS]
 \`\`\`
 
@@ -1122,7 +1314,7 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "key": "V1",
     "name": "17 abr Mensal",
     "color": "red",
-    "gex": 332536357,
+    "gex": 332399482,
     "iv_c_atm": 20.43,
     "div_c_atm": -0.84,
     "iv_p_atm": 20.31,
@@ -1146,31 +1338,31 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "key": "V2",
     "name": "24 abr W2",
     "color": "blu",
-    "gex": 0,
-    "iv_c_atm": 0.0,
-    "div_c_atm": 0.0,
-    "iv_p_atm": 0.0,
+    "gex": 5128282,
+    "iv_c_atm": 21.35,
+    "div_c_atm": -0.13,
+    "iv_p_atm": 21.55,
     "div_p_atm": 0.0,
-    "mp": 0,
-    "pcr_oi": 0.0,
-    "dpcr_oi": 0.0,
-    "pcr_vol": 0.0,
-    "dpcr_vol": 0.0,
-    "coi": 0,
-    "poi": 0,
-    "dcoi": 0,
-    "dpoi": 0,
-    "cvol": 0,
-    "pvol": 0,
-    "d_cvol": 0,
-    "d_pvol": 0,
-    "d_tvol": 0
+    "mp": 191.0,
+    "pcr_oi": 0.93,
+    "dpcr_oi": 0.3,
+    "pcr_vol": 0.94,
+    "dpcr_vol": 0.44,
+    "coi": 1596800,
+    "poi": 1478290,
+    "dcoi": 438830,
+    "dpoi": 750300,
+    "cvol": 2476030,
+    "pvol": 2333100,
+    "d_cvol": -51072750,
+    "d_pvol": -24694820,
+    "d_tvol": -75767570
   },
   {
     "key": "V3",
     "name": "30 abr W5",
     "color": "grn",
-    "gex": 145810,
+    "gex": 145750,
     "iv_c_atm": 21.37,
     "div_c_atm": 1.33,
     "iv_p_atm": 21.84,
@@ -1194,31 +1386,31 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "key": "V4",
     "name": "8 mai W2",
     "color": "yel",
-    "gex": 487314,
-    "iv_c_atm": 23.94,
-    "div_c_atm": 2.96,
-    "iv_p_atm": 25.86,
-    "div_p_atm": 2.58,
+    "gex": 43792275,
+    "iv_c_atm": 22.07,
+    "div_c_atm": 1.02,
+    "iv_p_atm": 23.52,
+    "div_p_atm": 1.02,
     "mp": 192.0,
-    "pcr_oi": 1.01,
-    "dpcr_oi": -0.02,
+    "pcr_oi": 0.9,
+    "dpcr_oi": 0.08,
     "pcr_vol": 1.13,
-    "dpcr_vol": 0.62,
-    "coi": 27730413,
-    "poi": 27906420,
-    "dcoi": 19529899,
-    "dpoi": 19500000,
+    "dpcr_vol": 0.63,
+    "coi": 37477183,
+    "poi": 33776740,
+    "dcoi": 20832079,
+    "dpoi": 20141991,
     "cvol": 68817688,
     "pvol": 77548113,
-    "d_cvol": 41122068,
-    "d_pvol": 63460035,
-    "d_tvol": 104582103
+    "d_cvol": 12832068,
+    "d_pvol": 49677955,
+    "d_tvol": 62510023
   },
   {
     "key": "V5",
     "name": "15 mai Mensal",
     "color": "pur",
-    "gex": 66991910,
+    "gex": 66964335,
     "iv_c_atm": 21.16,
     "div_c_atm": 0.12,
     "iv_p_atm": 22.26,
@@ -1246,117 +1438,117 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 [
   {
     "s": 178.0,
-    "c": 47384,
-    "p": -19573,
-    "n": 27811
+    "c": 47364,
+    "p": -19565,
+    "n": 27799
   },
   {
     "s": 180.0,
-    "c": 33882460,
-    "p": -34982265,
-    "n": -1099805
+    "c": 33868514,
+    "p": -34967866,
+    "n": -1099353
   },
   {
     "s": 182.0,
-    "c": 12769,
-    "p": -600716,
-    "n": -587946
+    "c": 12764,
+    "p": -600468,
+    "n": -587704
   },
   {
     "s": 184.0,
     "c": 1397,
-    "p": -73364,
-    "n": -71967
+    "p": -73334,
+    "n": -71937
   },
   {
     "s": 186.0,
-    "c": 19398394,
-    "p": -28130354,
-    "n": -8731960
+    "c": 20646570,
+    "p": -30852878,
+    "n": -10206308
   },
   {
     "s": 187.0,
-    "c": 25580212,
-    "p": -20540524,
-    "n": 5039688
+    "c": 32564447,
+    "p": -29871386,
+    "n": 2693061
   },
   {
     "s": 188.0,
-    "c": 21625431,
-    "p": -20749072,
-    "n": 876358
+    "c": 23211312,
+    "p": -23959943,
+    "n": -748631
   },
   {
     "s": 189.0,
-    "c": 30079382,
-    "p": -29316248,
-    "n": 763134
+    "c": 36326333,
+    "p": -41622790,
+    "n": -5296457
   },
   {
     "s": 190.0,
-    "c": 57070051,
-    "p": -46977620,
-    "n": 10092431
+    "c": 59273201,
+    "p": -48086049,
+    "n": 11187152
   },
   {
     "s": 191.0,
-    "c": 47710604,
-    "p": -44355836,
-    "n": 3354768
+    "c": 54485380,
+    "p": -55039667,
+    "n": -554287
   },
   {
     "s": 192.0,
-    "c": 300590992,
-    "p": -284558555,
-    "n": 16032436
+    "c": 303029667,
+    "p": -284993736,
+    "n": 18035931
   },
   {
     "s": 193.0,
-    "c": 88991689,
-    "p": -79077280,
-    "n": 9914409
+    "c": 114760928,
+    "p": -100784709,
+    "n": 13976219
   },
   {
     "s": 194.0,
-    "c": 176095865,
-    "p": -140252823,
-    "n": 35843042
+    "c": 178985274,
+    "p": -140732085,
+    "n": 38253189
   },
   {
     "s": 195.0,
-    "c": 76461180,
-    "p": -16705514,
-    "n": 59755666
+    "c": 102776961,
+    "p": -26913043,
+    "n": 75863919
   },
   {
     "s": 196.0,
-    "c": 40467993,
-    "p": -6291732,
-    "n": 34176261
+    "c": 41688465,
+    "p": -8794313,
+    "n": 32894152
   },
   {
     "s": 197.0,
-    "c": 64797037,
-    "p": -13679843,
-    "n": 51117194
+    "c": 75607710,
+    "p": -16704960,
+    "n": 58902750
   },
   {
     "s": 198.0,
-    "c": 70194829,
-    "p": -9118428,
-    "n": 61076402
+    "c": 73320732,
+    "p": -9515278,
+    "n": 63805454
   },
   {
     "s": 199.0,
-    "c": 23562483,
-    "p": -10308820,
-    "n": 13253662
+    "c": 32087055,
+    "p": -12864575,
+    "n": 19222480
   },
   {
     "s": 200.0,
-    "c": 81572357,
-    "p": -17472378,
-    "n": 64099979
+    "c": 86358407,
+    "p": -17667181,
+    "n": 68691227
   }
 ]
 \`\`\`
@@ -1368,185 +1560,177 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "strikes": [
       {
         "s": 186.0,
-        "c": 15860687,
-        "p": -22428548,
-        "n": -6567861
+        "c": 15854158,
+        "p": -22419316,
+        "n": -6565158
       },
       {
         "s": 187.0,
-        "c": 19090600,
-        "p": -11657482,
-        "n": 7433118
+        "c": 19082742,
+        "p": -11652684,
+        "n": 7430058
       },
       {
         "s": 188.0,
-        "c": 15492826,
-        "p": -14079168,
-        "n": 1413658
+        "c": 15486449,
+        "p": -14073373,
+        "n": 1413076
       },
       {
         "s": 189.0,
-        "c": 23955510,
-        "p": -20140938,
-        "n": 3814572
+        "c": 23945649,
+        "p": -20132648,
+        "n": 3813001
       },
       {
         "s": 190.0,
-        "c": 45062932,
-        "p": -32739599,
-        "n": 12323332
+        "c": 45044383,
+        "p": -32726123,
+        "n": 12318260
       },
       {
         "s": 191.0,
-        "c": 41190197,
-        "p": -37409239,
-        "n": 3780958
+        "c": 41173243,
+        "p": -37393841,
+        "n": 3779402
       },
       {
         "s": 192.0,
-        "c": 154208778,
-        "p": -142936908,
-        "n": 11271870
+        "c": 154145304,
+        "p": -142878074,
+        "n": 11267231
       },
       {
         "s": 193.0,
-        "c": 64181489,
-        "p": -58464919,
-        "n": 5716570
+        "c": 64155071,
+        "p": -58440855,
+        "n": 5714217
       },
       {
         "s": 194.0,
-        "c": 54461507,
-        "p": -14670296,
-        "n": 39791211
+        "c": 54439091,
+        "p": -14664258,
+        "n": 39774833
       },
       {
         "s": 195.0,
-        "c": 52108559,
-        "p": -7284170,
-        "n": 44824389
+        "c": 52087110,
+        "p": -7281172,
+        "n": 44805939
       },
       {
         "s": 196.0,
-        "c": 32404975,
-        "p": -3835129,
-        "n": 28569846
+        "c": 32391636,
+        "p": -3833550,
+        "n": 28558086
       },
       {
         "s": 197.0,
-        "c": 54798398,
-        "p": -10914868,
-        "n": 43883530
+        "c": 54775843,
+        "p": -10910375,
+        "n": 43865468
       },
       {
         "s": 198.0,
-        "c": 65072059,
-        "p": -7616015,
-        "n": 57456044
+        "c": 65045275,
+        "p": -7612880,
+        "n": 57432395
       },
       {
         "s": 199.0,
-        "c": 16221733,
-        "p": -7747768,
-        "n": 8473965
+        "c": 16215056,
+        "p": -7744579,
+        "n": 8470477
       },
       {
         "s": 200.0,
-        "c": 61483341,
-        "p": -8263756,
-        "n": 53219584
+        "c": 61458034,
+        "p": -8260355,
+        "n": 53197678
       }
     ],
-    "net": 332536357,
+    "net": 332399482,
     "flip": 186.5,
     "dom_s": 198.0,
-    "dom_n": 57456044
+    "dom_n": 57432395
   },
   "V2": {
-    "strikes": [],
-    "net": 0,
-    "flip": null,
-    "dom_s": 0,
-    "dom_n": 0
-  },
-  "V3": {
     "strikes": [
       {
         "s": 186.0,
-        "c": 27,
-        "p": -52354,
-        "n": -52327
+        "c": 1256160,
+        "p": -2734103,
+        "n": -1477942
       },
       {
         "s": 187.0,
-        "c": 0,
-        "p": 0,
-        "n": 0
+        "c": 507824,
+        "p": -420291,
+        "n": 87533
       },
       {
         "s": 188.0,
-        "c": 4457,
-        "p": -5582,
-        "n": -1125
+        "c": 1594783,
+        "p": -3219412,
+        "n": -1624629
       },
       {
         "s": 189.0,
-        "c": 12086,
-        "p": -12,
-        "n": 12074
+        "c": 150060,
+        "p": -3183338,
+        "n": -3033277
       },
       {
         "s": 190.0,
-        "c": 6534,
-        "p": -13068,
-        "n": -6534
+        "c": 2226640,
+        "p": -1127766,
+        "n": 1098875
       },
       {
         "s": 191.0,
-        "c": 14177,
-        "p": -3498,
-        "n": 10679
+        "c": 290862,
+        "p": -3761847,
+        "n": -3470985
       },
       {
         "s": 192.0,
-        "c": 731,
-        "p": -27771,
-        "n": -27040
+        "c": 2562400,
+        "p": -552307,
+        "n": 2010094
       },
       {
         "s": 193.0,
-        "c": 75914,
-        "p": -455,
-        "n": 75458
+        "c": 1081763,
+        "p": -1136557,
+        "n": -54794
       },
       {
         "s": 194.0,
-        "c": 17938,
-        "p": -31,
-        "n": 17907
+        "c": 2961891,
+        "p": -536991,
+        "n": 2424900
       },
       {
         "s": 195.0,
-        "c": 3569,
-        "p": 0,
-        "n": 3569
+        "c": 2008223,
+        "p": -796938,
+        "n": 1211284
       },
       {
         "s": 196.0,
-        "c": 7969,
-        "p": -8559,
-        "n": -590
+        "c": 1237128,
+        "p": -2505170,
+        "n": -1268042
       },
       {
         "s": 197.0,
-        "c": 81023,
-        "p": 0,
-        "n": 81023
+        "c": 923809,
+        "p": -266910,
+        "n": 656899
       },
       {
         "s": 198.0,
-        "c": 0,
-       
+        "c": 
 ... [DADOS EXCESSIVOS TRUNCADOS]
 \`\`\`
 
@@ -1570,6 +1754,36 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   "8 mai W2",
   "15 mai Mensal"
 ]
+\`\`\`
+
+**tabs**:
+\`\`\`
+[\`<button class="tab \${gexCur === 'AGG' ? 'active' : ''}" data-k="AGG">Agregado</button>\`]... (dados complexos)
+\`\`\`
+
+**Variable:** \`views\`
+\`\`\`json
+[
+  {
+    "id": "summary",
+    "label": "Resumo"
+  },
+  {
+    "id": "detail",
+    "label": "Detalhe por strike"
+  }
+]
+\`\`\`
+
+**topAbs**:
+\`\`\`
+[...rows].sort((a, b) => Math.abs(b.n) - Math.abs(a.n)).slice(0, 6);
+  const topPositive = [...rows].sort((a, b) => b.n - a.n)[0]... (dados complexos)
+\`\`\`
+
+**topNegative**:
+\`\`\`
+[...rows].sort((a, b) => a.n - b.n)[0]... (dados complexos)
 \`\`\`
 
 ### bova11_gex_pro_10mar_vs_11mar.html
@@ -5668,6 +5882,36 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 ]
 \`\`\`
 
+**tabs**:
+\`\`\`
+[\`<button class="tab \${gexCur === 'AGG' ? 'active' : ''}" data-k="AGG">Agregado</button>\`]... (dados complexos)
+\`\`\`
+
+**Variable:** \`views\`
+\`\`\`json
+[
+  {
+    "id": "summary",
+    "label": "Resumo"
+  },
+  {
+    "id": "detail",
+    "label": "Detalhe por strike"
+  }
+]
+\`\`\`
+
+**topAbs**:
+\`\`\`
+[...rows].sort((a, b) => Math.abs(b.n) - Math.abs(a.n)).slice(0, 6);
+  const topPositive = [...rows].sort((a, b) => b.n - a.n)[0]... (dados complexos)
+\`\`\`
+
+**topNegative**:
+\`\`\`
+[...rows].sort((a, b) => a.n - b.n)[0]... (dados complexos)
+\`\`\`
+
 ### bova11_gex_pro_20mar_vs_23mar.html
 **Variable:** \`EXP\`
 \`\`\`json
@@ -7022,6 +7266,36 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   "30 abr W5",
   "15 mai Mensal"
 ]
+\`\`\`
+
+**tabs**:
+\`\`\`
+[\`<button class="tab \${gexCur === 'AGG' ? 'active' : ''}" data-k="AGG">Agregado</button>\`]... (dados complexos)
+\`\`\`
+
+**Variable:** \`views\`
+\`\`\`json
+[
+  {
+    "id": "summary",
+    "label": "Resumo"
+  },
+  {
+    "id": "detail",
+    "label": "Detalhe por strike"
+  }
+]
+\`\`\`
+
+**topAbs**:
+\`\`\`
+[...rows].sort((a, b) => Math.abs(b.n) - Math.abs(a.n)).slice(0, 6);
+  const topPositive = [...rows].sort((a, b) => b.n - a.n)[0]... (dados complexos)
+\`\`\`
+
+**topNegative**:
+\`\`\`
+[...rows].sort((a, b) => a.n - b.n)[0]... (dados complexos)
 \`\`\`
 
 ### bova11_gex_pro_24mar_vs_25mar.html
@@ -9781,6 +10055,36 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 ]
 \`\`\`
 
+**tabs**:
+\`\`\`
+[\`<button class="tab \${gexCur === 'AGG' ? 'active' : ''}" data-k="AGG">Agregado</button>\`]... (dados complexos)
+\`\`\`
+
+**Variable:** \`views\`
+\`\`\`json
+[
+  {
+    "id": "summary",
+    "label": "Resumo"
+  },
+  {
+    "id": "detail",
+    "label": "Detalhe por strike"
+  }
+]
+\`\`\`
+
+**topAbs**:
+\`\`\`
+[...rows].sort((a, b) => Math.abs(b.n) - Math.abs(a.n)).slice(0, 6);
+  const topPositive = [...rows].sort((a, b) => b.n - a.n)[0]... (dados complexos)
+\`\`\`
+
+**topNegative**:
+\`\`\`
+[...rows].sort((a, b) => a.n - b.n)[0]... (dados complexos)
+\`\`\`
+
 ### bova11_gex_pro_30mar_vs_31mar.html
 **Variable:** \`EXP\`
 \`\`\`json
@@ -10669,6 +10973,36 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   "24 abr W2",
   "15 mai Mensal"
 ]
+\`\`\`
+
+**tabs**:
+\`\`\`
+[\`<button class="tab \${gexCur === 'AGG' ? 'active' : ''}" data-k="AGG">Agregado</button>\`]... (dados complexos)
+\`\`\`
+
+**Variable:** \`views\`
+\`\`\`json
+[
+  {
+    "id": "summary",
+    "label": "Resumo"
+  },
+  {
+    "id": "detail",
+    "label": "Detalhe por strike"
+  }
+]
+\`\`\`
+
+**topAbs**:
+\`\`\`
+[...rows].sort((a, b) => Math.abs(b.n) - Math.abs(a.n)).slice(0, 6);
+  const topPositive = [...rows].sort((a, b) => b.n - a.n)[0]... (dados complexos)
+\`\`\`
+
+**topNegative**:
+\`\`\`
+[...rows].sort((a, b) => a.n - b.n)[0]... (dados complexos)
 \`\`\`
 
 ### bova11_gex_pro_4mar_vs_5mar.html
@@ -12073,6 +12407,36 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 ]
 \`\`\`
 
+**tabs**:
+\`\`\`
+[\`<button class="tab \${gexCur === 'AGG' ? 'active' : ''}" data-k="AGG">Agregado</button>\`]... (dados complexos)
+\`\`\`
+
+**Variable:** \`views\`
+\`\`\`json
+[
+  {
+    "id": "summary",
+    "label": "Resumo"
+  },
+  {
+    "id": "detail",
+    "label": "Detalhe por strike"
+  }
+]
+\`\`\`
+
+**topAbs**:
+\`\`\`
+[...rows].sort((a, b) => Math.abs(b.n) - Math.abs(a.n)).slice(0, 6);
+  const topPositive = [...rows].sort((a, b) => b.n - a.n)[0]... (dados complexos)
+\`\`\`
+
+**topNegative**:
+\`\`\`
+[...rows].sort((a, b) => a.n - b.n)[0]... (dados complexos)
+\`\`\`
+
 ### bova11_gex_pro_6abr_vs_7abr.html
 **Variable:** \`EXP\`
 \`\`\`json
@@ -12556,6 +12920,36 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   "30 abr W5",
   "15 mai Mensal"
 ]
+\`\`\`
+
+**tabs**:
+\`\`\`
+[\`<button class="tab \${gexCur === 'AGG' ? 'active' : ''}" data-k="AGG">Agregado</button>\`]... (dados complexos)
+\`\`\`
+
+**Variable:** \`views\`
+\`\`\`json
+[
+  {
+    "id": "summary",
+    "label": "Resumo"
+  },
+  {
+    "id": "detail",
+    "label": "Detalhe por strike"
+  }
+]
+\`\`\`
+
+**topAbs**:
+\`\`\`
+[...rows].sort((a, b) => Math.abs(b.n) - Math.abs(a.n)).slice(0, 6);
+  const topPositive = [...rows].sort((a, b) => b.n - a.n)[0]... (dados complexos)
+\`\`\`
+
+**topNegative**:
+\`\`\`
+[...rows].sort((a, b) => a.n - b.n)[0]... (dados complexos)
 \`\`\`
 
 ### bova11_gex_pro_6mar_vs_9mar.html
@@ -13439,6 +13833,36 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 ]
 \`\`\`
 
+**tabs**:
+\`\`\`
+[\`<button class="tab \${gexCur === 'AGG' ? 'active' : ''}" data-k="AGG">Agregado</button>\`]... (dados complexos)
+\`\`\`
+
+**Variable:** \`views\`
+\`\`\`json
+[
+  {
+    "id": "summary",
+    "label": "Resumo"
+  },
+  {
+    "id": "detail",
+    "label": "Detalhe por strike"
+  }
+]
+\`\`\`
+
+**topAbs**:
+\`\`\`
+[...rows].sort((a, b) => Math.abs(b.n) - Math.abs(a.n)).slice(0, 6);
+  const topPositive = [...rows].sort((a, b) => b.n - a.n)[0]... (dados complexos)
+\`\`\`
+
+**topNegative**:
+\`\`\`
+[...rows].sort((a, b) => a.n - b.n)[0]... (dados complexos)
+\`\`\`
+
 ### bova11_gex_pro_8abr_vs_9abr.html
 **Variable:** \`EXP\`
 \`\`\`json
@@ -13875,6 +14299,36 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   "30 abr W5",
   "15 mai Mensal"
 ]
+\`\`\`
+
+**tabs**:
+\`\`\`
+[\`<button class="tab \${gexCur === 'AGG' ? 'active' : ''}" data-k="AGG">Agregado</button>\`]... (dados complexos)
+\`\`\`
+
+**Variable:** \`views\`
+\`\`\`json
+[
+  {
+    "id": "summary",
+    "label": "Resumo"
+  },
+  {
+    "id": "detail",
+    "label": "Detalhe por strike"
+  }
+]
+\`\`\`
+
+**topAbs**:
+\`\`\`
+[...rows].sort((a, b) => Math.abs(b.n) - Math.abs(a.n)).slice(0, 6);
+  const topPositive = [...rows].sort((a, b) => b.n - a.n)[0]... (dados complexos)
+\`\`\`
+
+**topNegative**:
+\`\`\`
+[...rows].sort((a, b) => a.n - b.n)[0]... (dados complexos)
 \`\`\`
 
 ### bova11_gex_pro_9abr_vs_10abr.html
@@ -14380,6 +14834,36 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   "8 mai W2",
   "15 mai Mensal"
 ]
+\`\`\`
+
+**tabs**:
+\`\`\`
+[\`<button class="tab \${gexCur === 'AGG' ? 'active' : ''}" data-k="AGG">Agregado</button>\`]... (dados complexos)
+\`\`\`
+
+**Variable:** \`views\`
+\`\`\`json
+[
+  {
+    "id": "summary",
+    "label": "Resumo"
+  },
+  {
+    "id": "detail",
+    "label": "Detalhe por strike"
+  }
+]
+\`\`\`
+
+**topAbs**:
+\`\`\`
+[...rows].sort((a, b) => Math.abs(b.n) - Math.abs(a.n)).slice(0, 6);
+  const topPositive = [...rows].sort((a, b) => b.n - a.n)[0]... (dados complexos)
+\`\`\`
+
+**topNegative**:
+\`\`\`
+[...rows].sort((a, b) => a.n - b.n)[0]... (dados complexos)
 \`\`\`
 
 ### bova11_gex_pro_9mar_vs_10mar.html
@@ -15006,6 +15490,23 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 ... [DADOS EXCESSIVOS TRUNCADOS]
 \`\`\`
 
+**Variable:** \`tOpt\`
+\`\`\`json
+{
+  "font": {
+    "size": 9,
+    "family": "var(--mono)"
+  }
+}
+\`\`\`
+
+**Variable:** \`gOpt\`
+\`\`\`json
+{
+  "color": "rgba(100,100,100,0.1)"
+}
+\`\`\`
+
 ### bova11_gravity_map.html
 **Variable:** \`D\`
 \`\`\`json
@@ -15127,53 +15628,69 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   "gex": [
     {
       "strike": 186.0,
-      "call_gex": 3535980.968521584,
-      "put_gex": -5648602.51155024,
-      "net_gex": -2112621.5430286564
+      "call_gex": 3534525.5328636,
+      "put_gex": -5646277.505396,
+      "net_gex": -2111751.9725324
     },
     {
       "strike": 187.0,
-      "call_gex": 6489612.063962496,
-      "put_gex": -8883041.97312,
-      "net_gex": -2393429.9091575043
+      "call_gex": 6486940.892118401,
+      "put_gex": -8879385.648000002,
+      "net_gex": -2392444.755881601
     },
     {
       "strike": 188.0,
-      "call_gex": 5972604.291593028,
-      "put_gex": -6661330.858383948,
-      "net_gex": -688726.5667909198
+      "call_gex": 5970145.923933701,
+      "put_gex": -6658589.005826701,
+      "net_gex": -688443.0818930008
     },
     {
       "strike": 189.0,
-      "call_gex": 6111786.678705793,
-      "put_gex": -9175298.208519565,
-      "net_gex": -3063511.529813772
+      "call_gex": 6109271.022556801,
+      "put_gex": -9171521.588593101,
+      "net_gex": -3062250.5660363
     },
     {
       "strike": 190.0,
-      "call_gex": 10809211.78872,
-      "put_gex": -14112026.50194,
-      "net_gex": -3302814.7132200003
+      "call_gex": 10804762.638000002,
+      "put_gex": -14106217.888500001,
+      "net_gex": -3301455.250499999
     },
     {
       "strike": 191.0,
-      "call_gex": 6506229.999626496,
-      "put_gex": -6943098.910297392,
-      "net_gex": -436868.91067089606
+      "call_gex": 6503551.987718401,
+      "put_gex": -6940241.079946801,
+      "net_gex": -436689.0922284005
     },
     {
       "strike": 192.0,
-      "call_gex": 9960317.025835177,
-      "put_gex": -6157701.279584712,
-      "net_gex": 3802615.7462504646
+      "call_gex": 9956217.286415402,
+      "put_gex": -6155166.724649801,
+      "net_gex": 3801050.561765601
     },
     {
       "strike": 193.0,
-      "call_gex": 24734286.51444,
-      "put_gex": -20611905.4287,
-      "net_gex": 4122381.08574
-    
+      "call_gex": 24724105.701000005,
+      "put_gex": -20603421.417500004,
+      "net_gex": 4120684.28
 ... [DADOS EXCESSIVOS TRUNCADOS]
+\`\`\`
+
+**Variable:** \`tOpt\`
+\`\`\`json
+{
+  "font": {
+    "size": 9,
+    "family": "var(--mono)"
+  }
+}
+\`\`\`
+
+**Variable:** \`gOpt\`
+\`\`\`json
+{
+  "color": "rgba(100,100,100,0.1)"
+}
 \`\`\`
 
 ### bova11_gravity_map_test.html
@@ -15383,6 +15900,23 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 ... [DADOS EXCESSIVOS TRUNCADOS]
 \`\`\`
 
+**Variable:** \`tOpt\`
+\`\`\`json
+{
+  "font": {
+    "size": 9,
+    "family": "var(--mono)"
+  }
+}
+\`\`\`
+
+**Variable:** \`gOpt\`
+\`\`\`json
+{
+  "color": "rgba(0,0,0,0.05)"
+}
+\`\`\`
+
 ### bova11_gravity_map_test2.html
 **Variable:** \`D\`
 \`\`\`json
@@ -15590,6 +16124,23 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 ... [DADOS EXCESSIVOS TRUNCADOS]
 \`\`\`
 
+**Variable:** \`tOpt\`
+\`\`\`json
+{
+  "font": {
+    "size": 9,
+    "family": "var(--mono)"
+  }
+}
+\`\`\`
+
+**Variable:** \`gOpt\`
+\`\`\`json
+{
+  "color": "rgba(0,0,0,0.05)"
+}
+\`\`\`
+
 ### bova11_historical_data.html
 **Variable:** \`FULL\`
 \`\`\`json
@@ -15608,11 +16159,13 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "vol_total": 330353838,
     "vol_pcr": 1.63,
     "iv_atm": 0.2617,
-    "iv_rank": 50.0,
-    "iv_percentile": 50.0,
+    "iv_rank": null,
+    "iv_percentile": null,
     "max_pain": 184.0,
-    "gex_net": -83270657,
-    "dex_net": -2745646474
+    "gex_net": -267702587,
+    "dex_net": -2745646427,
+    "spot_source": "stored_history",
+    "warnings": []
   },
   {
     "date": "2026-03-04",
@@ -15631,8 +16184,10 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "iv_rank": 0.0,
     "iv_percentile": 0.0,
     "max_pain": 184.0,
-    "gex_net": -49230393,
-    "dex_net": -320634868
+    "gex_net": -162354746,
+    "dex_net": -320634858,
+    "spot_source": "stored_history",
+    "warnings": []
   },
   {
     "date": "2026-03-05",
@@ -15651,8 +16206,10 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "iv_rank": 100.0,
     "iv_percentile": 66.67,
     "max_pain": 182.0,
-    "gex_net": -92722221,
-    "dex_net": -4160571360
+    "gex_net": -289669433,
+    "dex_net": -4160571360,
+    "spot_source": "stored_history",
+    "warnings": []
   },
   {
     "date": "2026-03-06",
@@ -15671,28 +16228,32 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "iv_rank": 100.0,
     "iv_percentile": 75.0,
     "max_pain": 181.0,
-    "gex_net": -57899402,
-    "dex_net": -4514706741
+    "gex_net": -179125071,
+    "dex_net": -4514706756,
+    "spot_source": "stored_history",
+    "warnings": []
   },
   {
     "date": "2026-03-09",
     "tag": "9mar",
     "display": "9/Mar",
     "spot_close": 177.26,
-    "oi_call": 82315003,
-    "oi_put": 93378701,
-    "oi_total": 175693704,
-    "oi_pcr": 1.13,
-    "vol_call": 81761510,
-    "vol_put": 114808487,
-    "vol_total": 196569997,
-    "vol_pcr": 1.4,
-    "iv_atm": 0.2758,
-    "iv_rank": 80.77,
+    "oi_call": 95056543,
+    "oi_put": 110853721,
+    "oi_total": 205910264,
+    "oi_pcr": 1.17,
+    "vol_call": 112144160,
+    "vol_put": 150780167,
+    "vol_total": 262924327,
+    "vol_pcr": 1.34,
+    "iv_atm": 0.2714,
+    "iv_rank": 69.49,
     "iv_percentile": 40.0,
     "max_pain": 182.0,
-    "gex_net": -35451000,
-    "dex_net": -3301608114
+    "gex_net": -149663673,
+    "dex_net": -3370807648,
+    "spot_source": "stored_history",
+    "warnings": []
   },
   {
     "date": "2026-03-10",
@@ -15711,24 +16272,97 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "iv_rank": 16.41,
     "iv_percentile": 16.67,
     "max_pain": 184.0,
-    "gex_net": -35317257,
-    "dex_net": -2428515362
-  },
-  {
-    "date": "2026-03-11",
-    "tag": "11mar",
-    "display": "11/Mar",
-    "spot_close": 180.21,
-    "oi_call": 69838592,
-    "oi_put": 81834896,
-    "oi_total": 151673488,
-    "oi_pcr": 1.17,
-    "vol_call": 65469926,
-    "vol_put": 35912311,
-    "vol_total": 101382237,
-    "vol_pcr": 0.55,
-    "iv_atm": 0.
+    "gex_net": -114110280,
+    "dex_net": -2428515362,
+    "spot_source": "sto
 ... [DADOS EXCESSIVOS TRUNCADOS]
+\`\`\`
+
+**Variable:** \`charts\`
+\`\`\`json
+[]
+\`\`\`
+
+**Variable:** \`common\`
+\`\`\`json
+{
+  "responsive": true,
+  "maintainAspectRatio": false,
+  "interaction": {
+    "mode": "index",
+    "intersect": false
+  }
+}
+\`\`\`
+
+### bova11_hunter_walls.html
+**Variable:** \`strikes\`
+\`\`\`json
+[
+  186.0,
+  187.0,
+  188.0,
+  189.0,
+  190.0,
+  191.0,
+  192.0,
+  193.0,
+  194.0,
+  195.0,
+  196.0,
+  197.0,
+  198.0,
+  199.0,
+  200.0,
+  205.0,
+  210.0
+]
+\`\`\`
+
+**Variable:** \`callVals\`
+\`\`\`json
+[
+  -1140000.0,
+  -1910000.0,
+  -3810000.0,
+  -2170000.0,
+  -9050000.0,
+  -2480000.0,
+  -2340000.0,
+  -4540000.0,
+  -3830000.0,
+  -3950000.0,
+  -1390000.0,
+  -2480000.0,
+  -1650000.0,
+  -950610.0,
+  -2690000.0,
+  -2000000.0,
+  -954680.0
+]
+\`\`\`
+
+**Variable:** \`putVals\`
+\`\`\`json
+[
+  576880.0,
+  1080000.0,
+  1670000.0,
+  934820.0,
+  1910000.0,
+  2590000.0,
+  1300000.0,
+  2760000.0,
+  2370000.0,
+  2260000.0,
+  560300.0,
+  875800.0,
+  1160000.0,
+  962910.0,
+  3800000.0,
+  2700000.0,
+  607490.0
+]
 \`\`\`
 
 ### bova11_market_gamma.html
@@ -15767,95 +16401,95 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
         240.0
       ],
       "call": [
-        47408.162198952865,
-        33899896.75747217,
-        12775.944236781412,
-        1398.136458920178,
-        19408377.000779428,
-        25593385.163663574,
-        21636559.603868473,
-        30094861.58277597,
-        57099420.63890179,
-        47735156.842466235,
-        300745682.36674297,
-        89037486.32594183,
-        176186487.4422118,
-        76500528.95495613,
-        40488818.87248156,
-        64830383.3134004,
-        70230953.29915509,
-        23574608.37313436,
-        81614335.86274023,
-        35985765.20429362,
-        18018542.373852547,
-        204.05234805862062,
+        47364.27395400001,
+        33868513.82880001,
+        12764.116869000003,
+        1396.8421300000002,
+        24181122.736562062,
+        32564456.748522803,
+        29185898.077596202,
+        36338488.98577011,
+        70084475.97570041,
+        54499550.81521012,
+        312986614.39335704,
+        114836810.68685922,
+        189860388.30052462,
+        102780520.34945536,
+        49748164.37317251,
+        75688699.47238581,
+        78439935.58767961,
+        32087054.993553508,
+        106426441.96579951,
+        54943463.84640001,
+        28915351.46469696,
+        203.86344600000004,
         0.0,
         0.0
       ],
       "put": [
-        -19582.979418129547,
-        -35000267.93811421,
-        -601024.8549651081,
-        -73402.16409330936,
-        -28144830.784057137,
-        -20551094.44725211,
-        -20759750.254070412,
-        -29331335.181512695,
-        -47001795.7265413,
-        -44378662.699740075,
-        -284704995.407578,
-        -79117974.92945452,
-        -140324999.7914787,
-        -16714111.09872015,
-        -6294970.121666817,
-        -13686883.042228518,
-        -9123120.399620667,
-        -10314125.58727485,
-        -17481369.46627952,
-        -1841182.4745194276,
-        -6910224.831636095,
+        -19564.850417600006,
+        -34967866.33760001,
+        -600468.454446,
+        -73334.211825,
+        -36551269.19238321,
+        -29871385.894572005,
+        -30624093.11481501,
+        -41622802.110474385,
+        -62205291.9619138,
+        -55043163.56668623,
+        -291176590.17326576,
+        -100785164.77770402,
+        -155553743.6874081,
+        -26913042.639337406,
+        -11249905.19228422,
+        -16704959.615887001,
+        -11017072.071062801,
+        -12864575.489840202,
+        -26859213.628995806,
+        -2600230.6855926,
+        -7959371.435121301,
         0.0,
         0.0,
         0.0
       ],
       "net": [
-        27825.182780823317,
-        -1100371.1806420386,
-        -588248.9107283266,
-        -72004.02763438917,
-        -8736453.783277709,
-        5042290.716411462,
-        876809.3497980662,
-        763526.4012632697,
-        10097624.912360497,
-        3356494.142726152,
-        16040686.959164947,
-        9919511.396487309,
-        35861487.65073312,
-        59786417.85623598,
-        34193848.75081475,
-        51143500.27117189,
-        61107832.899534434,
-        13260482.785859508,
-        64132966.39646072,
-        34144582.72977419,
-        11108317.542216448,
-        204.05234805862062,
+        27799.423536400005,
+        -1099352.5088,
+        -587704.337577,
+        -71937.369695,
+        -12370146.45582114,
+        2693070.8539507957,
+        -1438195.0372188122,
+        -5284313.124704277,
+        7879184.013786601,
+        -543612.7514761196,
+        21810024.220091224,
+        14051645.9091552,
+        34306644.613116525,
+        75867477.71011797,
+        38498259.18088829,
+        58983739.85649881,
+        67422863.51661682,
+        19222479.503713302,
+        79567228.33680372,
+        52343233.160807416,
+        20955980.029575657,
+        203.86344600000004,
         0.0,
         0.0
       ],
-      "spot": 194.38999938964844,
+      "spot": 194.3,
       "flip": 178.05,
-      "gamma_atual": 35861487.65073312,
+      "gamma_atual": 34306644.613116525,
       "gamma_min_neg": {
         "strike": 186.0,
-        "value": -8736453.783277709
+        "value": -12370146.45582114
       },
       "gamma_max_pos": {
         "strike": 200.0,
-        "value": 64132966.39646072
+        "value": 79567228.33680372
       },
-      "gamma_score": 0.5591740046615432
+      "gamma_score": 0.43116551035180434
     },
     "15 mai Mensal": {
       "strikes": [
@@ -15869,8 +16503,28 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
         193.0,
         194.0,
         195.0,
-        196.0
+        196.0,
+        197.0,
+        
 ... [DADOS EXCESSIVOS TRUNCADOS]
+\`\`\`
+
+**vlinePlugin**:
+\`\`\`
+{
+    id: 'vline',
+    afterDatasetsDraw(ch){
+      const {ctx, chartArea:{top,bottom}, scales:{x}} = ch;
+      ctx.save();
+      if (c.strikes.length) {
+        const xSpot = x.getPixelForValue(spotIdx);
+        ctx.strokeStyle = '#2f81f7'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(xSpot, top); ctx.lineTo(xSpot, bottom); ctx.stroke();
+      }
+      if (flipIdx !== null) {
+        const xFlip = x.getPixelForValue(flipIdx);
+        ctx.strokeStyle = '#facc15'; ctx.lineWidth = 1.5;
+... (dados complexos)
 \`\`\`
 
 ### bova11_max_pain.html
@@ -15987,105 +16641,105 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 [
   {
     "strike": 186.0,
-    "call_gex": 3535980.968521584,
-    "put_gex": -5648602.51155024,
-    "net_gex": -2112621.5430286564
+    "call_gex": 3534525.5328636,
+    "put_gex": -5646277.505396,
+    "net_gex": -2111751.9725324
   },
   {
     "strike": 187.0,
-    "call_gex": 6489612.063962496,
-    "put_gex": -8883041.97312,
-    "net_gex": -2393429.9091575043
+    "call_gex": 6486940.892118401,
+    "put_gex": -8879385.648000002,
+    "net_gex": -2392444.755881601
   },
   {
     "strike": 188.0,
-    "call_gex": 5972604.291593028,
-    "put_gex": -6661330.858383948,
-    "net_gex": -688726.5667909198
+    "call_gex": 5970145.923933701,
+    "put_gex": -6658589.005826701,
+    "net_gex": -688443.0818930008
   },
   {
     "strike": 189.0,
-    "call_gex": 6111786.678705793,
-    "put_gex": -9175298.208519565,
-    "net_gex": -3063511.529813772
+    "call_gex": 6109271.022556801,
+    "put_gex": -9171521.588593101,
+    "net_gex": -3062250.5660363
   },
   {
     "strike": 190.0,
-    "call_gex": 10809211.78872,
-    "put_gex": -14112026.50194,
-    "net_gex": -3302814.7132200003
+    "call_gex": 10804762.638000002,
+    "put_gex": -14106217.888500001,
+    "net_gex": -3301455.250499999
   },
   {
     "strike": 191.0,
-    "call_gex": 6506229.999626496,
-    "put_gex": -6943098.910297392,
-    "net_gex": -436868.91067089606
+    "call_gex": 6503551.987718401,
+    "put_gex": -6940241.079946801,
+    "net_gex": -436689.0922284005
   },
   {
     "strike": 192.0,
-    "call_gex": 9960317.025835177,
-    "put_gex": -6157701.279584712,
-    "net_gex": 3802615.7462504646
+    "call_gex": 9956217.286415402,
+    "put_gex": -6155166.724649801,
+    "net_gex": 3801050.561765601
   },
   {
     "strike": 193.0,
-    "call_gex": 24734286.51444,
-    "put_gex": -20611905.4287,
-    "net_gex": 4122381.08574
+    "call_gex": 24724105.701000005,
+    "put_gex": -20603421.417500004,
+    "net_gex": 4120684.283500001
   },
   {
     "strike": 194.0,
-    "call_gex": 10861654.972232737,
-    "put_gex": -14827730.776560001,
-    "net_gex": -3966075.8043272644
+    "call_gex": 10857184.235514402,
+    "put_gex": -14821627.574000003,
+    "net_gex": -3964443.3384856004
   },
   {
     "strike": 195.0,
-    "call_gex": 24349052.55132,
-    "put_gex": -9421344.11932146,
-    "net_gex": 14927708.431998542
+    "call_gex": 24339030.303000003,
+    "put_gex": -9417466.225096501,
+    "net_gex": 14921564.077903502
   },
   {
     "strike": 196.0,
-    "call_gex": 8055049.55185764,
-    "put_gex": -2448044.75471724,
-    "net_gex": 5607004.7971404
+    "call_gex": 8051734.034481001,
+    "put_gex": -2447037.121571,
+    "net_gex": 5604696.912910001
   },
   {
     "strike": 197.0,
-    "call_gex": 9917616.10710546,
-    "put_gex": -2764975.22545464,
-    "net_gex": 7152640.88165082
+    "call_gex": 9913533.9436965,
+    "put_gex": -2763837.141406,
+    "net_gex": 7149696.802290501
   },
   {
     "strike": 198.0,
-    "call_gex": 5121312.013808317,
-    "put_gex": -1502412.833848356,
-    "net_gex": 3618899.1799599603
+    "call_gex": 5119204.0442839,
+    "put_gex": -1501794.4297249,
+    "net_gex": 3617409.6145590004
   },
   {
     "strike": 199.0,
-    "call_gex": 7340749.870481604,
-    "put_gex": -2561052.38243778,
-    "net_gex": 4779697.488043824
+    "call_gex": 7337728.364084101,
+    "put_gex": -2559998.2345245006,
+    "net_gex": 4777730.129559601
   },
   {
     "strike": 200.0,
-    "call_gex": 20043496.49292,
-    "put_gex": -9195817.9599414,
-    "net_gex": 10847678.5329786
+    "call_gex": 20035246.443000004,
+    "put_gex": -9192032.893935,
+    "net_gex": 10843213.549065003
   },
   {
     "strike": 205.0,
-    "call_gex": 18998832.628224,
-    "put_gex": -758172.164570064,
-    "net_gex": 18240660.463653937
+    "call_gex": 18991012.569600005,
+    "put_gex": -757860.0953556002,
+    "net_gex": 18233152.474244405
   },
   {
     "strike": 210.0,
-    "call_gex": 10917983.731248002,
-    "put_gex": -1061311.637108124,
-    "net_gex": 9856672.094139878
+    "call_gex": 10913489.809200004,
+    "put_gex": -1060874.7934671002,
+    "net_gex": 9852615.015732903
   }
 ]
 \`\`\`
@@ -16096,56 +16750,56 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   {
     "label": "17 Abr — Mensal",
     "mp": 192.0,
-    "spot": 194.34,
-    "dist": 1.2,
+    "spot": 194.3,
+    "dist": 1.18,
     "dte": 4,
-    "score": 69,
+    "score": 74,
     "verdict": "Atração moderada",
     "color": "#6B9E1D",
     "direction": "para baixo"
   },
   {
     "label": "24 Abr — W2",
-    "mp": 192.0,
-    "spot": 194.34,
-    "dist": 1.2,
+    "mp": 191.0,
+    "spot": 194.3,
+    "dist": 1.7,
     "dte": 11,
-    "score": 64,
-    "verdict": "Atração moderada",
-    "color": "#6B9E1D",
+    "score": 76,
+    "verdict": "Forte atração",
+    "color": "#1D9E75",
     "direction": "para baixo"
   },
   {
     "label": "30 Abr — W5",
-    "mp": 192.0,
-    "spot": 194.34,
-    "dist": 1.2,
+    "mp": 191.0,
+    "spot": 194.3,
+    "dist": 1.7,
     "dte": 17,
-    "score": 67,
-    "verdict": "Atração moderada",
-    "color": "#6B9E1D",
+    "score": 76,
+    "verdict": "Forte atração",
+    "color": "#1D9E75",
     "direction": "para baixo"
   },
   {
     "label": "8 Mai — W2",
     "mp": 192.0,
-    "spot": 194.34,
-    "dist": 1.2,
+    "spot": 194.3,
+    "dist": 1.18,
     "dte": 25,
-    "score": 67,
-    "verdict": "Atração moderada",
-    "color": "#6B9E1D",
+    "score": 76,
+    "verdict": "Forte atração",
+    "color": "#1D9E75",
     "direction": "para baixo"
   },
   {
     "label": "15 Mai — Mensal",
     "mp": 193.0,
-    "spot": 194.34,
-    "dist": 0.69,
+    "spot": 194.3,
+    "dist": 0.67,
     "dte": 32,
-    "score": 64,
-    "verdict": "Atração moderada",
-    "color": "#6B9E1D",
+    "score": 76,
+    "verdict": "Forte atração",
+    "color": "#1D9E75",
     "direction": "para baixo"
   }
 ]
@@ -16175,60 +16829,60 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     187.0
   ],
   "call_oi": [
-    123910.0,
-    225110.0,
-    333590.0,
-    219190.0,
-    504270.0,
-    184740.0,
-    616620.0,
-    379210.0,
-    361090.0,
-    626460.0,
-    253790.0,
-    595060.0,
-    331890.0,
-    227150.0,
-    559840.0,
-    548190.0,
-    8400000.0
+    114260.0,
+    192450.0,
+    309670.0,
+    197920.0,
+    479890.0,
+    142480.0,
+    512500.0,
+    307480.0,
+    317940.0,
+    527270.0,
+    328700.0,
+    742310.0,
+    374010.0,
+    463270.0,
+    666100.0,
+    651520.0,
+    8440000.0
   ],
   "put_oi": [
-    414870.0,
-    388420.0,
-    371270.0,
-    356680.0,
-    425440.0,
-    403790.0,
-    274710.0,
-    338890.0,
-    333360.0,
-    846740.0,
-    238480.0,
-    314210.0,
-    186760.0,
-    230880.0,
-    189710.0,
-    202770.0,
-    8189999.999999999
+    392630.0,
+    360980.0,
+    328940.0,
+    435870.0,
+    491520.0,
+    436220.0,
+    327340.0,
+    318180.0,
+    486480.0,
+    703480.0,
+    509750.0,
+    396250.0,
+    254980.0,
+    293280.0,
+    103410.0,
+    153110.0,
+    8150000.0
   ],
   "total_oi": [
-    538780.0,
-    613530.0,
-    704860.0,
-    575870.0,
-    929710.0,
-    588530.0,
-    891330.0,
-    718100.0,
-    694450.0,
-    1473200.0,
-    492270.0,
-    909270.0,
-    518650.0,
-    458030.0,
-    749550.0,
-    750960.0,
+    506890.0,
+    553430.0,
+    638610.0,
+    633790.0,
+    971410.0,
+    578700.0,
+    839840.0,
+    625660.0,
+    804420.0,
+    1230750.0,
+    838450.0,
+    1138560.0,
+    628990.0,
+    756550.0,
+    769510.0,
+    804630.0,
     16590000.0
   ],
   "normal_fit": [
@@ -16251,30 +16905,30 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     0
   ],
   "residuals": [
-    538780.0,
-    613530.0,
-    704860.0,
-    575870.0,
-    929710.0,
-    588530.0,
-    891330.0,
-    718100.0,
-    694450.0,
-    1473200.0,
-    492270.0,
-    909270.0,
-    518650.0,
-    458030.0,
-    749550.0,
-    750960.0,
+    506890.0,
+    553430.0,
+    638610.0,
+    633790.0,
+    971410.0,
+    578700.0,
+    839840.0,
+    625660.0,
+    804420.0,
+    1230750.0,
+    838450.0,
+    1138560.0,
+    628990.0,
+    756550.0,
+    769510.0,
+    804630.0,
     16590000.0
   ],
   "mp": 187.0,
   "spot": 179.0,
-  "mu": 183.55102530083778,
-  "sigma": 4.988450822608043,
-  "call_mean": 183.82609241751788,
-  "put_mean": 183.26024259173064
+  "mu": 183.59127698572718,
+  "sigma": 4.872649337855635,
+  "call_mean": 184.0456433164926,
+  "put_mean": 183.11681946936946
 }
 \`\`\`
 
@@ -16284,104 +16938,104 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   {
     "strike": 171.0,
     "call_loss": 0.0,
-    "put_loss": 168050900.0,
-    "total_loss": 168050900.0
+    "put_loss": 171361150.0,
+    "total_loss": 171361150.0
   },
   {
     "strike": 172.0,
-    "call_loss": 123910.0,
-    "put_loss": 154758790.0,
-    "total_loss": 154882700.0
+    "call_loss": 114260.0,
+    "put_loss": 157611360.0,
+    "total_loss": 157725620.0
   },
   {
     "strike": 173.0,
-    "call_loss": 472930.0,
-    "put_loss": 141855100.0,
-    "total_loss": 142328030.0
+    "call_loss": 420970.0,
+    "put_loss": 144222550.0,
+    "total_loss": 144643520.0
   },
   {
     "strike": 174.0,
-    "call_loss": 1155540.0,
-    "put_loss": 129322679.99999999,
-    "total_loss": 130478219.99999999
+    "call_loss": 1037350.0,
+    "put_loss": 131162680.0,
+    "total_loss": 132200030.0
   },
   {
     "strike": 175.0,
-    "call_loss": 2057340.0,
-    "put_loss": 117146939.99999999,
-    "total_loss": 119204279.99999999
+    "call_loss": 1851650.0,
+    "put_loss": 118538680.0,
+    "total_loss": 120390330.0
   },
   {
     "strike": 176.0,
-    "call_loss": 3463410.0,
-    "put_loss": 105396639.99999999,
-    "total_loss": 108860049.99999999
+    "call_loss": 3145840.0,
+    "put_loss": 106406200.0,
+    "total_loss": 109552040.0
   },
   {
     "strike": 177.0,
-    "call_loss": 5054220.0,
-    "put_loss": 94050129.99999999,
-    "total_loss": 99104349.99999999
+    "call_loss": 4582510.0,
+    "put_loss": 94709940.0,
+    "total_loss": 99292450.0
   },
   {
     "strike": 178.0,
-    "call_loss": 7261650.0,
-    "put_loss": 82978329.99999999,
-    "total_loss": 90239979.99999999
+    "call_loss": 6531680.0,
+    "put_loss": 83341020.0,
+    "total_loss": 89872700.0
   },
   {
     "strike": 179.0,
-    "call_loss": 9848290.0,
-    "put_loss": 72245420.0,
-    "total_loss": 82093710.0
+    "call_loss": 8788330.0,
+    "put_loss": 72290280.0,
+    "total_loss": 81078610.0
   },
   {
     "strike": 180.0,
-    "call_loss": 12796020.0,
-    "put_loss": 61845869.99999999,
-    "total_loss": 74641890.0
+    "call_loss": 11362920.0,
+    "put_loss": 61726020.0,
+    "total_loss": 73088940.0
   },
   {
     "strike": 181.0,
-    "call_loss": 16370210.0,
-    "put_loss": 52293059.99999999,
-    "total_loss": 68663270.0
+    "call_loss": 14464780.0,
+    "put_loss": 51865240.0,
+    "total_loss": 66330020.0
   },
   {
     "strike": 182.0,
-    "call_loss": 20198190.0,
-    "put_loss": 42978729.99999999,
-    "total_loss": 63176919.99999999
+    "call_loss": 17895340.0,
+    "put_loss": 42514210.0,
+    "total_loss": 60409550.0
   },
   {
     "strike": 183.0,
-    "call_loss": 24621230.0,
-    "put_loss": 33978610.0,
-    "total_loss": 58599840.0
+    "call_loss": 22068210.0,
+    "put_loss": 33559430.0,
+    "total_loss": 55627640.0
   },
   {
     "strike": 184.0,
-    "call_loss": 29376160.0,
-    "put_loss": 25165249.999999996,
-    "total_loss": 54541410.0
+    "call_loss": 26615090.0,
+    "put_loss": 24859630.0,
+    "total_loss": 51474720.0
   },
   {
     "strike": 185.0,
-    "call_loss": 34358240.0,
-    "put_loss": 16582769.999999998,
-    "total_loss": 50941010.0
+    "call_loss": 31625240.0,
+    "put_loss": 16453110.0,
+    "total_loss": 48078350.0
   },
   {
     "strike": 186.0,
-    "call_loss": 39900160.0,
-    "put_loss": 8189999.999999999,
-    "total_loss": 48090160.0
+    "call_loss": 37301490.0,
+    "put_loss": 8150000.0,
+    "total_loss": 45451490.0
   },
   {
     "strike": 187.0,
-    "call_loss": 45990270.0,
+    "call_loss": 43629260.0,
     "put_loss": 0.0,
-    "total_loss": 45990270.0
+    "total_loss": 43629260.0
   }
 ]
 \`\`\`
@@ -19122,31 +19776,85 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   },
   {
     "s": 186.0,
-    "cv": 2293803,
-    "pv": 1099403,
-    "cv1": 5800000,
-    "pv1": 3035440,
-    "co2": 2718163,
-    "po2": 3931500,
-    "co1": 2913223,
-    "po1": 3695440,
-    "dcv": -3506197,
-    "dpv": -1936037,
-    "dtv": -5442234,
-    "dco": -195060,
-    "dpo": 236060,
-    "dc_gamma": -0.0143,
-    "dp_gamma": -0.0144,
-    "dc_delta": 0.12000000000000001,
-    "dp_delta": 0.12000000000000001,
-    "dc_vega": -6.4093,
-    "dp_vega": -6.4488,
-    "dc_theta": 0.026800000000000004,
-    "dp_theta": 0.0274,
-    "n_venc": 4,
-    "c_iv_avg": 18.34,
-    "c_iv_av
+    "cv": 2879633,
+    "pv": 1169513,
+    "cv1": 7250000,
+    "pv1": 3794300,
+    "co2": 2857383,
+    "po2": 4234520,
+    "co1": 3042023,
+    "po1": 3860180,
+    "dcv": -4370367,
+    "dpv": -2624787,
+    "dtv": -6995154,
+    "dco": -184640,
+    "dpo": 374340,
+    "dc_gamma": -0.0186,
+    "dp_gamma": -0.018699999999999998,
+    "dc_delta": 0.15,
+    "dp_delta": 0.15,
+    "dc_vega": -8.3037,
+    "dp_vega": -8.3432,
+    "dc_theta": 0.035,
+    "dp_theta": 0.0356,
+    "n_venc": 5,
+    "c_iv_avg": 19.5,
+    "c_iv_avg1": 18.05,
+    "p_iv_avg": 25.4
 ... [DADOS EXCESSIVOS TRUNCADOS]
+\`\`\`
+
+**sorted**:
+\`\`\`
+[...valid].sort((a, b) => {
+    const av = mode === 'abs' ? Math.abs(a[key]) : a[key]... (dados complexos)
+\`\`\`
+
+**tabs**:
+\`\`\`
+[\`<button class="tab \${cur === 'AGG' ? 'active' : ''}" data-k="AGG">Agregado</button>\`]... (dados complexos)
+\`\`\`
+
+**Variable:** \`views\`
+\`\`\`json
+[
+  {
+    "id": "summary",
+    "label": "Resumo"
+  },
+  {
+    "id": "table",
+    "label": "Tabela"
+  }
+]
+\`\`\`
+
+**topStrikeRows**:
+\`\`\`
+[...rows].sort((a, b) => (b.tv || 0) - (a.tv || 0)).slice(0, 6);
+  const strikeCards = topStrikeRows.map(row => {
+    const ivCall = cur === 'AGG' ? row.div_c : row.c_ivd;
+    return strikeCard(\`K\${row.s}\`, fI(row.tv), \`ΔVol \${row.dtv >= 0 ? '+' : ''}\${fI(row.dtv)} · ΔIV Call \${ivCall == null ? '–' : fP(ivCall)}\`, pc(row.dtv));
+  }).join('');
+
+  let summaryHtml = \`
+    <div class="summary-layout">
+      <section class="panel">
+        <div class="panel-head">
+          <div><div class="panel-kic... (dados complexos)
+\`\`\`
+
+**rows**:
+\`\`\`
+[...rowsForScope()].sort((a, b) => a.s - b.s);
+  let head = '';
+  let body = '';
+  if (cur === 'AGG') {
+    head = '<tr><th>Strike</th><th>OI Call D-1</th><th>OI Call D</th><th>ΔOI Call</th><th>OI Put D-1</th><th>OI Put D</th><th>ΔOI Put</th><th>Vol Call</th><th>Vol Put</th><th>ΔVol Total</th><th>ΔIV Call</th><th>ΔIV Put</th></tr>';
+    body = rows.map(row => \`
+      <tr class="\${Math.abs(row.s - SPOT) < 1.5 ? 'focus' : ''}">
+        <td>K\${row.s}</td>
+        <td>\${fI(row.co1)}</td><td>\${fI(row... (dados complexos)
 \`\`\`
 
 ### bova11_rankings_pro_10mar_vs_11mar.html
@@ -19155,10 +19863,76 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 {"V1": {"name": "13 mar W2", "color": "red", "strikes": [{"s": 172.0, "snap": false, "c_last1": 8.31, "c_last2": 8.31, "cp_pct": 0.0, "p_last1": 0.36, "p_last2": 0.19, "pp_pct": -47.22, "co1": 164880, "co2": 164960, "dco": 80, "po1": 326740, "po2": 329990, "dpo": 3250, "c_iv1": null, "c_iv2": 1.95, "c_ivd": null, "p_iv1": 34.28, "p_iv2": 33.7, "p_ivd": -0.58, "c_delta1": 0.97, "c_delta2": 0.99, "dc_delta": 0.02, "c_gamma1": 0.0132, "c_gamma2": 0.0057, "dc_gamma": -0.0075, "c_theta1": -0.1422, "c... (dados complexos)
 \`\`\`
 
+**Variable:** \`vs\`
+\`\`\`json
+[
+  {
+    "id": "rank",
+    "l": "📊 Rankings"
+  },
+  {
+    "id": "table",
+    "l": "📋 Tabela"
+  },
+  {
+    "id": "greeks",
+    "l": "🔬 Gregas"
+  }
+]
+\`\`\`
+
+**rows**:
+\`\`\`
+[...st].sort(sortFn).slice(0,10);
+  let h=\`<div class="card"><h3>\${title}</h3><div style="max-height:300px;overflow:auto"><table><thead><tr>\`;
+  cols.forEach(c=>{h+=\`<th>\${c.h}</th>\`});
+  h+=\`</tr></thead><tbody>\`;
+  rows.forEach(r=>{h+=\`<tr>\`;cols.forEach(c=>{const v=c.fmt?c.fmt(r):(r[c.k]??'–');h+=\`<td class="\${c.cls?c.cls(r):''}">\${v}</td>\`});h+=\`</tr>\`});
+  return h+\`</tbody></table></div></div>\`}
+
+function renderRankings(){
+  if(cur==='AGG')return;
+  const st=D[cur].strikes;
+  let h='<div c... (dados complexos)
+\`\`\`
+
 ### bova11_rankings_pro_11mar_vs_12mar.html
 **D**:
 \`\`\`
 {"V1": {"name": "13 mar W2", "color": "red", "strikes": [{"s": 168.0, "snap": true, "c_last1": 8.15, "c_last2": 8.15, "cp_pct": 0.0, "p_last1": 0.13, "p_last2": 0.13, "pp_pct": 0.0, "co1": 89310, "co2": 89310, "dco": 0, "po1": 299330, "po2": 299330, "dpo": 0, "c_iv1": 49.59, "c_iv2": 49.59, "c_ivd": 0.0, "p_iv1": 46.79, "p_iv2": 46.79, "p_ivd": 0.0, "c_delta1": 1.0, "c_delta2": 1.0, "dc_delta": 0.0, "c_gamma1": 0.0006, "c_gamma2": 0.0006, "dc_gamma": 0.0, "c_theta1": -0.1013, "c_theta2": -0.1013... (dados complexos)
+\`\`\`
+
+**Variable:** \`vs\`
+\`\`\`json
+[
+  {
+    "id": "rank",
+    "l": "📊 Rankings"
+  },
+  {
+    "id": "table",
+    "l": "📋 Tabela"
+  },
+  {
+    "id": "greeks",
+    "l": "🔬 Gregas"
+  }
+]
+\`\`\`
+
+**rows**:
+\`\`\`
+[...st].sort(sortFn).slice(0,10);
+  let h=\`<div class="card"><h3>\${title}</h3><div style="max-height:300px;overflow:auto"><table><thead><tr>\`;
+  cols.forEach(c=>{h+=\`<th>\${c.h}</th>\`});
+  h+=\`</tr></thead><tbody>\`;
+  rows.forEach(r=>{h+=\`<tr>\`;cols.forEach(c=>{const v=c.fmt?c.fmt(r):(r[c.k]??'–');h+=\`<td class="\${c.cls?c.cls(r):''}">\${v}</td>\`});h+=\`</tr>\`});
+  return h+\`</tbody></table></div></div>\`}
+
+function renderRankings(){
+  if(cur==='AGG')return;
+  const st=D[cur].strikes;
+  let h='<div c... (dados complexos)
 \`\`\`
 
 ### bova11_rankings_pro_12mar_vs_13mar.html
@@ -19167,10 +19941,76 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 {"V1": {"name": "13 mar W2", "color": "red", "strikes": [{"s": 166.0, "snap": true, "c_last1": 9.2, "c_last2": 9.2, "cp_pct": 0.0, "p_last1": 0.01, "p_last2": 0.01, "pp_pct": 0.0, "co1": 44920, "co2": 44920, "dco": 0, "po1": 327150, "po2": 327150, "dpo": 0, "c_iv1": null, "c_iv2": null, "c_ivd": null, "p_iv1": null, "p_iv2": null, "p_ivd": null, "c_delta1": 1.0, "c_delta2": 1.0, "dc_delta": 0.0, "c_gamma1": 0.0, "c_gamma2": 0.0, "dc_gamma": 0.0, "c_theta1": 0.0, "c_theta2": 0.0, "dc_theta": 0.0,... (dados complexos)
 \`\`\`
 
+**Variable:** \`vs\`
+\`\`\`json
+[
+  {
+    "id": "rank",
+    "l": "📊 Rankings"
+  },
+  {
+    "id": "table",
+    "l": "📋 Tabela"
+  },
+  {
+    "id": "greeks",
+    "l": "🔬 Gregas"
+  }
+]
+\`\`\`
+
+**rows**:
+\`\`\`
+[...st].sort(sortFn).slice(0,10);
+  let h=\`<div class="card"><h3>\${title}</h3><div style="max-height:300px;overflow:auto"><table><thead><tr>\`;
+  cols.forEach(c=>{h+=\`<th>\${c.h}</th>\`});
+  h+=\`</tr></thead><tbody>\`;
+  rows.forEach(r=>{h+=\`<tr>\`;cols.forEach(c=>{const v=c.fmt?c.fmt(r):(r[c.k]??'–');h+=\`<td class="\${c.cls?c.cls(r):''}">\${v}</td>\`});h+=\`</tr>\`});
+  return h+\`</tbody></table></div></div>\`}
+
+function renderRankings(){
+  if(cur==='AGG')return;
+  const st=D[cur].strikes;
+  let h='<div c... (dados complexos)
+\`\`\`
+
 ### bova11_rankings_pro_13mar_vs_16mar.html
 **D**:
 \`\`\`
 {"V1": {"name": "20 mar Mensal", "color": "red", "strikes": [{"s": 168.0, "snap": false, "c_last1": 8.32, "c_last2": 10.02, "cp_pct": 20.43, "p_last1": 0.87, "p_last2": 0.38, "pp_pct": -56.32, "co1": 920210, "co2": 915830, "dco": -4380, "po1": 1750000, "po2": 2069999, "dpo": 319999, "c_iv1": 34.6, "c_iv2": 34.32, "c_ivd": -0.28, "p_iv1": 34.93, "p_iv2": 33.63, "p_ivd": -1.3, "c_delta1": 0.92, "c_delta2": 0.97, "dc_delta": 0.05, "c_gamma1": 0.0273, "c_gamma2": 0.0143, "dc_gamma": -0.013, "c_theta... (dados complexos)
+\`\`\`
+
+**Variable:** \`vs\`
+\`\`\`json
+[
+  {
+    "id": "rank",
+    "l": "📊 Rankings"
+  },
+  {
+    "id": "table",
+    "l": "📋 Tabela"
+  },
+  {
+    "id": "greeks",
+    "l": "🔬 Gregas"
+  }
+]
+\`\`\`
+
+**rows**:
+\`\`\`
+[...st].sort(sortFn).slice(0,10);
+  let h=\`<div class="card"><h3>\${title}</h3><div style="max-height:300px;overflow:auto"><table><thead><tr>\`;
+  cols.forEach(c=>{h+=\`<th>\${c.h}</th>\`});
+  h+=\`</tr></thead><tbody>\`;
+  rows.forEach(r=>{h+=\`<tr>\`;cols.forEach(c=>{const v=c.fmt?c.fmt(r):(r[c.k]??'–');h+=\`<td class="\${c.cls?c.cls(r):''}">\${v}</td>\`});h+=\`</tr>\`});
+  return h+\`</tbody></table></div></div>\`}
+
+function renderRankings(){
+  if(cur==='AGG')return;
+  const st=D[cur].strikes;
+  let h='<div c... (dados complexos)
 \`\`\`
 
 ### bova11_rankings_pro_16mar_vs_17mar.html
@@ -19179,10 +20019,76 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 {"V1": {"name": "20 mar Mensal", "color": "red", "strikes": [{"s": 168.0, "snap": false, "c_last1": 10.02, "c_last2": 9.12, "cp_pct": -8.98, "p_last1": 0.38, "p_last2": 0.24, "pp_pct": -36.84, "co1": 915830, "co2": 910200, "dco": -5630, "po1": 2069999, "po2": 2100000, "dpo": 30001, "c_iv1": 34.32, "c_iv2": 36.14, "c_ivd": 1.82, "p_iv1": 33.63, "p_iv2": 35.09, "p_ivd": 1.46, "c_delta1": 0.97, "c_delta2": 0.98, "dc_delta": 0.01, "c_gamma1": 0.0143, "c_gamma2": 0.0089, "dc_gamma": -0.0054, "c_theta... (dados complexos)
 \`\`\`
 
+**Variable:** \`vs\`
+\`\`\`json
+[
+  {
+    "id": "rank",
+    "l": "📊 Rankings"
+  },
+  {
+    "id": "table",
+    "l": "📋 Tabela"
+  },
+  {
+    "id": "greeks",
+    "l": "🔬 Gregas"
+  }
+]
+\`\`\`
+
+**rows**:
+\`\`\`
+[...st].sort(sortFn).slice(0,10);
+  let h=\`<div class="card"><h3>\${title}</h3><div style="max-height:300px;overflow:auto"><table><thead><tr>\`;
+  cols.forEach(c=>{h+=\`<th>\${c.h}</th>\`});
+  h+=\`</tr></thead><tbody>\`;
+  rows.forEach(r=>{h+=\`<tr>\`;cols.forEach(c=>{const v=c.fmt?c.fmt(r):(r[c.k]??'–');h+=\`<td class="\${c.cls?c.cls(r):''}">\${v}</td>\`});h+=\`</tr>\`});
+  return h+\`</tbody></table></div></div>\`}
+
+function renderRankings(){
+  if(cur==='AGG')return;
+  const st=D[cur].strikes;
+  let h='<div c... (dados complexos)
+\`\`\`
+
 ### bova11_rankings_pro_17mar_vs_18mar.html
 **D**:
 \`\`\`
 {"V1": {"name": "20 mar Mensal", "color": "red", "strikes": [{"s": 168.0, "snap": false, "c_last1": 9.12, "c_last2": 8.95, "cp_pct": -1.86, "p_last1": 0.24, "p_last2": 0.23, "pp_pct": -4.17, "co1": 910200, "co2": 879300, "dco": -30900, "po1": 2100000, "po2": 2060000, "dpo": -40000, "c_iv1": 36.14, "c_iv2": 40.44, "c_ivd": 4.3, "p_iv1": 35.09, "p_iv2": 39.94, "p_ivd": 4.85, "c_delta1": 0.98, "c_delta2": 1.0, "dc_delta": 0.02, "c_gamma1": 0.0089, "c_gamma2": 0.0039, "dc_gamma": -0.005, "c_theta1":... (dados complexos)
+\`\`\`
+
+**Variable:** \`vs\`
+\`\`\`json
+[
+  {
+    "id": "rank",
+    "l": "📊 Rankings"
+  },
+  {
+    "id": "table",
+    "l": "📋 Tabela"
+  },
+  {
+    "id": "greeks",
+    "l": "🔬 Gregas"
+  }
+]
+\`\`\`
+
+**rows**:
+\`\`\`
+[...st].sort(sortFn).slice(0,10);
+  let h=\`<div class="card"><h3>\${title}</h3><div style="max-height:300px;overflow:auto"><table><thead><tr>\`;
+  cols.forEach(c=>{h+=\`<th>\${c.h}</th>\`});
+  h+=\`</tr></thead><tbody>\`;
+  rows.forEach(r=>{h+=\`<tr>\`;cols.forEach(c=>{const v=c.fmt?c.fmt(r):(r[c.k]??'–');h+=\`<td class="\${c.cls?c.cls(r):''}">\${v}</td>\`});h+=\`</tr>\`});
+  return h+\`</tbody></table></div></div>\`}
+
+function renderRankings(){
+  if(cur==='AGG')return;
+  const st=D[cur].strikes;
+  let h='<div c... (dados complexos)
 \`\`\`
 
 ### bova11_rankings_pro_18mar_vs_19mar.html
@@ -19191,10 +20097,76 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 {"V1": {"name": "20 mar Mensal", "color": "red", "strikes": [{"s": 169.0, "snap": false, "c_last1": 7.84, "c_last2": 8.37, "cp_pct": 6.76, "p_last1": 0.28, "p_last2": 0.12, "pp_pct": -57.14, "co1": 464660, "co2": 432700, "dco": -31960, "po1": 1040000, "po2": 944390, "dpo": -95610, "c_iv1": 38.29, "c_iv2": 55.59, "c_ivd": 17.3, "p_iv1": 38.28, "p_iv2": 46.71, "p_ivd": 8.43, "c_delta1": 0.99, "c_delta2": 1.0, "dc_delta": 0.01, "c_gamma1": 0.0083, "c_gamma2": 0.0004, "dc_gamma": -0.0079, "c_theta1"... (dados complexos)
 \`\`\`
 
+**Variable:** \`vs\`
+\`\`\`json
+[
+  {
+    "id": "rank",
+    "l": "📊 Rankings"
+  },
+  {
+    "id": "table",
+    "l": "📋 Tabela"
+  },
+  {
+    "id": "greeks",
+    "l": "🔬 Gregas"
+  }
+]
+\`\`\`
+
+**rows**:
+\`\`\`
+[...st].sort(sortFn).slice(0,10);
+  let h=\`<div class="card"><h3>\${title}</h3><div style="max-height:300px;overflow:auto"><table><thead><tr>\`;
+  cols.forEach(c=>{h+=\`<th>\${c.h}</th>\`});
+  h+=\`</tr></thead><tbody>\`;
+  rows.forEach(r=>{h+=\`<tr>\`;cols.forEach(c=>{const v=c.fmt?c.fmt(r):(r[c.k]??'–');h+=\`<td class="\${c.cls?c.cls(r):''}">\${v}</td>\`});h+=\`</tr>\`});
+  return h+\`</tbody></table></div></div>\`}
+
+function renderRankings(){
+  if(cur==='AGG')return;
+  const st=D[cur].strikes;
+  let h='<div c... (dados complexos)
+\`\`\`
+
 ### bova11_rankings_pro_19mar_vs_20mar.html
 **D**:
 \`\`\`
 {"V1": {"name": "20 mar Mensal", "color": "red", "strikes": [{"s": 164.0, "snap": true, "c_last1": 7.81, "c_last2": 7.81, "cp_pct": 0.0, "p_last1": 0.01, "p_last2": 0.01, "pp_pct": 0.0, "co1": 68960, "co2": 68960, "dco": 0, "po1": 1220000, "po2": 1220000, "dpo": 0, "c_iv1": null, "c_iv2": null, "c_ivd": null, "p_iv1": null, "p_iv2": null, "p_ivd": null, "c_delta1": 1.0, "c_delta2": 1.0, "dc_delta": 0.0, "c_gamma1": 0.0, "c_gamma2": 0.0, "dc_gamma": 0.0, "c_theta1": 0.0, "c_theta2": 0.0, "dc_thet... (dados complexos)
+\`\`\`
+
+**Variable:** \`vs\`
+\`\`\`json
+[
+  {
+    "id": "rank",
+    "l": "📊 Rankings"
+  },
+  {
+    "id": "table",
+    "l": "📋 Tabela"
+  },
+  {
+    "id": "greeks",
+    "l": "🔬 Gregas"
+  }
+]
+\`\`\`
+
+**rows**:
+\`\`\`
+[...st].sort(sortFn).slice(0,10);
+  let h=\`<div class="card"><h3>\${title}</h3><div style="max-height:300px;overflow:auto"><table><thead><tr>\`;
+  cols.forEach(c=>{h+=\`<th>\${c.h}</th>\`});
+  h+=\`</tr></thead><tbody>\`;
+  rows.forEach(r=>{h+=\`<tr>\`;cols.forEach(c=>{const v=c.fmt?c.fmt(r):(r[c.k]??'–');h+=\`<td class="\${c.cls?c.cls(r):''}">\${v}</td>\`});h+=\`</tr>\`});
+  return h+\`</tbody></table></div></div>\`}
+
+function renderRankings(){
+  if(cur==='AGG')return;
+  const st=D[cur].strikes;
+  let h='<div c... (dados complexos)
 \`\`\`
 
 ### bova11_rankings_pro_1abr_vs_2abr.html
@@ -19531,16 +20503,135 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 ... [DADOS EXCESSIVOS TRUNCADOS]
 \`\`\`
 
+**sorted**:
+\`\`\`
+[...valid].sort((a, b) => {
+    const av = mode === 'abs' ? Math.abs(a[key]) : a[key]... (dados complexos)
+\`\`\`
+
+**tabs**:
+\`\`\`
+[\`<button class="tab \${cur === 'AGG' ? 'active' : ''}" data-k="AGG">Agregado</button>\`]... (dados complexos)
+\`\`\`
+
+**Variable:** \`views\`
+\`\`\`json
+[
+  {
+    "id": "summary",
+    "label": "Resumo"
+  },
+  {
+    "id": "table",
+    "label": "Tabela"
+  }
+]
+\`\`\`
+
+**topStrikeRows**:
+\`\`\`
+[...rows].sort((a, b) => (b.tv || 0) - (a.tv || 0)).slice(0, 6);
+  const strikeCards = topStrikeRows.map(row => {
+    const ivCall = cur === 'AGG' ? row.div_c : row.c_ivd;
+    return strikeCard(\`K\${row.s}\`, fI(row.tv), \`ΔVol \${row.dtv >= 0 ? '+' : ''}\${fI(row.dtv)} · ΔIV Call \${ivCall == null ? '–' : fP(ivCall)}\`, pc(row.dtv));
+  }).join('');
+
+  let summaryHtml = \`
+    <div class="summary-layout">
+      <section class="panel">
+        <div class="panel-head">
+          <div><div class="panel-kic... (dados complexos)
+\`\`\`
+
+**rows**:
+\`\`\`
+[...rowsForScope()].sort((a, b) => a.s - b.s);
+  let head = '';
+  let body = '';
+  if (cur === 'AGG') {
+    head = '<tr><th>Strike</th><th>OI Call D-1</th><th>OI Call D</th><th>ΔOI Call</th><th>OI Put D-1</th><th>OI Put D</th><th>ΔOI Put</th><th>Vol Call</th><th>Vol Put</th><th>ΔVol Total</th><th>ΔIV Call</th><th>ΔIV Put</th></tr>';
+    body = rows.map(row => \`
+      <tr class="\${Math.abs(row.s - SPOT) < 1.5 ? 'focus' : ''}">
+        <td>K\${row.s}</td>
+        <td>\${fI(row.co1)}</td><td>\${fI(row... (dados complexos)
+\`\`\`
+
 ### bova11_rankings_pro_20mar_vs_23mar.html
 **D**:
 \`\`\`
 {"V1": {"name": "27 mar W4", "color": "red", "strikes": [{"s": 171.0, "snap": false, "c_last1": 3.62, "c_last2": 8.8, "cp_pct": 143.09, "p_last1": 2.3, "p_last2": 0.48, "pp_pct": -79.13, "co1": 93540, "co2": 122970, "dco": 29430, "po1": 131940, "po2": 243490, "dpo": 111550, "c_iv1": 29.61, "c_iv2": 32.13, "c_ivd": 2.52, "p_iv1": 30.52, "p_iv2": 33.25, "p_ivd": 2.73, "c_delta1": 0.61, "c_delta2": 0.95, "dc_delta": 0.34, "c_gamma1": 0.0685, "c_gamma2": 0.0212, "dc_gamma": -0.0473, "c_theta1": -0.2... (dados complexos)
 \`\`\`
 
+**Variable:** \`vs\`
+\`\`\`json
+[
+  {
+    "id": "rank",
+    "l": "📊 Rankings"
+  },
+  {
+    "id": "table",
+    "l": "📋 Tabela"
+  },
+  {
+    "id": "greeks",
+    "l": "🔬 Gregas"
+  }
+]
+\`\`\`
+
+**rows**:
+\`\`\`
+[...st].sort(sortFn).slice(0,10);
+  let h=\`<div class="card"><h3>\${title}</h3><div style="max-height:300px;overflow:auto"><table><thead><tr>\`;
+  cols.forEach(c=>{h+=\`<th>\${c.h}</th>\`});
+  h+=\`</tr></thead><tbody>\`;
+  rows.forEach(r=>{h+=\`<tr>\`;cols.forEach(c=>{const v=c.fmt?c.fmt(r):(r[c.k]??'–');h+=\`<td class="\${c.cls?c.cls(r):''}">\${v}</td>\`});h+=\`</tr>\`});
+  return h+\`</tbody></table></div></div>\`}
+
+function renderRankings(){
+  if(cur==='AGG')return;
+  const st=D[cur].strikes;
+  let h='<div c... (dados complexos)
+\`\`\`
+
 ### bova11_rankings_pro_23mar_vs_24mar.html
 **D**:
 \`\`\`
 {"V1": {"name": "27 mar W4", "color": "red", "strikes": [{"s": 171.0, "snap": false, "c_last1": 8.8, "c_last2": 8.34, "cp_pct": -5.23, "p_last1": 0.48, "p_last2": 0.3, "pp_pct": -37.5, "co1": 122970, "co2": 123910, "dco": 940, "po1": 243490, "po2": 414870, "dpo": 171380, "c_iv1": 32.13, "c_iv2": 33.89, "c_ivd": 1.76, "p_iv1": 33.25, "p_iv2": 34.13, "p_ivd": 0.88, "c_delta1": 0.95, "c_delta2": 0.97, "dc_delta": 0.02, "c_gamma1": 0.0212, "c_gamma2": 0.0137, "dc_gamma": -0.0075, "c_theta1": -0.1657... (dados complexos)
+\`\`\`
+
+**Variable:** \`vs\`
+\`\`\`json
+[
+  {
+    "id": "rank",
+    "l": "📊 Rankings"
+  },
+  {
+    "id": "table",
+    "l": "📋 Tabela"
+  },
+  {
+    "id": "greeks",
+    "l": "🔬 Gregas"
+  }
+]
+\`\`\`
+
+**rows**:
+\`\`\`
+[...st].sort(sortFn).slice(0,10);
+  let h=\`<div class="card"><h3>\${title}</h3><div style="max-height:300px;overflow:auto"><table><thead><tr>\`;
+  cols.forEach(c=>{h+=\`<th>\${c.h}</th>\`});
+  h+=\`</tr></thead><tbody>\`;
+  rows.forEach(r=>{h+=\`<tr>\`;cols.forEach(c=>{const v=c.fmt?c.fmt(r):(r[c.k]??'–');h+=\`<td class="\${c.cls?c.cls(r):''}">\${v}</td>\`});h+=\`</tr>\`});
+  return h+\`</tbody></table></div></div>\`}
+
+function renderRankings(){
+  if(cur==='AGG')return;
+  const st=D[cur].strikes;
+  let h='<div c... (dados complexos)
 \`\`\`
 
 ### bova11_rankings_pro_24abr_vs_2abr.html
@@ -19885,10 +20976,96 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 ... [DADOS EXCESSIVOS TRUNCADOS]
 \`\`\`
 
+**sorted**:
+\`\`\`
+[...valid].sort((a, b) => {
+    const av = mode === 'abs' ? Math.abs(a[key]) : a[key]... (dados complexos)
+\`\`\`
+
+**tabs**:
+\`\`\`
+[\`<button class="tab \${cur === 'AGG' ? 'active' : ''}" data-k="AGG">Agregado</button>\`]... (dados complexos)
+\`\`\`
+
+**Variable:** \`views\`
+\`\`\`json
+[
+  {
+    "id": "summary",
+    "label": "Resumo"
+  },
+  {
+    "id": "table",
+    "label": "Tabela"
+  }
+]
+\`\`\`
+
+**topStrikeRows**:
+\`\`\`
+[...rows].sort((a, b) => (b.tv || 0) - (a.tv || 0)).slice(0, 6);
+  const strikeCards = topStrikeRows.map(row => {
+    const ivCall = cur === 'AGG' ? row.div_c : row.c_ivd;
+    return strikeCard(\`K\${row.s}\`, fI(row.tv), \`ΔVol \${row.dtv >= 0 ? '+' : ''}\${fI(row.dtv)} · ΔIV Call \${ivCall == null ? '–' : fP(ivCall)}\`, pc(row.dtv));
+  }).join('');
+
+  let summaryHtml = \`
+    <div class="summary-layout">
+      <section class="panel">
+        <div class="panel-head">
+          <div><div class="panel-kic... (dados complexos)
+\`\`\`
+
+**rows**:
+\`\`\`
+[...rowsForScope()].sort((a, b) => a.s - b.s);
+  let head = '';
+  let body = '';
+  if (cur === 'AGG') {
+    head = '<tr><th>Strike</th><th>OI Call D-1</th><th>OI Call D</th><th>ΔOI Call</th><th>OI Put D-1</th><th>OI Put D</th><th>ΔOI Put</th><th>Vol Call</th><th>Vol Put</th><th>ΔVol Total</th><th>ΔIV Call</th><th>ΔIV Put</th></tr>';
+    body = rows.map(row => \`
+      <tr class="\${Math.abs(row.s - SPOT) < 1.5 ? 'focus' : ''}">
+        <td>K\${row.s}</td>
+        <td>\${fI(row.co1)}</td><td>\${fI(row... (dados complexos)
+\`\`\`
+
 ### bova11_rankings_pro_24mar_vs_25mar.html
 **D**:
 \`\`\`
 {"V1": {"name": "27 mar W4", "color": "red", "strikes": [{"s": 174.0, "snap": false, "c_last1": 5.9, "c_last2": 8.0, "cp_pct": 35.59, "p_last1": 0.59, "p_last2": 0.27, "pp_pct": -54.24, "co1": 219190, "co2": 212940, "dco": -6250, "po1": 356680, "po2": 353730, "dpo": -2950, "c_iv1": 30.51, "c_iv2": 34.2, "c_ivd": 3.69, "p_iv1": 30.68, "p_iv2": 37.71, "p_ivd": 7.03, "c_delta1": 0.89, "c_delta2": 0.98, "dc_delta": 0.09, "c_gamma1": 0.0416, "c_gamma2": 0.0106, "dc_gamma": -0.031, "c_theta1": -0.2272... (dados complexos)
+\`\`\`
+
+**Variable:** \`vs\`
+\`\`\`json
+[
+  {
+    "id": "rank",
+    "l": "📊 Rankings"
+  },
+  {
+    "id": "table",
+    "l": "📋 Tabela"
+  },
+  {
+    "id": "greeks",
+    "l": "🔬 Gregas"
+  }
+]
+\`\`\`
+
+**rows**:
+\`\`\`
+[...st].sort(sortFn).slice(0,10);
+  let h=\`<div class="card"><h3>\${title}</h3><div style="max-height:300px;overflow:auto"><table><thead><tr>\`;
+  cols.forEach(c=>{h+=\`<th>\${c.h}</th>\`});
+  h+=\`</tr></thead><tbody>\`;
+  rows.forEach(r=>{h+=\`<tr>\`;cols.forEach(c=>{const v=c.fmt?c.fmt(r):(r[c.k]??'–');h+=\`<td class="\${c.cls?c.cls(r):''}">\${v}</td>\`});h+=\`</tr>\`});
+  return h+\`</tbody></table></div></div>\`}
+
+function renderRankings(){
+  if(cur==='AGG')return;
+  const st=D[cur].strikes;
+  let h='<div c... (dados complexos)
 \`\`\`
 
 ### bova11_rankings_pro_24mar_vs_25posmar.html
@@ -19897,10 +21074,76 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 {"V1": {"name": "27 mar W4", "color": "red", "strikes": [{"s": 174.0, "snap": false, "c_last1": 5.9, "c_last2": 8.22, "cp_pct": 39.32, "p_last1": 0.59, "p_last2": 0.2, "pp_pct": -66.1, "co1": 219190, "co2": 212940, "dco": -6250, "po1": 356680, "po2": 353730, "dpo": -2950, "c_iv1": 30.51, "c_iv2": 34.14, "c_ivd": 3.63, "p_iv1": 30.68, "p_iv2": 34.64, "p_ivd": 3.96, "c_delta1": 0.89, "c_delta2": 0.99, "dc_delta": 0.1, "c_gamma1": 0.0416, "c_gamma2": 0.009, "dc_gamma": -0.0326, "c_theta1": -0.2272,... (dados complexos)
 \`\`\`
 
+**Variable:** \`vs\`
+\`\`\`json
+[
+  {
+    "id": "rank",
+    "l": "📊 Rankings"
+  },
+  {
+    "id": "table",
+    "l": "📋 Tabela"
+  },
+  {
+    "id": "greeks",
+    "l": "🔬 Gregas"
+  }
+]
+\`\`\`
+
+**rows**:
+\`\`\`
+[...st].sort(sortFn).slice(0,10);
+  let h=\`<div class="card"><h3>\${title}</h3><div style="max-height:300px;overflow:auto"><table><thead><tr>\`;
+  cols.forEach(c=>{h+=\`<th>\${c.h}</th>\`});
+  h+=\`</tr></thead><tbody>\`;
+  rows.forEach(r=>{h+=\`<tr>\`;cols.forEach(c=>{const v=c.fmt?c.fmt(r):(r[c.k]??'–');h+=\`<td class="\${c.cls?c.cls(r):''}">\${v}</td>\`});h+=\`</tr>\`});
+  return h+\`</tbody></table></div></div>\`}
+
+function renderRankings(){
+  if(cur==='AGG')return;
+  const st=D[cur].strikes;
+  let h='<div c... (dados complexos)
+\`\`\`
+
 ### bova11_rankings_pro_25posmar_vs_26mar.html
 **D**:
 \`\`\`
 {"V1": {"name": "27 mar W4", "color": "red", "strikes": [{"s": 171.0, "snap": true, "c_last1": 9.09, "c_last2": 9.09, "cp_pct": 0.0, "p_last1": 0.08, "p_last2": 0.08, "pp_pct": 0.0, "co1": 114260, "co2": 114260, "dco": 0, "po1": 392630, "po2": 392630, "dpo": 0, "c_iv1": 40.67, "c_iv2": 40.67, "c_ivd": 0.0, "p_iv1": 44.06, "p_iv2": 44.06, "p_ivd": 0.0, "c_delta1": 1.0, "c_delta2": 1.0, "dc_delta": 0.0, "c_gamma1": 0.0005, "c_gamma2": 0.0005, "dc_gamma": 0.0, "c_theta1": -0.1009, "c_theta2": -0.10... (dados complexos)
+\`\`\`
+
+**Variable:** \`vs\`
+\`\`\`json
+[
+  {
+    "id": "rank",
+    "l": "📊 Rankings"
+  },
+  {
+    "id": "table",
+    "l": "📋 Tabela"
+  },
+  {
+    "id": "greeks",
+    "l": "🔬 Gregas"
+  }
+]
+\`\`\`
+
+**rows**:
+\`\`\`
+[...st].sort(sortFn).slice(0,10);
+  let h=\`<div class="card"><h3>\${title}</h3><div style="max-height:300px;overflow:auto"><table><thead><tr>\`;
+  cols.forEach(c=>{h+=\`<th>\${c.h}</th>\`});
+  h+=\`</tr></thead><tbody>\`;
+  rows.forEach(r=>{h+=\`<tr>\`;cols.forEach(c=>{const v=c.fmt?c.fmt(r):(r[c.k]??'–');h+=\`<td class="\${c.cls?c.cls(r):''}">\${v}</td>\`});h+=\`</tr>\`});
+  return h+\`</tbody></table></div></div>\`}
+
+function renderRankings(){
+  if(cur==='AGG')return;
+  const st=D[cur].strikes;
+  let h='<div c... (dados complexos)
 \`\`\`
 
 ### bova11_rankings_pro_26mar_vs_27mar.html
@@ -19909,10 +21152,76 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 {"V1": {"name": "27 mar W4", "color": "red", "strikes": [{"s": 169.0, "snap": true, "c_last1": 8.96, "c_last2": 8.96, "cp_pct": 0.0, "p_last1": 0.01, "p_last2": 0.01, "pp_pct": 0.0, "co1": 62190, "co2": 62190, "dco": 0, "po1": 172050, "po2": 172050, "dpo": 0, "c_iv1": null, "c_iv2": null, "c_ivd": null, "p_iv1": null, "p_iv2": null, "p_ivd": null, "c_delta1": 1.0, "c_delta2": 1.0, "dc_delta": 0.0, "c_gamma1": 0.0, "c_gamma2": 0.0, "dc_gamma": 0.0, "c_theta1": 0.0, "c_theta2": 0.0, "dc_theta": 0.... (dados complexos)
 \`\`\`
 
+**Variable:** \`vs\`
+\`\`\`json
+[
+  {
+    "id": "rank",
+    "l": "📊 Rankings"
+  },
+  {
+    "id": "table",
+    "l": "📋 Tabela"
+  },
+  {
+    "id": "greeks",
+    "l": "🔬 Gregas"
+  }
+]
+\`\`\`
+
+**rows**:
+\`\`\`
+[...st].sort(sortFn).slice(0,10);
+  let h=\`<div class="card"><h3>\${title}</h3><div style="max-height:300px;overflow:auto"><table><thead><tr>\`;
+  cols.forEach(c=>{h+=\`<th>\${c.h}</th>\`});
+  h+=\`</tr></thead><tbody>\`;
+  rows.forEach(r=>{h+=\`<tr>\`;cols.forEach(c=>{const v=c.fmt?c.fmt(r):(r[c.k]??'–');h+=\`<td class="\${c.cls?c.cls(r):''}">\${v}</td>\`});h+=\`</tr>\`});
+  return h+\`</tbody></table></div></div>\`}
+
+function renderRankings(){
+  if(cur==='AGG')return;
+  const st=D[cur].strikes;
+  let h='<div c... (dados complexos)
+\`\`\`
+
 ### bova11_rankings_pro_27mar_vs_30mar.html
 **D**:
 \`\`\`
 {"V1": {"name": "2 abr W1", "color": "red", "strikes": [{"s": 171.0, "snap": false, "c_last1": 8.12, "c_last2": 8.54, "cp_pct": 5.17, "p_last1": 0.73, "p_last2": 0.31, "pp_pct": -57.53, "co1": 225640, "co2": 220640, "dco": -5000, "po1": 226020, "po2": 263390, "dpo": 37370, "c_iv1": 34.7, "c_iv2": 29.95, "c_ivd": -4.75, "p_iv1": 35.65, "p_iv2": 33.02, "p_ivd": -2.63, "c_delta1": 0.94, "c_delta2": 0.98, "dc_delta": 0.04, "c_gamma1": 0.0246, "c_gamma2": 0.0129, "dc_gamma": -0.0117, "c_theta1": -0.1... (dados complexos)
+\`\`\`
+
+**Variable:** \`vs\`
+\`\`\`json
+[
+  {
+    "id": "rank",
+    "l": "📊 Rankings"
+  },
+  {
+    "id": "table",
+    "l": "📋 Tabela"
+  },
+  {
+    "id": "greeks",
+    "l": "🔬 Gregas"
+  }
+]
+\`\`\`
+
+**rows**:
+\`\`\`
+[...st].sort(sortFn).slice(0,10);
+  let h=\`<div class="card"><h3>\${title}</h3><div style="max-height:300px;overflow:auto"><table><thead><tr>\`;
+  cols.forEach(c=>{h+=\`<th>\${c.h}</th>\`});
+  h+=\`</tr></thead><tbody>\`;
+  rows.forEach(r=>{h+=\`<tr>\`;cols.forEach(c=>{const v=c.fmt?c.fmt(r):(r[c.k]??'–');h+=\`<td class="\${c.cls?c.cls(r):''}">\${v}</td>\`});h+=\`</tr>\`});
+  return h+\`</tbody></table></div></div>\`}
+
+function renderRankings(){
+  if(cur==='AGG')return;
+  const st=D[cur].strikes;
+  let h='<div c... (dados complexos)
 \`\`\`
 
 ### bova11_rankings_pro_2abr_vs_6abr.html
@@ -20246,10 +21555,96 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 ... [DADOS EXCESSIVOS TRUNCADOS]
 \`\`\`
 
+**sorted**:
+\`\`\`
+[...valid].sort((a, b) => {
+    const av = mode === 'abs' ? Math.abs(a[key]) : a[key]... (dados complexos)
+\`\`\`
+
+**tabs**:
+\`\`\`
+[\`<button class="tab \${cur === 'AGG' ? 'active' : ''}" data-k="AGG">Agregado</button>\`]... (dados complexos)
+\`\`\`
+
+**Variable:** \`views\`
+\`\`\`json
+[
+  {
+    "id": "summary",
+    "label": "Resumo"
+  },
+  {
+    "id": "table",
+    "label": "Tabela"
+  }
+]
+\`\`\`
+
+**topStrikeRows**:
+\`\`\`
+[...rows].sort((a, b) => (b.tv || 0) - (a.tv || 0)).slice(0, 6);
+  const strikeCards = topStrikeRows.map(row => {
+    const ivCall = cur === 'AGG' ? row.div_c : row.c_ivd;
+    return strikeCard(\`K\${row.s}\`, fI(row.tv), \`ΔVol \${row.dtv >= 0 ? '+' : ''}\${fI(row.dtv)} · ΔIV Call \${ivCall == null ? '–' : fP(ivCall)}\`, pc(row.dtv));
+  }).join('');
+
+  let summaryHtml = \`
+    <div class="summary-layout">
+      <section class="panel">
+        <div class="panel-head">
+          <div><div class="panel-kic... (dados complexos)
+\`\`\`
+
+**rows**:
+\`\`\`
+[...rowsForScope()].sort((a, b) => a.s - b.s);
+  let head = '';
+  let body = '';
+  if (cur === 'AGG') {
+    head = '<tr><th>Strike</th><th>OI Call D-1</th><th>OI Call D</th><th>ΔOI Call</th><th>OI Put D-1</th><th>OI Put D</th><th>ΔOI Put</th><th>Vol Call</th><th>Vol Put</th><th>ΔVol Total</th><th>ΔIV Call</th><th>ΔIV Put</th></tr>';
+    body = rows.map(row => \`
+      <tr class="\${Math.abs(row.s - SPOT) < 1.5 ? 'focus' : ''}">
+        <td>K\${row.s}</td>
+        <td>\${fI(row.co1)}</td><td>\${fI(row... (dados complexos)
+\`\`\`
+
 ### bova11_rankings_pro_30mar_vs_31mar.html
 **D**:
 \`\`\`
 {"V1": {"name": "2 abr W1", "color": "red", "strikes": [{"s": 176.0, "snap": false, "c_last1": 4.28, "c_last2": 7.8, "cp_pct": 82.24, "p_last1": 0.96, "p_last2": 0.12, "pp_pct": -87.5, "co1": 151660, "co2": 142850, "dco": -8810, "po1": 320450, "po2": 378490, "dpo": 58040, "c_iv1": 28.64, "c_iv2": null, "c_ivd": null, "p_iv1": 28.9, "p_iv2": 32.32, "p_ivd": 3.42, "c_delta1": 0.79, "c_delta2": 0.99, "dc_delta": 0.2, "c_gamma1": 0.067, "c_gamma2": 0.0092, "dc_gamma": -0.0578, "c_theta1": -0.2906, "... (dados complexos)
+\`\`\`
+
+**Variable:** \`vs\`
+\`\`\`json
+[
+  {
+    "id": "rank",
+    "l": "📊 Rankings"
+  },
+  {
+    "id": "table",
+    "l": "📋 Tabela"
+  },
+  {
+    "id": "greeks",
+    "l": "🔬 Gregas"
+  }
+]
+\`\`\`
+
+**rows**:
+\`\`\`
+[...st].sort(sortFn).slice(0,10);
+  let h=\`<div class="card"><h3>\${title}</h3><div style="max-height:300px;overflow:auto"><table><thead><tr>\`;
+  cols.forEach(c=>{h+=\`<th>\${c.h}</th>\`});
+  h+=\`</tr></thead><tbody>\`;
+  rows.forEach(r=>{h+=\`<tr>\`;cols.forEach(c=>{const v=c.fmt?c.fmt(r):(r[c.k]??'–');h+=\`<td class="\${c.cls?c.cls(r):''}">\${v}</td>\`});h+=\`</tr>\`});
+  return h+\`</tbody></table></div></div>\`}
+
+function renderRankings(){
+  if(cur==='AGG')return;
+  const st=D[cur].strikes;
+  let h='<div c... (dados complexos)
 \`\`\`
 
 ### bova11_rankings_pro_31mar_vs_1abr.html
@@ -20555,16 +21950,135 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 ... [DADOS EXCESSIVOS TRUNCADOS]
 \`\`\`
 
+**sorted**:
+\`\`\`
+[...valid].sort((a, b) => {
+    const av = mode === 'abs' ? Math.abs(a[key]) : a[key]... (dados complexos)
+\`\`\`
+
+**tabs**:
+\`\`\`
+[\`<button class="tab \${cur === 'AGG' ? 'active' : ''}" data-k="AGG">Agregado</button>\`]... (dados complexos)
+\`\`\`
+
+**Variable:** \`views\`
+\`\`\`json
+[
+  {
+    "id": "summary",
+    "label": "Resumo"
+  },
+  {
+    "id": "table",
+    "label": "Tabela"
+  }
+]
+\`\`\`
+
+**topStrikeRows**:
+\`\`\`
+[...rows].sort((a, b) => (b.tv || 0) - (a.tv || 0)).slice(0, 6);
+  const strikeCards = topStrikeRows.map(row => {
+    const ivCall = cur === 'AGG' ? row.div_c : row.c_ivd;
+    return strikeCard(\`K\${row.s}\`, fI(row.tv), \`ΔVol \${row.dtv >= 0 ? '+' : ''}\${fI(row.dtv)} · ΔIV Call \${ivCall == null ? '–' : fP(ivCall)}\`, pc(row.dtv));
+  }).join('');
+
+  let summaryHtml = \`
+    <div class="summary-layout">
+      <section class="panel">
+        <div class="panel-head">
+          <div><div class="panel-kic... (dados complexos)
+\`\`\`
+
+**rows**:
+\`\`\`
+[...rowsForScope()].sort((a, b) => a.s - b.s);
+  let head = '';
+  let body = '';
+  if (cur === 'AGG') {
+    head = '<tr><th>Strike</th><th>OI Call D-1</th><th>OI Call D</th><th>ΔOI Call</th><th>OI Put D-1</th><th>OI Put D</th><th>ΔOI Put</th><th>Vol Call</th><th>Vol Put</th><th>ΔVol Total</th><th>ΔIV Call</th><th>ΔIV Put</th></tr>';
+    body = rows.map(row => \`
+      <tr class="\${Math.abs(row.s - SPOT) < 1.5 ? 'focus' : ''}">
+        <td>K\${row.s}</td>
+        <td>\${fI(row.co1)}</td><td>\${fI(row... (dados complexos)
+\`\`\`
+
 ### bova11_rankings_pro_4mar_vs_5mar.html
 **D**:
 \`\`\`
 {"V1": {"name": "6 mar W1", "color": "red", "strikes": [{"s": 168.0, "snap": true, "c_last1": 9.31, "c_last2": 9.31, "cp_pct": 0.0, "p_last1": 0.08, "p_last2": 0.08, "pp_pct": 0.0, "co1": 6780, "co2": 6780, "dco": 0, "po1": 254840, "po2": 254840, "dpo": 0, "c_iv1": 50.15, "c_iv2": 50.15, "c_ivd": 0.0, "p_iv1": 49.27, "p_iv2": 49.27, "p_ivd": 0.0, "c_delta1": 1.0, "c_delta2": 1.0, "dc_delta": 0.0, "c_gamma1": 0.0001, "c_gamma2": 0.0001, "dc_gamma": 0.0, "c_theta1": -0.0996, "c_theta2": -0.0996, "... (dados complexos)
 \`\`\`
 
+**Variable:** \`vs\`
+\`\`\`json
+[
+  {
+    "id": "rank",
+    "l": "📊 Rankings"
+  },
+  {
+    "id": "table",
+    "l": "📋 Tabela"
+  },
+  {
+    "id": "greeks",
+    "l": "🔬 Gregas"
+  }
+]
+\`\`\`
+
+**rows**:
+\`\`\`
+[...st].sort(sortFn).slice(0,10);
+  let h=\`<div class="card"><h3>\${title}</h3><div style="max-height:300px;overflow:auto"><table><thead><tr>\`;
+  cols.forEach(c=>{h+=\`<th>\${c.h}</th>\`});
+  h+=\`</tr></thead><tbody>\`;
+  rows.forEach(r=>{h+=\`<tr>\`;cols.forEach(c=>{const v=c.fmt?c.fmt(r):(r[c.k]??'–');h+=\`<td class="\${c.cls?c.cls(r):''}">\${v}</td>\`});h+=\`</tr>\`});
+  return h+\`</tbody></table></div></div>\`}
+
+function renderRankings(){
+  if(cur==='AGG')return;
+  const st=D[cur].strikes;
+  let h='<div c... (dados complexos)
+\`\`\`
+
 ### bova11_rankings_pro_5mar_vs_6mar.html
 **D**:
 \`\`\`
 {"V1": {"name": "6 mar W1", "color": "red", "strikes": [{"s": 168.0, "snap": false, "c_last1": 9.31, "c_last2": 8.17, "cp_pct": -12.24, "p_last1": 0.08, "p_last2": 0.01, "pp_pct": -87.5, "co1": 6780, "co2": 13460, "dco": 6680, "po1": 254840, "po2": 374120, "dpo": 119280, "c_iv1": 50.15, "c_iv2": null, "c_ivd": null, "p_iv1": 49.27, "p_iv2": null, "p_ivd": null, "c_delta1": 1.0, "c_delta2": 1.0, "dc_delta": 0.0, "c_gamma1": 0.0001, "c_gamma2": 0.0, "dc_gamma": -0.0001, "c_theta1": -0.0996, "c_the... (dados complexos)
+\`\`\`
+
+**Variable:** \`vs\`
+\`\`\`json
+[
+  {
+    "id": "rank",
+    "l": "📊 Rankings"
+  },
+  {
+    "id": "table",
+    "l": "📋 Tabela"
+  },
+  {
+    "id": "greeks",
+    "l": "🔬 Gregas"
+  }
+]
+\`\`\`
+
+**rows**:
+\`\`\`
+[...st].sort(sortFn).slice(0,10);
+  let h=\`<div class="card"><h3>\${title}</h3><div style="max-height:300px;overflow:auto"><table><thead><tr>\`;
+  cols.forEach(c=>{h+=\`<th>\${c.h}</th>\`});
+  h+=\`</tr></thead><tbody>\`;
+  rows.forEach(r=>{h+=\`<tr>\`;cols.forEach(c=>{const v=c.fmt?c.fmt(r):(r[c.k]??'–');h+=\`<td class="\${c.cls?c.cls(r):''}">\${v}</td>\`});h+=\`</tr>\`});
+  return h+\`</tbody></table></div></div>\`}
+
+function renderRankings(){
+  if(cur==='AGG')return;
+  const st=D[cur].strikes;
+  let h='<div c... (dados complexos)
 \`\`\`
 
 ### bova11_rankings_pro_6abr_vs_2abr.html
@@ -20894,6 +22408,59 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "pv": 553290,
     "cv1": 1257550,
 ... [DADOS EXCESSIVOS TRUNCADOS]
+\`\`\`
+
+**sorted**:
+\`\`\`
+[...valid].sort((a, b) => {
+    const av = mode === 'abs' ? Math.abs(a[key]) : a[key]... (dados complexos)
+\`\`\`
+
+**tabs**:
+\`\`\`
+[\`<button class="tab \${cur === 'AGG' ? 'active' : ''}" data-k="AGG">Agregado</button>\`]... (dados complexos)
+\`\`\`
+
+**Variable:** \`views\`
+\`\`\`json
+[
+  {
+    "id": "summary",
+    "label": "Resumo"
+  },
+  {
+    "id": "table",
+    "label": "Tabela"
+  }
+]
+\`\`\`
+
+**topStrikeRows**:
+\`\`\`
+[...rows].sort((a, b) => (b.tv || 0) - (a.tv || 0)).slice(0, 6);
+  const strikeCards = topStrikeRows.map(row => {
+    const ivCall = cur === 'AGG' ? row.div_c : row.c_ivd;
+    return strikeCard(\`K\${row.s}\`, fI(row.tv), \`ΔVol \${row.dtv >= 0 ? '+' : ''}\${fI(row.dtv)} · ΔIV Call \${ivCall == null ? '–' : fP(ivCall)}\`, pc(row.dtv));
+  }).join('');
+
+  let summaryHtml = \`
+    <div class="summary-layout">
+      <section class="panel">
+        <div class="panel-head">
+          <div><div class="panel-kic... (dados complexos)
+\`\`\`
+
+**rows**:
+\`\`\`
+[...rowsForScope()].sort((a, b) => a.s - b.s);
+  let head = '';
+  let body = '';
+  if (cur === 'AGG') {
+    head = '<tr><th>Strike</th><th>OI Call D-1</th><th>OI Call D</th><th>ΔOI Call</th><th>OI Put D-1</th><th>OI Put D</th><th>ΔOI Put</th><th>Vol Call</th><th>Vol Put</th><th>ΔVol Total</th><th>ΔIV Call</th><th>ΔIV Put</th></tr>';
+    body = rows.map(row => \`
+      <tr class="\${Math.abs(row.s - SPOT) < 1.5 ? 'focus' : ''}">
+        <td>K\${row.s}</td>
+        <td>\${fI(row.co1)}</td><td>\${fI(row... (dados complexos)
 \`\`\`
 
 ### bova11_rankings_pro_6abr_vs_7abr.html
@@ -21231,10 +22798,96 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 ... [DADOS EXCESSIVOS TRUNCADOS]
 \`\`\`
 
+**sorted**:
+\`\`\`
+[...valid].sort((a, b) => {
+    const av = mode === 'abs' ? Math.abs(a[key]) : a[key]... (dados complexos)
+\`\`\`
+
+**tabs**:
+\`\`\`
+[\`<button class="tab \${cur === 'AGG' ? 'active' : ''}" data-k="AGG">Agregado</button>\`]... (dados complexos)
+\`\`\`
+
+**Variable:** \`views\`
+\`\`\`json
+[
+  {
+    "id": "summary",
+    "label": "Resumo"
+  },
+  {
+    "id": "table",
+    "label": "Tabela"
+  }
+]
+\`\`\`
+
+**topStrikeRows**:
+\`\`\`
+[...rows].sort((a, b) => (b.tv || 0) - (a.tv || 0)).slice(0, 6);
+  const strikeCards = topStrikeRows.map(row => {
+    const ivCall = cur === 'AGG' ? row.div_c : row.c_ivd;
+    return strikeCard(\`K\${row.s}\`, fI(row.tv), \`ΔVol \${row.dtv >= 0 ? '+' : ''}\${fI(row.dtv)} · ΔIV Call \${ivCall == null ? '–' : fP(ivCall)}\`, pc(row.dtv));
+  }).join('');
+
+  let summaryHtml = \`
+    <div class="summary-layout">
+      <section class="panel">
+        <div class="panel-head">
+          <div><div class="panel-kic... (dados complexos)
+\`\`\`
+
+**rows**:
+\`\`\`
+[...rowsForScope()].sort((a, b) => a.s - b.s);
+  let head = '';
+  let body = '';
+  if (cur === 'AGG') {
+    head = '<tr><th>Strike</th><th>OI Call D-1</th><th>OI Call D</th><th>ΔOI Call</th><th>OI Put D-1</th><th>OI Put D</th><th>ΔOI Put</th><th>Vol Call</th><th>Vol Put</th><th>ΔVol Total</th><th>ΔIV Call</th><th>ΔIV Put</th></tr>';
+    body = rows.map(row => \`
+      <tr class="\${Math.abs(row.s - SPOT) < 1.5 ? 'focus' : ''}">
+        <td>K\${row.s}</td>
+        <td>\${fI(row.co1)}</td><td>\${fI(row... (dados complexos)
+\`\`\`
+
 ### bova11_rankings_pro_6mar_vs_9mar.html
 **D**:
 \`\`\`
 {"V1": {"name": "13 mar W2", "color": "red", "strikes": [{"s": 170.0, "snap": false, "c_last1": 7.75, "c_last2": 8.71, "cp_pct": 12.39, "p_last1": 0.95, "p_last2": 0.5, "pp_pct": -47.37, "co1": 73340, "co2": 83240, "dco": 9900, "po1": 351650, "po2": 418680, "dpo": 67030, "c_iv1": 33.73, "c_iv2": 34.4, "c_ivd": 0.67, "p_iv1": 34.7, "p_iv2": 34.84, "p_ivd": 0.14, "c_delta1": 0.9, "c_delta2": 0.96, "dc_delta": 0.06, "c_gamma1": 0.0305, "c_gamma2": 0.0175, "dc_gamma": -0.013, "c_theta1": -0.1876, "c... (dados complexos)
+\`\`\`
+
+**Variable:** \`vs\`
+\`\`\`json
+[
+  {
+    "id": "rank",
+    "l": "📊 Rankings"
+  },
+  {
+    "id": "table",
+    "l": "📋 Tabela"
+  },
+  {
+    "id": "greeks",
+    "l": "🔬 Gregas"
+  }
+]
+\`\`\`
+
+**rows**:
+\`\`\`
+[...st].sort(sortFn).slice(0,10);
+  let h=\`<div class="card"><h3>\${title}</h3><div style="max-height:300px;overflow:auto"><table><thead><tr>\`;
+  cols.forEach(c=>{h+=\`<th>\${c.h}</th>\`});
+  h+=\`</tr></thead><tbody>\`;
+  rows.forEach(r=>{h+=\`<tr>\`;cols.forEach(c=>{const v=c.fmt?c.fmt(r):(r[c.k]??'–');h+=\`<td class="\${c.cls?c.cls(r):''}">\${v}</td>\`});h+=\`</tr>\`});
+  return h+\`</tbody></table></div></div>\`}
+
+function renderRankings(){
+  if(cur==='AGG')return;
+  const st=D[cur].strikes;
+  let h='<div c... (dados complexos)
 \`\`\`
 
 ### bova11_rankings_pro_7abr_vs_8abr.html
@@ -21543,6 +23196,59 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 ... [DADOS EXCESSIVOS TRUNCADOS]
 \`\`\`
 
+**sorted**:
+\`\`\`
+[...valid].sort((a, b) => {
+    const av = mode === 'abs' ? Math.abs(a[key]) : a[key]... (dados complexos)
+\`\`\`
+
+**tabs**:
+\`\`\`
+[\`<button class="tab \${cur === 'AGG' ? 'active' : ''}" data-k="AGG">Agregado</button>\`]... (dados complexos)
+\`\`\`
+
+**Variable:** \`views\`
+\`\`\`json
+[
+  {
+    "id": "summary",
+    "label": "Resumo"
+  },
+  {
+    "id": "table",
+    "label": "Tabela"
+  }
+]
+\`\`\`
+
+**topStrikeRows**:
+\`\`\`
+[...rows].sort((a, b) => (b.tv || 0) - (a.tv || 0)).slice(0, 6);
+  const strikeCards = topStrikeRows.map(row => {
+    const ivCall = cur === 'AGG' ? row.div_c : row.c_ivd;
+    return strikeCard(\`K\${row.s}\`, fI(row.tv), \`ΔVol \${row.dtv >= 0 ? '+' : ''}\${fI(row.dtv)} · ΔIV Call \${ivCall == null ? '–' : fP(ivCall)}\`, pc(row.dtv));
+  }).join('');
+
+  let summaryHtml = \`
+    <div class="summary-layout">
+      <section class="panel">
+        <div class="panel-head">
+          <div><div class="panel-kic... (dados complexos)
+\`\`\`
+
+**rows**:
+\`\`\`
+[...rowsForScope()].sort((a, b) => a.s - b.s);
+  let head = '';
+  let body = '';
+  if (cur === 'AGG') {
+    head = '<tr><th>Strike</th><th>OI Call D-1</th><th>OI Call D</th><th>ΔOI Call</th><th>OI Put D-1</th><th>OI Put D</th><th>ΔOI Put</th><th>Vol Call</th><th>Vol Put</th><th>ΔVol Total</th><th>ΔIV Call</th><th>ΔIV Put</th></tr>';
+    body = rows.map(row => \`
+      <tr class="\${Math.abs(row.s - SPOT) < 1.5 ? 'focus' : ''}">
+        <td>K\${row.s}</td>
+        <td>\${fI(row.co1)}</td><td>\${fI(row... (dados complexos)
+\`\`\`
+
 ### bova11_rankings_pro_8abr_vs_9abr.html
 **Variable:** \`D\`
 \`\`\`json
@@ -21841,6 +23547,59 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "po2": 2240060,
     "co1": 3583340
 ... [DADOS EXCESSIVOS TRUNCADOS]
+\`\`\`
+
+**sorted**:
+\`\`\`
+[...valid].sort((a, b) => {
+    const av = mode === 'abs' ? Math.abs(a[key]) : a[key]... (dados complexos)
+\`\`\`
+
+**tabs**:
+\`\`\`
+[\`<button class="tab \${cur === 'AGG' ? 'active' : ''}" data-k="AGG">Agregado</button>\`]... (dados complexos)
+\`\`\`
+
+**Variable:** \`views\`
+\`\`\`json
+[
+  {
+    "id": "summary",
+    "label": "Resumo"
+  },
+  {
+    "id": "table",
+    "label": "Tabela"
+  }
+]
+\`\`\`
+
+**topStrikeRows**:
+\`\`\`
+[...rows].sort((a, b) => (b.tv || 0) - (a.tv || 0)).slice(0, 6);
+  const strikeCards = topStrikeRows.map(row => {
+    const ivCall = cur === 'AGG' ? row.div_c : row.c_ivd;
+    return strikeCard(\`K\${row.s}\`, fI(row.tv), \`ΔVol \${row.dtv >= 0 ? '+' : ''}\${fI(row.dtv)} · ΔIV Call \${ivCall == null ? '–' : fP(ivCall)}\`, pc(row.dtv));
+  }).join('');
+
+  let summaryHtml = \`
+    <div class="summary-layout">
+      <section class="panel">
+        <div class="panel-head">
+          <div><div class="panel-kic... (dados complexos)
+\`\`\`
+
+**rows**:
+\`\`\`
+[...rowsForScope()].sort((a, b) => a.s - b.s);
+  let head = '';
+  let body = '';
+  if (cur === 'AGG') {
+    head = '<tr><th>Strike</th><th>OI Call D-1</th><th>OI Call D</th><th>ΔOI Call</th><th>OI Put D-1</th><th>OI Put D</th><th>ΔOI Put</th><th>Vol Call</th><th>Vol Put</th><th>ΔVol Total</th><th>ΔIV Call</th><th>ΔIV Put</th></tr>';
+    body = rows.map(row => \`
+      <tr class="\${Math.abs(row.s - SPOT) < 1.5 ? 'focus' : ''}">
+        <td>K\${row.s}</td>
+        <td>\${fI(row.co1)}</td><td>\${fI(row... (dados complexos)
 \`\`\`
 
 ### bova11_rankings_pro_9abr_vs_10abr.html
@@ -22179,13 +23938,289 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 ... [DADOS EXCESSIVOS TRUNCADOS]
 \`\`\`
 
+**sorted**:
+\`\`\`
+[...valid].sort((a, b) => {
+    const av = mode === 'abs' ? Math.abs(a[key]) : a[key]... (dados complexos)
+\`\`\`
+
+**tabs**:
+\`\`\`
+[\`<button class="tab \${cur === 'AGG' ? 'active' : ''}" data-k="AGG">Agregado</button>\`]... (dados complexos)
+\`\`\`
+
+**Variable:** \`views\`
+\`\`\`json
+[
+  {
+    "id": "summary",
+    "label": "Resumo"
+  },
+  {
+    "id": "table",
+    "label": "Tabela"
+  }
+]
+\`\`\`
+
+**topStrikeRows**:
+\`\`\`
+[...rows].sort((a, b) => (b.tv || 0) - (a.tv || 0)).slice(0, 6);
+  const strikeCards = topStrikeRows.map(row => {
+    const ivCall = cur === 'AGG' ? row.div_c : row.c_ivd;
+    return strikeCard(\`K\${row.s}\`, fI(row.tv), \`ΔVol \${row.dtv >= 0 ? '+' : ''}\${fI(row.dtv)} · ΔIV Call \${ivCall == null ? '–' : fP(ivCall)}\`, pc(row.dtv));
+  }).join('');
+
+  let summaryHtml = \`
+    <div class="summary-layout">
+      <section class="panel">
+        <div class="panel-head">
+          <div><div class="panel-kic... (dados complexos)
+\`\`\`
+
+**rows**:
+\`\`\`
+[...rowsForScope()].sort((a, b) => a.s - b.s);
+  let head = '';
+  let body = '';
+  if (cur === 'AGG') {
+    head = '<tr><th>Strike</th><th>OI Call D-1</th><th>OI Call D</th><th>ΔOI Call</th><th>OI Put D-1</th><th>OI Put D</th><th>ΔOI Put</th><th>Vol Call</th><th>Vol Put</th><th>ΔVol Total</th><th>ΔIV Call</th><th>ΔIV Put</th></tr>';
+    body = rows.map(row => \`
+      <tr class="\${Math.abs(row.s - SPOT) < 1.5 ? 'focus' : ''}">
+        <td>K\${row.s}</td>
+        <td>\${fI(row.co1)}</td><td>\${fI(row... (dados complexos)
+\`\`\`
+
 ### bova11_rankings_pro_9mar_vs_10mar.html
 **D**:
 \`\`\`
 {"V1": {"name": "13 mar W2", "color": "red", "strikes": [{"s": 172.0, "snap": false, "c_last1": 5.95, "c_last2": 8.31, "cp_pct": 39.66, "p_last1": 0.95, "p_last2": 0.36, "pp_pct": -62.11, "co1": 144650, "co2": 164880, "dco": 20230, "po1": 305450, "po2": 326740, "dpo": 21290, "c_iv1": 32.56, "c_iv2": null, "c_ivd": null, "p_iv1": 33.0, "p_iv2": 34.28, "p_ivd": 1.28, "c_delta1": 0.91, "c_delta2": 0.97, "dc_delta": 0.06, "c_gamma1": 0.0326, "c_gamma2": 0.0132, "dc_gamma": -0.0194, "c_theta1": -0.19... (dados complexos)
 \`\`\`
 
+**Variable:** \`vs\`
+\`\`\`json
+[
+  {
+    "id": "rank",
+    "l": "📊 Rankings"
+  },
+  {
+    "id": "table",
+    "l": "📋 Tabela"
+  },
+  {
+    "id": "greeks",
+    "l": "🔬 Gregas"
+  }
+]
+\`\`\`
+
+**rows**:
+\`\`\`
+[...st].sort(sortFn).slice(0,10);
+  let h=\`<div class="card"><h3>\${title}</h3><div style="max-height:300px;overflow:auto"><table><thead><tr>\`;
+  cols.forEach(c=>{h+=\`<th>\${c.h}</th>\`});
+  h+=\`</tr></thead><tbody>\`;
+  rows.forEach(r=>{h+=\`<tr>\`;cols.forEach(c=>{const v=c.fmt?c.fmt(r):(r[c.k]??'–');h+=\`<td class="\${c.cls?c.cls(r):''}">\${v}</td>\`});h+=\`</tr>\`});
+  return h+\`</tbody></table></div></div>\`}
+
+function renderRankings(){
+  if(cur==='AGG')return;
+  const st=D[cur].strikes;
+  let h='<div c... (dados complexos)
+\`\`\`
+
 ### bova11_skew_history.html
+**Variable:** \`allData\`
+\`\`\`json
+[
+  {
+    "label": "3/Mar",
+    "date_key": "03/mar",
+    "call_iv": 28.28,
+    "put_iv": 26.02,
+    "skew": -2.25
+  },
+  {
+    "label": "4/Mar",
+    "date_key": "04/mar",
+    "call_iv": 24.58,
+    "put_iv": 25.01,
+    "skew": 0.42
+  },
+  {
+    "label": "5/Mar",
+    "date_key": "05/mar",
+    "call_iv": 29.92,
+    "put_iv": 29.71,
+    "skew": -0.2
+  },
+  {
+    "label": "6/Mar",
+    "date_key": "06/mar",
+    "call_iv": 25.4,
+    "put_iv": 26.5,
+    "skew": 1.1
+  },
+  {
+    "label": "9/Mar",
+    "date_key": "09/mar",
+    "call_iv": 25.31,
+    "put_iv": 26.7,
+    "skew": 1.38
+  },
+  {
+    "label": "10/Mar",
+    "date_key": "10/mar",
+    "call_iv": 23.28,
+    "put_iv": 25.79,
+    "skew": 2.51
+  },
+  {
+    "label": "11/Mar",
+    "date_key": "11/mar",
+    "call_iv": 22.2,
+    "put_iv": 27.39,
+    "skew": 5.19
+  },
+  {
+    "label": "12/Mar",
+    "date_key": "12/mar",
+    "call_iv": 32.75,
+    "put_iv": 29.33,
+    "skew": -3.43
+  },
+  {
+    "label": "13/Mar",
+    "date_key": "13/mar",
+    "call_iv": 27.36,
+    "put_iv": 27.64,
+    "skew": 0.28
+  },
+  {
+    "label": "16/Mar",
+    "date_key": "16/mar",
+    "call_iv": 25.99,
+    "put_iv": 26.55,
+    "skew": 0.56
+  },
+  {
+    "label": "17/Mar",
+    "date_key": "17/mar",
+    "call_iv": 25.13,
+    "put_iv": 26.06,
+    "skew": 0.93
+  },
+  {
+    "label": "18/Mar",
+    "date_key": "18/mar",
+    "call_iv": 28.03,
+    "put_iv": 28.44,
+    "skew": 0.42
+  },
+  {
+    "label": "19/Mar",
+    "date_key": "19/mar",
+    "call_iv": 27.79,
+    "put_iv": 29.62,
+    "skew": 1.83
+  },
+  {
+    "label": "20/Mar",
+    "date_key": "20/mar",
+    "call_iv": 29.01,
+    "put_iv": 29.81,
+    "skew": 0.8
+  },
+  {
+    "label": "23/Mar",
+    "date_key": "23/mar",
+    "call_iv": 26.39,
+    "put_iv": 27.79,
+    "skew": 1.41
+  },
+  {
+    "label": "24/Mar",
+    "date_key": "24/mar",
+    "call_iv": 26.57,
+    "put_iv": 27.92,
+    "skew": 1.35
+  },
+  {
+    "label": "26/Mar",
+    "date_key": "26/mar",
+    "call_iv": 27.99,
+    "put_iv": 30.81,
+    "skew": 2.82
+  },
+  {
+    "label": "27/Mar",
+    "date_key": "27/mar",
+    "call_iv": 29.74,
+    "put_iv": 30.43,
+    "skew": 0.69
+  },
+  {
+    "label": "30/Mar",
+    "date_key": "30/mar",
+    "call_iv": 27.47,
+    "put_iv": 29.02,
+    "skew": 1.55
+  },
+  {
+    "label": "31/Mar",
+    "date_key": "31/mar",
+    "call_iv": 21.38,
+    "put_iv": 30.49,
+    "skew": 9.1
+  },
+  {
+    "label": "1/Abr",
+    "date_key": "01/abr",
+    "call_iv": 25.75,
+    "put_iv": 28.53,
+    "skew": 2.78
+  },
+  {
+    "label": "2/Abr",
+    "date_key": "02/abr",
+    "call_iv": 23.64,
+    "put_iv": 26.97,
+    "skew": 3.33
+  },
+  {
+    "label": "6/Abr",
+    "date_key": "06/abr",
+    "call_iv": 24.61,
+    "put_iv": 27.86,
+    "skew": 3.24
+  },
+  {
+    "label": "7/Abr",
+    "date_key": "07/abr",
+    "call_iv": 26.17,
+    "put_iv": 27.29,
+    "skew": 1.13
+  },
+  {
+    "label": "8/Abr",
+    "date_key": "08/abr",
+    "call_iv": 20.5,
+    "put_iv": 25.29,
+    "skew": 4.78
+  },
+  {
+    "label": "9/Abr",
+    "date_key": "09/abr",
+    "call_iv
+... [DADOS EXCESSIVOS TRUNCADOS]
+\`\`\`
+
+**Variable:** \`charts\`
+\`\`\`json
+{}
+\`\`\`
+
 **Variable:** \`MONTHS_PT\`
 \`\`\`json
 {
@@ -22222,6 +24257,21 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 ]
 \`\`\`
 
+**Variable:** \`keyToLabel\`
+\`\`\`json
+{}
+\`\`\`
+
+**Variable:** \`labelToKey\`
+\`\`\`json
+{}
+\`\`\`
+
+**Variable:** \`months\`
+\`\`\`json
+{}
+\`\`\`
+
 **Variable:** \`DOW\`
 \`\`\`json
 [
@@ -22233,6 +24283,16 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
   "S",
   "S"
 ]
+\`\`\`
+
+**Variable:** \`dayMap\`
+\`\`\`json
+{}
+\`\`\`
+
+**Variable:** \`lastTableData\`
+\`\`\`json
+[]
 \`\`\`
 
 ### bova11_skew_prediction.html
@@ -22463,12 +24523,40 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "bear_fallback_would_trigger_count": 10
   },
   "bear_fallback_would_trigger_count": 10,
-  "backtest_status": "OK (32 pregões)",
+  "backtest_status": "OK manual+mercado (32 pregões)",
   "conflicts_raw": 4,
   "conflicts_resolved_to_bull": 4,
   "conflicts_resolved_to_bear": 0,
   "records": 29
 }
+\`\`\`
+
+**reversed**:
+\`\`\`
+[...IV_SKEW_ROWS].reverse();
+            const visible = showAll ? reversed : reversed.slice(0, DEFAULT_ROWS);
+
+            tbody.innerHTML = visible.map(r => \`
+                <tr>
+                    <td>\${r.date}</td>
+                    <td>\${fmt(r.iv_call)}%</td>
+                    <td>\${fmt(r.iv_put)}%</td>
+                    <td>\${fmtSigned(r.skew, 4)}</td>
+                    <td>\${fmtSigned(r.delta_skew, 4)}</td>
+                    <td>\${fmtSigned(r.zscore, 2)}</td>
+                 ... (dados complexos)
+\`\`\`
+
+**metrics**:
+\`\`\`
+[
+                ['Componente 1 (W1*ΔSkew_norm_MMA)', fmtSigned(last.comp_1, 4)],
+                ['Componente 2 (W2*Z-Score)', fmtSigned(last.comp_2, 4)],
+                ['Componente 3 (W3*Aceleração)', fmtSigned(last.comp_3, 4)],
+                ['Sinal Base', fmtSigned(last.signal, 4)],
+                ['Fator Confiança VOL/OI', \`\${fmt(last.confidence, 2)}x\`],
+                ['Ajuste Direcional VOL/OI', fmtSigned(last.adjustment, 4)],
+                ['Sinal Final Ajustado', fmtSigned(last... (dados complexos)
 \`\`\`
 
 ### bova11_tex_dex_vex_10abr_vs_13abr.html
@@ -22499,9 +24587,9 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
       "tex_call": -73017480000.0,
       "tex_put": -40288280000.0,
       "tex_net": -113305760000.0,
-      "dex_call": 36284760.0,
-      "dex_put": -13596400.0,
-      "dex_net": 22688360.0,
+      "dex_call": 70501288.68,
+      "dex_put": -26417805.2,
+      "dex_net": 44083483.48,
       "vex_call": 6901988496000.0,
       "vex_put": 11018093200000.0,
       "vex_net": 17920081696000.0
@@ -22511,9 +24599,9 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
       "tex_call": -127720485000.0,
       "tex_put": -62160000000.0,
       "tex_net": -189880485000.0,
-      "dex_call": 60600110.0,
-      "dex_put": -22050000.0,
-      "dex_net": 38550110.0,
+      "dex_call": 117746013.73,
+      "dex_put": -42843150.0,
+      "dex_net": 74902863.73,
       "vex_call": 12664655900000.0,
       "vex_put": 17324790000000.0,
       "vex_net": 29989445900000.0
@@ -22523,9 +24611,9 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
       "tex_call": -112219232000.0,
       "tex_put": -45532749000.0,
       "tex_net": -157751981000.0,
-      "dex_call": 50948590.0,
-      "dex_put": -16973310.0,
-      "dex_net": 33975280.0,
+      "dex_call": 98993110.37,
+      "dex_put": -32979141.33,
+      "dex_net": 66013969.04,
       "vex_call": 11624946397000.0,
       "vex_put": 12958384215000.0,
       "vex_net": 24583330612000.0
@@ -22535,9 +24623,9 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
       "tex_call": -110644168000.0,
       "tex_put": -61262674000.0,
       "tex_net": -171906842000.0,
-      "dex_call": 47519840.0,
-      "dex_put": -24965980.0,
-      "dex_net": 22553860.0,
+      "dex_call": 92331049.12,
+      "dex_put": -48508899.14,
+      "dex_net": 43822149.98,
       "vex_call": 11924333256000.0,
       "vex_put": 17839152940000.0,
       "vex_net": 29763486196000.0
@@ -22547,9 +24635,9 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
       "tex_call": -188352000000.0,
       "tex_put": -92073000000.0,
       "tex_net": -280425000000.0,
-      "dex_call": 76680000.0,
-      "dex_put": -40890000.0,
-      "dex_net": 35790000.0,
+      "dex_call": 148989240.0,
+      "dex_put": -79449270.0,
+      "dex_net": 69539970.0,
       "vex_call": 21054276000000.0,
       "vex_put": 27487527000000.0,
       "vex_net": 48541803000000.0
@@ -22559,9 +24647,9 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
       "tex_call": -109789744000.0,
       "tex_put": -44160441000.0,
       "tex_net": -153950185000.0,
-      "dex_call": 43067040.0,
-      "dex_put": -20648170.0,
-      "dex_net": 22418870.0,
+      "dex_call": 83679258.72,
+      "dex_put": -40119394.31,
+      "dex_net": 43559864.41,
       "vex_call": 12690233872000.0,
       "vex_put": 13542335419000.0,
       "vex_net": 26232569291000.0
@@ -22571,9 +24659,9 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
       "tex_call": -163029048000.0,
       "tex_put": -37966662000.0,
       "tex_net": -200995710000.0,
-      "dex_call": 60859260.0,
-      "dex_put": -19382380.0,
-      "dex_net": 41476880.0,
+      "dex_call": 118249542.18,
+      "dex_put": -37659964.34,
+      "dex_net": 80589577.84,
       "vex_call": 19426091370000.0,
       "vex_put": 12009664690000.0,
       "vex_net": 31435756060000.0
@@ -22583,9 +24671,9 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
       "tex_call": -392940000000.0,
       "tex_put": -122470000000.0,
       "tex_net": -515410000000.0,
-      "dex_call": 139860000.0,
-      "dex_put": -68450000.0,
-      "dex_net": 71410000.0,
+      "dex_call": 271747980.0,
+      "dex_put": -132998350.0,
+      "dex_net": 138749630.0,
       "vex_call": 48150690000000.0,
       "vex_put": 40125575000000.0,
       "vex_net": 88276265000000.0
@@ -22595,12 +24683,12 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
       "tex_call": -167982192000.0,
       "tex_put": -84630000000.0,
       "tex_net": -252612192000.0,
-      "dex_call": 57136800.0,
-      "dex_put": -52000000.0,
-      "dex_net": 5136800.0,
+      "dex_call": 111016802.4,
+      "dex_put": -101036000.0,
+      "dex_net": 9980802.4,
       "vex_call": 21131093200000.0,
       "vex_put": 28847000000000.0,
-      "vex_net": 49978093200000
+      "v
 ... [DADOS EXCESSIVOS TRUNCADOS]
 \`\`\`
 
@@ -22636,9 +24724,9 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "tex_call": -7839720000.0,
     "tex_put": -647168000.0,
     "tex_net": -8486888000.0,
-    "dex_call": 5875200.0,
-    "dex_put": -101120.0,
-    "dex_net": 5774080.0,
+    "dex_call": 11415513.6,
+    "dex_put": -196476.16,
+    "dex_net": 11219037.44,
     "vex_call": 285638760000.0,
     "vex_put": 117989344000.0,
     "vex_net": 403628104000.0
@@ -22648,9 +24736,9 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "tex_call": -4418316000000.0,
     "tex_put": -1134644000000.0,
     "tex_net": -5552960000000.0,
-    "dex_call": 3011760000.0,
-    "dex_put": -198480000.0,
-    "dex_net": 2813280000.0,
+    "dex_call": 5851849680.0,
+    "dex_put": -385646640.0,
+    "dex_net": 5466203040.0,
     "vex_call": 204075576000000.0,
     "vex_put": 210699752000000.0,
     "vex_net": 414775328000000.0
@@ -22660,9 +24748,9 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "tex_call": -1369880000.0,
     "tex_put": -19086480000.0,
     "tex_net": -20456360000.0,
-    "dex_call": 837200.0,
-    "dex_put": -3895200.0,
-    "dex_net": -3058000.0,
+    "dex_call": 1626679.6,
+    "dex_put": -7568373.6,
+    "dex_net": -5941694.0,
     "vex_call": 76837480000.0,
     "vex_put": 3614702320000.0,
     "vex_net": 3691539800000.0
@@ -22672,9 +24760,9 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "tex_call": -128240000.0,
     "tex_put": -2280600000.0,
     "tex_net": -2408840000.0,
-    "dex_call": 69600.0,
-    "dex_put": -546000.0,
-    "dex_net": -476400.0,
+    "dex_call": 135232.8,
+    "dex_put": -1060878.0,
+    "dex_net": -925645.2,
     "vex_call": 8428560000.0,
     "vex_put": 442499400000.0,
     "vex_net": 450927960000.0
@@ -22684,9 +24772,9 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "tex_call": -805765753200.0,
     "tex_put": -453277148000.0,
     "tex_net": -1259042901200.0,
-    "dex_call": 421922134.0,
-    "dex_put": -90948840.0,
-    "dex_net": 330973294.0,
+    "dex_call": 819794706.36,
+    "dex_put": -176713596.12,
+    "dex_net": 643081110.24,
     "vex_call": 41926022129900.0,
     "vex_put": 67102102386000.0,
     "vex_net": 109028124515900.0
@@ -22696,9 +24784,9 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "tex_call": -1050001113000.0,
     "tex_put": -423167256000.0,
     "tex_net": -1473168369000.0,
-    "dex_call": 500042650.0,
-    "dex_put": -119823760.0,
-    "dex_net": 380218890.0,
+    "dex_call": 971582868.95,
+    "dex_put": -232817565.68,
+    "dex_net": 738765303.27,
     "vex_call": 70825184556000.0,
     "vex_put": 91419898352000.0,
     "vex_net": 162245082908000.0
@@ -22708,9 +24796,9 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "tex_call": -904530568000.0,
     "tex_put": -407114535900.0,
     "tex_net": -1311645103900.0,
-    "dex_call": 395649230.0,
-    "dex_put": -105271810.0,
-    "dex_net": 290377420.0,
+    "dex_call": 768746453.89,
+    "dex_put": -204543126.83,
+    "dex_net": 564203327.06,
     "vex_call": 66834146331000.0,
     "vex_put": 74369549044500.0,
     "vex_net": 141203695375500.0
@@ -22720,9 +24808,9 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "tex_call": -942641249000.0,
     "tex_put": -536385166000.0,
     "tex_net": -1479026415000.0,
-    "dex_call": 374602200.0,
-    "dex_put": -152601569.0,
-    "dex_net": 222000631.0,
+    "dex_call": 727852074.6,
+    "dex_put": -296504848.57,
+    "dex_net": 431347226.03,
     "vex_call": 68405893480000.0,
     "vex_put": 100788193966400.0,
     "vex_net": 169194087446400.0
@@ -22732,9 +24820,9 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "tex_call": -1752608598000.0,
     "tex_put": -767904143000.0,
     "tex_net": -2520512741000.0,
-    "dex_call": 639144980.0,
-    "dex_put": -238436880.0,
-    "dex_net": 400708100.0,
+    "dex_call": 1241858696.14,
+    "dex_put": -463282857.84,
+    "dex_net": 778575838.3,
     "vex_call": 131583214113000.0,
     "vex_put": 151369572266000.0,
     "vex_net": 282952786379000.0
@@ -22744,10 +24832,9 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
     "tex_call": -1123430457000.0,
     "tex_put": -602041140800.0,
     "tex_net": -1725471597800.0,
-    "dex_call": 363219050.0,
-    "dex_put": -158230940.0,
-    "dex_net": 204988110.0,
-    "vex_call": 7
+    "dex_call": 705734614.15,
+    "dex_put": -307442716.42,
+    "dex_net": 398291
 ... [DADOS EXCESSIVOS TRUNCADOS]
 \`\`\`
 
@@ -22874,28 +24961,28 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 **Variable:** \`DEX_CALL\`
 \`\`\`json
 [
-  5.8752,
-  3011.76,
-  0.8372,
-  0.0696,
-  421.9221,
-  500.0426,
-  395.6492,
-  374.6022,
-  639.145,
-  363.219,
-  3698.9187,
-  863.0618,
-  2421.4903,
-  701.8678,
-  242.2135,
-  294.9729,
-  197.6381,
-  163.7534,
-  443.7741,
-  281.28,
-  124.1054,
-  0.0012,
+  11.4155,
+  5851.8497,
+  1.6267,
+  0.1352,
+  819.7947,
+  971.5829,
+  768.7465,
+  727.8521,
+  1241.8587,
+  705.7346,
+  7186.999,
+  1676.929,
+  4704.9556,
+  1363.7292,
+  470.6209,
+  573.1324,
+  384.0108,
+  318.1728,
+  862.2531,
+  546.527,
+  241.1367,
+  0.0023,
   0.0,
   0.0
 ]
@@ -22904,27 +24991,27 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 **Variable:** \`DEX_PUT\`
 \`\`\`json
 [
-  -0.1011,
-  -198.48,
-  -3.8952,
-  -0.546,
-  -90.9488,
-  -119.8238,
-  -105.2718,
-  -152.6016,
-  -238.4369,
-  -158.2309,
-  -1773.9689,
-  -430.1539,
-  -1680.1128,
-  -192.0998,
-  -70.0665,
-  -87.0032,
-  -59.009,
-  -88.9127,
-  -271.2191,
-  -46.6834,
-  -795.6022,
+  -0.1965,
+  -385.6466,
+  -7.5684,
+  -1.0609,
+  -176.7136,
+  -232.8176,
+  -204.5431,
+  -296.5048,
+  -463.2829,
+  -307.4427,
+  -3446.8215,
+  -835.7889,
+  -3264.4592,
+  -373.2499,
+  -136.1392,
+  -169.0473,
+  -114.6545,
+  -172.7573,
+  -526.9788,
+  -90.7058,
+  -1545.855,
   0.0,
   0.0,
   0.0
@@ -22934,28 +25021,28 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 **Variable:** \`DEX_NET\`
 \`\`\`json
 [
-  5.7741,
-  2813.28,
-  -3.058,
-  -0.4764,
-  330.9733,
-  380.2189,
-  290.3774,
-  222.0006,
-  400.7081,
-  204.9881,
-  1924.9498,
-  432.9079,
-  741.3774,
-  509.768,
-  172.147,
-  207.9697,
-  138.6291,
-  74.8407,
-  172.555,
-  234.5966,
-  -671.4968,
-  0.0012,
+  11.219,
+  5466.203,
+  -5.9417,
+  -0.9256,
+  643.0811,
+  738.7653,
+  564.2033,
+  431.3472,
+  778.5758,
+  398.2919,
+  3740.1775,
+  841.14,
+  1440.4964,
+  990.4792,
+  334.4816,
+  404.0851,
+  269.3563,
+  145.4155,
+  335.2743,
+  455.8213,
+  -1304.7183,
+  0.0023,
   0.0,
   0.0
 ]
@@ -35444,13 +37531,15 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
         const resumoText = `## CONCEITOS E FÓRMULAS VITAIS (Para entendimento da IA)
 
 ### 1. Demanda Institucional e PDI (Módulo 17)
-- **ADI (Aggregate Demand Index)**: Mede o fluxo total (0.4*Skew + 0.3*Premium_Imbalance + 0.2*OI_Flow + 0.1*Vol_Imbalance). 
+- **ADI (Aggregate Demand Index)**: Mede o fluxo total \`0.4*ΔSPS + 0.3*PIC + 0.2*OIF + 0.1*VIC\`.
+  * SPS usa puts OTM abaixo de \`spot*0.99\`, calls OTM acima de \`spot*1.01\`, e \`spot_d\` / \`spot_d1\` corretos por dia.
+  * PIC/VIC/OIF usam a massa combinada \`D + D-1\` no denominador para manter os ratios na escala interpretável.
   * > +0.02 = Puts demand, Hedging (Bearish/Proteção).
   * < -0.02 = Calls demand, Risk-on (Bullish).
 - **PDI (Put Demand Index)**: \`ΔSkew * ΔIV_ATM\`. Avalia a aceleração na demanda por proteção.
   * Hedge: Puts em demanda + IV subindo (medo agudo).
   * Defensive: Puts em demanda mas IV caindo.
-- **IDS (Institutional Demand Score)**: Z-score integrado de 7 variáveis (Skew, Premium, OI, IV, GEX, Charm, Vanna). \`> +0.5 = Bear, < -0.5 = Bull\`.
+- **IDS (Institutional Demand Score)**: Z-score robusto integrado de 7 variáveis (Skew, Premium, OI, IV, GEX, Charm, Vanna), com clipping de extremos, cobertura mínima e renormalização dos pesos ativos quando IV estiver ausente. \`> +0.5 = Bear, < -0.5 = Bull\`.
 - **DFP (Delta Flow Proxy)**: Proxy do Delta-adjusted flow em Notional Net.
 
 ### 2. Max Pain e Gravitação (Módulos 11 e 12)
@@ -35463,14 +37552,15 @@ Ele contém os dados extraídos de todos os relatórios processados hoje, bem co
 
 ### 3. Convexidade e Gregos (Módulos 4 e 7 - GEX, Vanna, Charm, TEX, DEX, VEX)
 - **GEX (Gamma Exposure)**: Exposição de Gamma líquida dos Dealers. 
+  * Fórmula canônica: \`GEX = gamma * OI * spot² / 100\`, calls positivas e puts negativas.
   * GEX Positivo (>0): Dealers vendem na alta, compram na baixa. Comprime a volatilidade e consolida o mercado.
   * GEX Negativo (<0): Dealers compram na alta, vendem na baixa. Aumenta a volatilidade e gera "squeezes".
   * **GEX Flip**: Preço exato onde o GEX muda de sinal (regime de volatilidade inverte).
-- **DEX (Delta Exposure)**: Exposição direcional por strike. Delta agrupado projeta "Walls".
+- **DEX (Delta Exposure)**: \`delta * OI * spot\`, usando \`put_delta\` assinado. Delta agrupado projeta "Walls".
 - **VEX (Vega Exposure)**: Exposição de volatilidade a variações de IV.
 - **TEX (Theta Exposure)**: Fluxo de dinheiro diário por decaimento de tempo.
-- **Vanna**: Mudança de Delta em função da Volatilidade. Mede risco não-linear direcional.
-- **Charm**: Mudança de Delta em função do Tempo. Causa o "Charm rally" em que puts expiram worthless. Vanna + Charm = Ventos favoráveis (Tailwinds) do Gamma.
+- **Vanna**: Mudança de Delta em função da Volatilidade. A decomposição atual usa aproximação Black-Scholes local por \`spot\`, \`strike\`, \`IV\`, \`DTE\` e \`r=0\`.
+- **Charm**: Mudança de Delta em função do Tempo. Agora é separado explicitamente do residual; a parte não explicada pelos drivers locais fica em **Residual**.
 
 ### 4. Trade Score Institucional (Módulo 5 e 6)
 - Avalia cada Opção listada em vários eixos (Liquidez, OI Edge, Vol Edge, GEX Imbalance, Delta/Teta, Distância do Max Pain).
