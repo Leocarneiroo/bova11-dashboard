@@ -1,326 +1,648 @@
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BOVA11 - Arquivos (IA)</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root { --bg: #0d1117; --bg2: #161b22; --border: #30363d; --text: #c9d1d9; --blue: #58a6ff; --green: #238636; }
-        [data-theme="light"] { --bg: #f6f8fa; --bg2: #ffffff; --border: #d0d7de; --text: #24292f; --blue: #0969da; --green: #1a7f37; }
-
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); }
-
-        .shell { display: flex; flex-direction: column; height: 100vh; }
-        .hdr { background: var(--bg2); padding: 20px; border-bottom: 1px solid var(--border); }
-        .hdr h1 { font-size: 1.5em; margin-bottom: 8px; }
-        .hdr p { color: #8b949e; font-size: 0.9em; }
-        [data-theme="light"] .hdr p { color: #57606a; }
-        .theme-toggle {
-            position: fixed;
-            top: 12px;
-            right: 16px;
-            z-index: 9999;
-            background: var(--bg2);
-            border: 1px solid var(--border);
-            color: var(--text);
-            border-radius: 8px;
-            padding: 6px 12px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            line-height: 1;
-            transition: all 0.2s ease;
-        }
-        .theme-toggle:hover { border-color: var(--blue); color: var(--blue); }
-
-        .content-wrapper { display: flex; flex: 1; overflow: hidden; gap: 1px; background: var(--border); }
-
-        .sidebar { background: var(--bg2); width: 280px; padding: 16px; overflow-y: auto; border-right: 1px solid var(--border); }
-        .sidebar-title { font-weight: bold; font-size: 0.95em; color: var(--text); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-
-        .file-item { padding: 10px 12px; margin-bottom: 6px; border-radius: 6px; cursor: pointer; color: #8b949e; transition: all 0.2s; }
-        .file-item:hover { background: var(--bg); color: var(--text); }
-        .file-item.active { background: var(--blue); color: black; font-weight: bold; }
-
-        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
-
-        .toolbar { padding: 16px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; flex-wrap: wrap; }
-        .btn { display: inline-block; padding: 8px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; border: none; font-size: 0.85em; transition: all 0.2s; white-space: nowrap; }
-        .btn-primary { background: var(--blue); color: black; }
-        .btn-primary:hover { opacity: 0.9; }
-        .btn-secondary { background: var(--green); color: white; }
-        .btn-secondary:hover { opacity: 0.9; }
-        .btn-tertiary { background: var(--bg2); color: var(--text); border: 1px solid var(--border); }
-        .btn-tertiary:hover { background: var(--border); }
-
-        .viewer-wrapper { flex: 1; overflow-y: auto; padding: 24px; line-height: 1.6; }
-        .viewer-wrapper h1 { font-size: 1.8em; margin-bottom: 12px; color: var(--text); }
-        .viewer-wrapper h2 { font-size: 1.3em; margin-top: 24px; margin-bottom: 12px; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
-        .viewer-wrapper h3 { font-size: 1.1em; margin-top: 16px; margin-bottom: 8px; color: var(--blue); }
-        .viewer-wrapper p { margin-bottom: 12px; color: var(--text); }
-        .viewer-wrapper strong { color: var(--text); }
-        .viewer-wrapper code { background: var(--bg2); padding: 2px 6px; border-radius: 3px; font-family: Monaco, monospace; font-size: 0.9em; }
-        .viewer-wrapper pre { background: var(--bg2); padding: 12px; border-radius: 6px; overflow-x: auto; border: 1px solid var(--border); margin: 12px 0; }
-        .viewer-wrapper pre code { background: none; padding: 0; }
-        .viewer-wrapper hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
-        .viewer-wrapper ul, .viewer-wrapper ol { margin-left: 20px; margin-bottom: 12px; }
-        .viewer-wrapper li { margin-bottom: 6px; }
-
-        .status-msg { padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; font-size: 0.9em; }
-        .status-info { background: rgba(88, 166, 255, 0.1); color: var(--blue); border: 1px solid var(--blue); }
-
-        @media (max-width: 768px) {
-            .content-wrapper { flex-direction: column; }
-            .sidebar { width: 100%; max-height: 140px; border-right: none; border-bottom: 1px solid var(--border); }
-            .main-content { width: 100%; }
-
-            .toolbar { flex-direction: column; }
-            .btn { width: 100%; }
-
-            .viewer-wrapper { padding: 16px; }
-            .viewer-wrapper h1 { font-size: 1.3em; }
-            .viewer-wrapper h2 { font-size: 1.1em; }
-
-            .hdr { padding: 16px; }
-            .hdr h1 { font-size: 1.2em; margin-bottom: 6px; }
-            .hdr p { font-size: 0.85em; }
-
-            .sidebar-title { margin-bottom: 10px; padding-bottom: 8px; font-size: 0.9em; }
-            .file-item { padding: 8px 10px; margin-bottom: 4px; font-size: 0.9em; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BOVA11 - Arquivos</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --surface: #ffffff;
+      --surface-2: #eef3f8;
+      --border: #d8e0e8;
+      --text: #111827;
+      --muted: #64748b;
+      --soft: #94a3b8;
+      --accent: #2563eb;
+      --accent-2: #0f766e;
+      --danger: #b42318;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    [data-theme="dark"] {
+      --bg: #0f141b;
+      --surface: #151c25;
+      --surface-2: #1b2531;
+      --border: #2a3544;
+      --text: #e5edf6;
+      --muted: #a2adbb;
+      --soft: #748196;
+      --accent: #6ea8ff;
+      --accent-2: #5eead4;
+      --danger: #f87171;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      overflow: hidden;
+    }
+    button { font: inherit; }
+    .shell {
+      display: grid;
+      grid-template-columns: minmax(230px, 280px) 1fr;
+      height: 100dvh;
+      min-height: 0;
+    }
+    .sidebar {
+      border-right: 1px solid var(--border);
+      background: var(--surface);
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .side-head {
+      padding: 22px 18px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .kicker {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      color: var(--soft);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    h1, h2, h3, p { margin: 0; }
+    h1 {
+      font-size: 1.22rem;
+      line-height: 1.12;
+      letter-spacing: -0.03em;
+    }
+    .side-head p {
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.45;
+      margin-top: 8px;
+    }
+    .file-list {
+      padding: 12px;
+      overflow: auto;
+      min-height: 0;
+      display: grid;
+      gap: 6px;
+    }
+    .file-btn {
+      width: 100%;
+      text-align: left;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text);
+      border-radius: 8px;
+      padding: 10px 11px;
+      cursor: pointer;
+      display: grid;
+      gap: 4px;
+    }
+    .file-btn:hover { background: var(--surface-2); }
+    .file-btn.active {
+      border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+      background: color-mix(in srgb, var(--accent) 14%, transparent);
+    }
+    .file-date { font-weight: 700; font-size: 0.92rem; }
+    .file-meta { color: var(--muted); font-size: 0.74rem; font-family: var(--mono); }
+    .main {
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .top {
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      padding: 18px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .title-block {
+      min-width: 0;
+      display: grid;
+      gap: 8px;
+    }
+    .title-line {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    h2 {
+      font-size: 1.28rem;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+    }
+    .date-pill {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+    .scope {
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .btn {
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 9px 12px;
+      cursor: pointer;
+      min-height: 38px;
+    }
+    .btn:hover { border-color: var(--accent); color: var(--accent); }
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    [data-theme="dark"] .btn.primary { color: #07111f; }
+    .work {
+      overflow: auto;
+      min-height: 0;
+      padding: 22px;
+      display: grid;
+      gap: 20px;
+      align-content: start;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(120px, 1fr));
+      gap: 1px;
+      border: 1px solid var(--border);
+      background: var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .stat {
+      background: var(--surface);
+      padding: 15px;
+      display: grid;
+      gap: 5px;
+      min-width: 0;
+    }
+    .stat b {
+      font-size: 1.25rem;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .stat span {
+      font-family: var(--mono);
+      color: var(--muted);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+    .section {
+      display: grid;
+      gap: 10px;
+    }
+    .section h3 {
+      font-size: 0.96rem;
+      letter-spacing: -0.01em;
+    }
+    .table-wrap {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: auto;
+      background: var(--surface);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+      font-size: 0.83rem;
+    }
+    th {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      background: var(--surface-2);
+    }
+    tr:last-child td { border-bottom: none; }
+    code, pre {
+      font-family: var(--mono);
+      font-size: 0.76rem;
+    }
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin: 0;
+      max-height: 220px;
+      overflow: auto;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+    }
+    details {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      overflow: hidden;
+    }
+    summary {
+      cursor: pointer;
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--text);
+      font-weight: 700;
+    }
+    summary span {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    .detail-body {
+      padding: 0 14px 14px;
+      display: grid;
+      gap: 10px;
+    }
+    .notice {
+      border-left: 3px solid var(--accent);
+      background: color-mix(in srgb, var(--accent) 10%, transparent);
+      padding: 12px 14px;
+      color: var(--text);
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+    .notice.error {
+      border-left-color: var(--danger);
+      background: color-mix(in srgb, var(--danger) 12%, transparent);
+    }
+    .empty {
+      color: var(--muted);
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      padding: 18px;
+      background: var(--surface);
+    }
+    @media (max-width: 900px) {
+      body { overflow: auto; }
+      .shell {
+        grid-template-columns: 1fr;
+        height: auto;
+        min-height: 100dvh;
+      }
+      .sidebar {
+        min-height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      .file-list {
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(180px, 1fr);
+        overflow-x: auto;
+      }
+      .main { min-height: 0; }
+      .top { flex-direction: column; }
+      .actions { justify-content: flex-start; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .work { padding: 16px; }
+    }
+  </style>
 </head>
 <body>
-    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Alternar tema">◐</button>
-    <div class="shell">
-        <div class="hdr">
-            <h1>📁 Arquivos BOVA11 (IA)</h1>
-            <p>Histórico consolidado de análises para uso com assistentes de IA</p>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="side-head">
+        <div class="kicker">BOVA11 Arquivos</div>
+        <h1>Contexto parseado para IA</h1>
+        <p>Histórico gerado a partir dos CSVs e HTMLs publicados no dashboard.</p>
+      </div>
+      <div class="file-list" id="file-list"></div>
+    </aside>
+
+    <main class="main">
+      <header class="top">
+        <div class="title-block">
+          <div class="title-line">
+            <h2 id="current-title">Carregando</h2>
+            <span class="date-pill" id="current-date">2026-04-21T01:41:39</span>
+          </div>
+          <p class="scope" id="scope-text">Run atual, com preview leve e arquivos completos disponíveis para cópia e download.</p>
         </div>
-
-        <div class="content-wrapper">
-            <div class="sidebar" id="sidebar">
-                <div class="sidebar-title">📅 Datas Disponíveis</div>
-                <div id="file-list"></div>
-            </div>
-
-            <div class="main-content">
-                <div class="toolbar">
-                    <button class="btn btn-primary" id="btn-copy">📋 Copiar para IA</button>
-                    <button class="btn btn-secondary" id="btn-dl">💾 Download MD</button>
-                    <button class="btn btn-tertiary" id="btn-toggle">👁 Ver Dados Completos</button>
-                </div>
-
-                <div class="viewer-wrapper">
-                    <div id="status-container"></div>
-                    <div id="viewer">Carregando...</div>
-                </div>
-            </div>
+        <div class="actions">
+          <button class="btn" id="theme-btn" type="button">Tema</button>
+          <button class="btn primary" id="copy-md" type="button">Copiar MD</button>
+          <button class="btn" id="download-md" type="button">Baixar MD</button>
+          <button class="btn" id="download-json" type="button">Baixar JSON</button>
         </div>
-    </div>
+      </header>
 
-	    <script>
-	        const files = ["bova11_2026-04-20", "bova11_2026-04-17", "bova11_2026-04-16", "bova11_2026-04-15", "bova11_2026-04-14", "bova11_2026-04-13", "bova11_2026-04-10", "bova11_2026-04-09", "bova11_2026-04-08", "bova11_2026-04-07", "bova11_2026-04-06", "bova11_2026-04-02", "bova11_2026-04-01", "bova11_2026-03-31", "bova11_2026-03-30", "bova11_2026-03-27"];
-	        const embeddedFirstFile = files[0];
-	        // Importante: nao embedamos o markdown completo no HTML (pode ficar enorme).
-	        // O conteudo completo e carregado via fetch de ../arquivos/<arquivo>.md.
-	        const embeddedFullText = `# Arquivos BOVA11 (IA)
+      <section class="work">
+        <div id="notice"></div>
+        <div class="stats" id="stats"></div>
+        <section class="section">
+          <h3>CSVs do Run</h3>
+          <div id="csv-preview"></div>
+        </section>
+        <section class="section">
+          <h3>HTMLs do Dashboard</h3>
+          <div id="html-preview"></div>
+        </section>
+        <section class="section">
+          <h3>Avisos</h3>
+          <div id="warnings"></div>
+        </section>
+      </section>
+    </main>
+  </div>
 
-Abra este HTML via servidor (GitHub Pages ou http.server) para carregar os .md do historico.
-`;
-	
-	        let currentFile = files[0];
-	        let isFullView = false;
-	        let fullText = '';
-	        let resumoText = `## CONCEITOS E FÓRMULAS VITAIS (Para entendimento da IA)
+  <script>
+    const state = {
+      manifest: null,
+      currentEntry: null,
+      currentPayload: null,
+      markdownCache: new Map()
+    };
 
-### 1. Demanda Institucional e PDI (Módulo 17)
-- **ADI (Aggregate Demand Index)**: Mede o fluxo total \`0.4*ΔSPS + 0.3*PIC + 0.2*OIF + 0.1*VIC\`.
-  * SPS usa puts OTM abaixo de \`spot*0.99\`, calls OTM acima de \`spot*1.01\`, e \`spot_d\` / \`spot_d1\` corretos por dia.
-  * PIC/VIC/OIF usam a massa combinada \`D + D-1\` no denominador para manter os ratios na escala interpretável.
-  * > +0.02 = Puts demand, Hedging (Bearish/Proteção).
-  * < -0.02 = Calls demand, Risk-on (Bullish).
-- **PDI (Put Demand Index)**: \`ΔSkew * ΔIV_ATM\`. Avalia a aceleração na demanda por proteção.
-  * Hedge: Puts em demanda + IV subindo (medo agudo).
-  * Defensive: Puts em demanda mas IV caindo.
-- **IDS (Institutional Demand Score)**: Z-score robusto integrado de 7 variáveis (Skew, Premium, OI, IV, GEX, Charm, Vanna), com clipping de extremos, cobertura mínima e renormalização dos pesos ativos quando IV estiver ausente. \`> +0.5 = Bear, < -0.5 = Bull\`.
-- **DFP (Delta Flow Proxy)**: Proxy do Delta-adjusted flow em Notional Net.
+    const fmt = new Intl.NumberFormat('pt-BR');
 
-### 2. Max Pain e Gravitação (Módulos 11 e 12)
-- **Max Pain**: Preço de máxima dor para lançadores de opções (onde menor \$ é pago em expiração). O preço tende a ser atraído pra cá perto do vencimento.
-- **Mapa Gravitacional (Convergência)**: Distância e alinhamento do Spot com 3 centros de gravidade:
-  * μOI = Ponto médio ponderado pelo Open Interest.
-  * μGEX = Ponto médio ponderado pelo Gamma Exposure.
-  * μDEX = Ponto médio ponderado pelo Delta Exposure.
-  * **Score de Convergência (0-100)**: Quanto mais alinhados os três, maior o poder gravitacional. > 75 = Risco centralizado e atração forte.
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
 
-### 3. Convexidade e Gregos (Módulos 4 e 7 - GEX, Vanna, Charm, TEX, DEX, VEX)
-- **GEX (Gamma Exposure)**: Exposição de Gamma líquida dos Dealers. 
-  * Fórmula canônica: \`GEX = gamma * OI * spot² / 100\`, calls positivas e puts negativas.
-  * GEX Positivo (>0): Dealers vendem na alta, compram na baixa. Comprime a volatilidade e consolida o mercado.
-  * GEX Negativo (<0): Dealers compram na alta, vendem na baixa. Aumenta a volatilidade e gera "squeezes".
-  * **GEX Flip**: Preço exato onde o GEX muda de sinal (regime de volatilidade inverte).
-- **DEX (Delta Exposure)**: \`delta * OI * spot\`, usando \`put_delta\` assinado. Delta agrupado projeta "Walls".
-- **VEX (Vega Exposure)**: Exposição de volatilidade a variações de IV.
-- **TEX (Theta Exposure)**: Fluxo de dinheiro diário por decaimento de tempo.
-- **Vanna**: Mudança de Delta em função da Volatilidade. A decomposição atual usa aproximação Black-Scholes local por \`spot\`, \`strike\`, \`IV\`, \`DTE\` e \`r=0\`.
-- **Charm**: Mudança de Delta em função do Tempo. Agora é separado explicitamente do residual; a parte não explicada pelos drivers locais fica em **Residual**.
+    function setNotice(message, isError = false) {
+      document.getElementById('notice').innerHTML = message
+        ? `<div class="notice ${isError ? 'error' : ''}">${message}</div>`
+        : '';
+    }
 
-### 4. Trade Score Institucional (Módulo 5 e 6)
-- Avalia cada Opção listada em vários eixos (Liquidez, OI Edge, Vol Edge, GEX Imbalance, Delta/Teta, Distância do Max Pain).
-- Gera o **Quality Score (0-100)**. Opções com score alto representam melhores "plays" de mercado, pois têm suporte do Market Maker.
-- Institucional Bias analisa o net pressure (comprado em call vs put) nos block trades da B3.
+    async function fetchJson(path) {
+      const res = await fetch(`${path}?ts=${Date.now()}`, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    }
 
-### 5. Prediction e Dinâmica de Skew (Módulos 8, 9, 10, 14, 16)
-- **IV Skew Signal v2**: Sinal composto por \`W1*ΔSkew_norm + W2*Z-Score + W3*Aceleração\`, com suavização por MMA.
-  * Agregação diária por vencimento usa \`peso = volume_real * fator_DTE\`.
-  * DTE curto é filtrado/penalizado para reduzir ruído de pin risk e microestrutura.
-  * VOL/OI gera fator de confiança (0.5x a 1.5x) e ajuste direcional (±0.10), diferenciando fluxo real de proteção vs lançamento.
-  * Convenção: \`Sinal > 0 = Bearish\` e \`Sinal < 0 = Bullish\`.
-- **Hunter Walls**: Agregações severas de volume intradiário. Indica onde "Predadores" agem e travam book.
-- **Evolução do GEX History**: O crescimento repentino num strike vira imã de preço.
-- **OI Stats**: Distribuição Lognormal das probabililidades.
-- **Bandas Reais de Volatilidade**: Modelos GARCH aplicados contra a IV. Se o spot atinge a banda superior do Garch e a IV contrai = Topo.
+    async function fetchText(path) {
+      const res = await fetch(`${path}?ts=${Date.now()}`, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.text();
+    }
 
----`;
-	        const cache = {};
-	        cache[embeddedFirstFile] = embeddedFullText;
-	
-	        function extractResumoFromMarkdown(md) {
-	            // Mirror python extrair_resumo(): capture from "## CONCEITOS..." until "## EXTRATO DE DADOS"
-	            const lines = String(md || '').split('\n');
-	            const out = [];
-	            let inConcepts = false;
-	            for (const line of lines) {
-	                if (line.includes('## CONCEITOS E FÓRMULAS VITAIS')) inConcepts = true;
-	                if (inConcepts && line.startsWith('## EXTRATO DE DADOS')) break;
-	                if (inConcepts) out.push(line);
-	            }
-	            return out.length ? out.join('\n') : 'Resumo não disponível';
-	        }
+    function renderFileList() {
+      const list = document.getElementById('file-list');
+      const files = state.manifest?.files || [];
+      if (!files.length) {
+        list.innerHTML = '<div class="empty">Nenhum artefato publicado em output/arquivos.</div>';
+        return;
+      }
+      list.innerHTML = files.map((entry, index) => `
+        <button class="file-btn ${index === 0 ? 'active' : ''}" type="button" data-id="${escapeHtml(entry.id)}">
+          <span class="file-date">${escapeHtml(entry.ref_date)}</span>
+          <span class="file-meta">${fmt.format(entry.summary?.csv_files || 0)} CSVs / ${fmt.format(entry.summary?.html_files || 0)} HTMLs</span>
+        </button>
+      `).join('');
+      list.querySelectorAll('.file-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          list.querySelectorAll('.file-btn').forEach(el => el.classList.remove('active'));
+          btn.classList.add('active');
+          selectEntry(btn.dataset.id);
+        });
+      });
+    }
 
-        // Renderizar markdown para HTML
-        function render(text) {
-            let html = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-            html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
-            html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
-            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-            html = html.replace(/```([a-z]*)\n([\s\S]*?)```/g, '<pre><code class="lang-$1">$2</code></pre>');
-            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-            html = html.replace(/^---$/gim, '<hr>');
-            html = html.replace(/^- (.*$)/gim, '<li>$1</li>');
-            html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
-            document.getElementById('viewer').innerHTML = html;
+    function stat(label, value) {
+      return `<div class="stat"><b>${escapeHtml(value)}</b><span>${escapeHtml(label)}</span></div>`;
+    }
+
+    function renderStats(payload) {
+      const s = payload.summary || {};
+      document.getElementById('stats').innerHTML = [
+        stat('CSVs', fmt.format(s.csv_files || 0)),
+        stat('Linhas CSV', fmt.format(s.csv_rows || 0)),
+        stat('HTMLs', fmt.format(s.html_files || 0)),
+        stat('Variáveis JS', fmt.format(s.html_variables || 0)),
+        stat('Avisos', fmt.format(s.warnings || 0))
+      ].join('');
+    }
+
+    function jsonPreview(value, limit = 2200) {
+      const text = JSON.stringify(value, null, 2) || '';
+      return escapeHtml(text.length > limit ? `${text.slice(0, limit)}\n...` : text);
+    }
+
+    function renderCsvPreview(payload) {
+      const files = payload.csv?.files || [];
+      if (!files.length) {
+        document.getElementById('csv-preview').innerHTML = '<div class="empty">Nenhum CSV encontrado para as tags deste run.</div>';
+        return;
+      }
+      document.getElementById('csv-preview').innerHTML = files.map(file => {
+        const rows = (file.rows || []).slice(0, 8);
+        return `
+          <details>
+            <summary>
+              ${escapeHtml(file.filename)}
+              <span>${escapeHtml(file.kind)} / ${fmt.format(file.summary?.rows || 0)} linhas</span>
+            </summary>
+            <div class="detail-body">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Vencimento</th>
+                      <th>Data</th>
+                      <th>Strikes</th>
+                      <th>OI Call</th>
+                      <th>OI Put</th>
+                      <th>Volume Call</th>
+                      <th>Volume Put</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>${escapeHtml(file.expiration)}</td>
+                      <td>${escapeHtml(file.tag)} (${escapeHtml(file.date_role)})</td>
+                      <td>${escapeHtml(file.summary?.strike_min)} - ${escapeHtml(file.summary?.strike_max)}</td>
+                      <td>${fmt.format(Math.round(file.summary?.call_oi_total || 0))}</td>
+                      <td>${fmt.format(Math.round(file.summary?.put_oi_total || 0))}</td>
+                      <td>${fmt.format(Math.round(file.summary?.call_volume_total || 0))}</td>
+                      <td>${fmt.format(Math.round(file.summary?.put_volume_total || 0))}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <pre>${jsonPreview(rows)}</pre>
+            </div>
+          </details>
+        `;
+      }).join('');
+    }
+
+    function renderHtmlPreview(payload) {
+      const files = payload.html?.files || [];
+      if (!files.length) {
+        document.getElementById('html-preview').innerHTML = '<div class="empty">Nenhum HTML foi parseado para este run.</div>';
+        return;
+      }
+      document.getElementById('html-preview').innerHTML = files.map(file => {
+        const variables = file.variables || [];
+        const varRows = variables.slice(0, 14).map(v => `
+          <tr>
+            <td><code>${escapeHtml(v.name)}</code></td>
+            <td>${escapeHtml(v.type)}</td>
+            <td>${escapeHtml(v.items ?? '-')}</td>
+            <td>${escapeHtml(v.parse_status)}</td>
+            <td>${fmt.format(v.raw_chars || 0)}</td>
+          </tr>
+        `).join('');
+        return `
+          <details>
+            <summary>
+              ${escapeHtml(file.filename)}
+              <span>${fmt.format(file.variable_count || 0)} variáveis</span>
+            </summary>
+            <div class="detail-body">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Variável</th>
+                      <th>Tipo</th>
+                      <th>Itens</th>
+                      <th>Status</th>
+                      <th>Chars</th>
+                    </tr>
+                  </thead>
+                  <tbody>${varRows || '<tr><td colspan="5">Sem variáveis extraídas.</td></tr>'}</tbody>
+                </table>
+              </div>
+              <pre>${jsonPreview(variables.slice(0, 5))}</pre>
+            </div>
+          </details>
+        `;
+      }).join('');
+    }
+
+    function renderWarnings(payload) {
+      const warnings = payload.warnings || [];
+      document.getElementById('warnings').innerHTML = warnings.length
+        ? `<pre>${escapeHtml(warnings.join('\n'))}</pre>`
+        : '<div class="empty">Nenhum aviso registrado neste artefato.</div>';
+    }
+
+    async function selectEntry(id) {
+      const entry = (state.manifest?.files || []).find(item => item.id === id);
+      if (!entry) return;
+      state.currentEntry = entry;
+      setNotice('');
+      try {
+        const payload = await fetchJson(entry.json_path);
+        state.currentPayload = payload;
+        document.getElementById('current-title').textContent = `Arquivos ${payload.metadata?.ref_date || entry.ref_date}`;
+        document.getElementById('current-date').textContent = payload.metadata?.generated_at || entry.generated_at || '';
+        document.getElementById('scope-text').textContent =
+          `Escopo: ${payload.metadata?.scope || 'run_atual'} / D ${payload.metadata?.ref_tag || '-'} / D-1 ${payload.metadata?.ref_tag_d1 || '-'}`;
+        renderStats(payload);
+        renderCsvPreview(payload);
+        renderHtmlPreview(payload);
+        renderWarnings(payload);
+      } catch (err) {
+        setNotice(`Não foi possível carregar ${escapeHtml(entry.json_path)}. Sirva a pasta output por HTTP ou use GitHub Pages.`, true);
+      }
+    }
+
+    async function copyMarkdown() {
+      if (!state.currentEntry) return;
+      const path = state.currentEntry.markdown_path;
+      try {
+        let text = state.markdownCache.get(path);
+        if (!text) {
+          text = await fetchText(path);
+          state.markdownCache.set(path, text);
         }
-
-        function updateStatus() {
-            const statusDiv = document.getElementById('status-container');
-            const viewMode = isFullView ? 'Dados Completos' : 'Resumo (Conceitos)';
-            statusDiv.innerHTML = `<div class="status-msg status-info">📄 ${currentFile} — ${viewMode}</div>`;
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const area = document.createElement('textarea');
+          area.value = text;
+          document.body.appendChild(area);
+          area.select();
+          document.execCommand('copy');
+          area.remove();
         }
+        setNotice('Markdown completo copiado.');
+      } catch (err) {
+        setNotice('Falha ao copiar o Markdown completo.', true);
+      }
+    }
 
-	        function showContent() {
-	            const content = isFullView ? fullText : resumoText;
-	            render(content);
-	            updateStatus();
-	        }
-	
-	        async function loadMarkdown(name) {
-	            if (cache[name]) return cache[name];
-	            // Prefer dynamic loading so all dates work without embedding massive payloads in the HTML.
-	            try {
-	                const url = `../arquivos/${encodeURIComponent(name)}.md?ts=${Date.now()}`;
-	                const res = await fetch(url, { cache: 'no-store' });
-	                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-	                const txt = await res.text();
-	                cache[name] = txt;
-	                return txt;
-	            } catch (e) {
-	                // Offline/file:// open often blocks fetch. Keep embedded content as fallback.
-	                if (name === embeddedFirstFile) return embeddedFullText;
-	                throw e;
-	            }
-	        }
-	
-	        async function selectFile(name) {
-	            currentFile = name;
-	            isFullView = false;
-	            document.getElementById('btn-toggle').textContent = '👁 Ver Dados Completos';
-	
-	            try {
-	                const txt = await loadMarkdown(name);
-	                fullText = txt;
-	                resumoText = extractResumoFromMarkdown(txt);
-	                showContent();
-	            } catch (e) {
-	                const statusDiv = document.getElementById('status-container');
-	                statusDiv.innerHTML =
-	                    `<div class="status-msg status-info">⚠️ Não foi possível carregar <strong>${name}</strong>. Para usar múltiplas datas, abra via GitHub Pages ou sirva a pasta localmente (ex.: <code>python3 -m http.server</code>).</div>`;
-	                // Keep previous content visible.
-	                updateStatus();
-	            }
-	        }
+    function download(path) {
+      if (!path) return;
+      const a = document.createElement('a');
+      a.href = path;
+      a.download = path.split('/').pop();
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
 
-        (function() {
-            try {
-                const saved = localStorage.getItem('bova11-theme');
-                if (saved === 'light' || saved === 'dark') {
-                    document.documentElement.setAttribute('data-theme', saved);
-                }
-            } catch (e) {}
-        })();
+    function applySavedTheme() {
+      try {
+        const saved = localStorage.getItem('bova11-theme');
+        if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
+        if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+      } catch (err) {}
+    }
 
-        function toggleTheme() {
-            const html = document.documentElement;
-            const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-theme', next);
-            try { localStorage.setItem('bova11-theme', next); } catch (e) {}
-        }
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem('bova11-theme', next); } catch (err) {}
+    }
 
-        // Preencher lista de datas
-        const fileList = document.getElementById('file-list');
-	        files.forEach((f, i) => {
-	            const div = document.createElement('div');
-	            div.className = 'file-item' + (i === 0 ? ' active' : '');
-	            div.textContent = f;
-	            div.onclick = () => {
-	                document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
-	                div.classList.add('active');
-	                selectFile(f);
-	            };
-	            fileList.appendChild(div);
-	        });
+    async function init() {
+      applySavedTheme();
+      document.getElementById('theme-btn').addEventListener('click', toggleTheme);
+      document.getElementById('copy-md').addEventListener('click', copyMarkdown);
+      document.getElementById('download-md').addEventListener('click', () => download(state.currentEntry?.markdown_path));
+      document.getElementById('download-json').addEventListener('click', () => download(state.currentEntry?.json_path));
 
-	        // Exibir conteúdo inicial
-	        selectFile(files[0]);
+      try {
+        state.manifest = await fetchJson('arquivos/manifest.json');
+        renderFileList();
+        const first = state.manifest.files?.[0];
+        if (first) await selectEntry(first.id);
+      } catch (err) {
+        setNotice('Manifest não encontrado em arquivos/manifest.json. Gere novamente o módulo Arquivos ou publique output/arquivos.', true);
+        document.getElementById('stats').innerHTML = '';
+        document.getElementById('csv-preview').innerHTML = '<div class="empty">Sem dados carregados.</div>';
+        document.getElementById('html-preview').innerHTML = '<div class="empty">Sem dados carregados.</div>';
+        document.getElementById('warnings').innerHTML = '<div class="empty">Sem dados carregados.</div>';
+      }
+    }
 
-        // Botão Copiar
-        document.getElementById('btn-copy').onclick = () => {
-            navigator.clipboard.writeText(fullText).then(() => {
-                const btn = document.getElementById('btn-copy');
-                const oldText = btn.textContent;
-                btn.textContent = '✓ Copiado!';
-                setTimeout(() => { btn.textContent = oldText; }, 2000);
-            });
-        };
-
-        // Botão Download
-        document.getElementById('btn-dl').onclick = () => {
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(new Blob([fullText], {type: "text/markdown"}));
-            a.download = currentFile + ".md";
-            a.click();
-        };
-
-        // Botão Toggle
-        document.getElementById('btn-toggle').onclick = () => {
-            isFullView = !isFullView;
-            const btn = document.getElementById('btn-toggle');
-            btn.textContent = isFullView ? '👁 Ver Resumo' : '👁 Ver Dados Completos';
-            showContent();
-        };
-    </script>
+    init();
+  </script>
 </body>
 </html>
