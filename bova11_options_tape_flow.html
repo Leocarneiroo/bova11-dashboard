@@ -4,41 +4,429 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BOVA11 Option Tape Flow</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-:root { --bg:#FAFAF8; --card:#fff; --text:#1A1A18; --muted:#6B6960; --border:#E5E1D8; }
-[data-theme="dark"] { --bg:#0d1117; --card:#161b22; --text:#c9d1d9; --muted:#8b949e; --border:#30363d; }
-body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:var(--bg); color:var(--text); }
-.wrap { max-width:900px; margin:0 auto; padding:48px 22px; }
-.box { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:28px; }
-.kicker { color:var(--muted); font-size:.82rem; text-transform:uppercase; font-weight:700; }
-h1 { margin:.35rem 0 1rem; font-size:2rem; }
-p { color:var(--muted); line-height:1.6; }
-code { color:var(--text); }
-#theme-toggle { position:fixed; top:14px; right:14px; z-index:10; border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:8px; padding:9px 11px; cursor:pointer; }
+:root {
+  --bg:#FAFAF8; --surface:#FFFFFF; --surface2:#F4F1EA; --text:#1A1A18; --muted:#6B6960;
+  --border:#E5E1D8; --green:#148A63; --red:#B33530; --gold:#B8720A; --blue:#2E6BBF;
+}
+[data-theme="dark"] {
+  --bg:#0d1117; --surface:#161b22; --surface2:#21262d; --text:#c9d1d9; --muted:#8b949e;
+  --border:#30363d; --green:#3fb950; --red:#f85149; --gold:#d29922; --blue:#58a6ff;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+#theme-toggle { position:fixed; top:14px; right:14px; z-index:20; border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:8px; padding:9px 11px; cursor:pointer; }
+.wrap { max-width:1420px; margin:0 auto; padding:34px 22px 50px; }
+.hero { display:flex; justify-content:space-between; gap:18px; align-items:flex-end; margin-bottom:22px; }
+.kicker { color:var(--muted); font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; font-weight:800; }
+h1 { margin:.35rem 0 .35rem; font-size:clamp(1.8rem, 3vw, 3rem); line-height:1.05; letter-spacing:0; }
+.sub { color:var(--muted); line-height:1.45; max-width:820px; }
+.badge { display:inline-flex; align-items:center; min-height:34px; padding:7px 11px; border:1px solid var(--border); border-radius:8px; background:var(--surface); font-weight:800; white-space:nowrap; }
+.top-cards { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin-bottom:16px; }
+.cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:16px; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:15px; min-height:104px; min-width:0; overflow:hidden; }
+.label { color:var(--muted); font-size:.78rem; font-weight:800; text-transform:uppercase; }
+.value { font-size:clamp(1.05rem,1.85vw,1.55rem); font-weight:850; margin-top:8px; line-height:1.15; overflow-wrap:anywhere; word-break:break-word; }
+.mini { color:var(--muted); font-size:.82rem; margin-top:4px; }
+.pos { color:var(--green); } .neg { color:var(--red); } .neu { color:var(--muted); } .gold { color:var(--gold); }
+.tabs { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0; }
+.tab, .date-tab { border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:8px; padding:9px 13px; font-weight:800; cursor:pointer; }
+.tab.active, .date-tab.active { border-color:var(--blue); color:var(--blue); background:var(--surface2); }
+.grid { display:grid; grid-template-columns:1.1fr .9fr; gap:14px; align-items:start; }
+.panel { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; }
+.panel h2 { margin:0 0 4px; font-size:1.05rem; }
+.panel-sub { color:var(--muted); font-size:.86rem; margin-bottom:12px; }
+.rank-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+table { width:100%; border-collapse:collapse; font-size:.88rem; }
+th,td { padding:9px 8px; border-bottom:1px solid var(--border); text-align:right; vertical-align:middle; }
+th:first-child,td:first-child, .left { text-align:left; }
+th { color:var(--muted); font-size:.72rem; text-transform:uppercase; }
+.bias { display:inline-flex; padding:4px 8px; border-radius:8px; background:var(--surface2); font-weight:800; white-space:nowrap; }
+.chart-box { height:460px; }
+.source { margin-top:14px; }
+.source table { font-size:.8rem; }
+.warn { margin-top:14px; color:var(--muted); }
+.warn summary { cursor:pointer; font-weight:800; color:var(--gold); }
+@media (max-width: 980px) {
+  .hero { display:block; }
+  .top-cards { grid-template-columns:repeat(3,1fr); }
+  .cards { grid-template-columns:repeat(2,1fr); }
+  .grid, .rank-grid { grid-template-columns:1fr; }
+  .chart-box { height:520px; }
+}
+@media (max-width: 560px) {
+  .wrap { padding:28px 12px 42px; }
+  .top-cards { grid-template-columns:1fr; }
+  .cards { grid-template-columns:1fr; }
+  th,td { padding:8px 5px; font-size:.78rem; }
+}
+@media (max-width: 1280px) {
+  .top-cards { grid-template-columns:repeat(4,1fr); }
+}
+@media (max-width: 760px) {
+  .top-cards { grid-template-columns:repeat(2,1fr); }
+}
 </style>
 </head>
 <body>
 <button id="theme-toggle">🌙</button>
 <main class="wrap">
-  <section class="box">
-    <div class="kicker">Option Tape Flow · 2026-04-27 · 27abr</div>
-    <h1>Nenhum tape de opções encontrado</h1>
-    <p>Nenhum par CALLS/PUTS de opções encontrado em /Users/leonardocarneiro/Documents/Dashboad BOVA11/data.</p>
-    <p>Coloque arquivos no padrão <code>CALLS VENC &lt;vencimento&gt;.xlsx</code> e <code>PUTS VENC &lt;vencimento&gt;.xlsx</code> em <code>data/</code>.</p>
+  <section class="hero">
+    <div>
+      <div class="kicker">Option Tape Flow · 2026-04-27 · 27abr</div>
+      <h1>Fluxo real das opções por strike</h1>
+      <div class="sub">Leitura conservadora de Times & Trades: CVD, VWAP e agressão por strike. Delta Volume usa: contratos × 100 × delta, com sinal do agressor (compra/venda). Não substitui Greeks/IV do fechamento B3.</div>
+    </div>
+    <div class="badge" id="top-badge">Proteção via puts</div>
+  </section>
+
+  <section class="top-cards">
+    <div class="card"><div class="label">Vencimentos</div><div class="value" id="top-expiries">1</div><div class="mini">workbooks pareados</div></div>
+    <div class="card"><div class="label">Strikes</div><div class="value" id="top-strikes">19</div><div class="mini">abas com negócios</div></div>
+    <div class="card"><div class="label">Negócios</div><div class="value" id="top-total-trades">33.367</div><div class="mini">calls + puts</div></div>
+    <div class="card"><div class="label">Contratos</div><div class="value" id="top-total-volume">12.423.879</div><div class="mini">volume total</div></div>
+    <div class="card"><div class="label">Δ Volume (P-C)</div><div class="value neg" id="top-delta-vol">-725.071</div><div class="mini">puts - calls (contratos)</div></div>
+    <div class="card"><div class="label">Financeiro Calls</div><div class="value" id="top-call-fin">R$ 15,80 mi</div><div class="mini">volume financeiro call</div></div>
+    <div class="card"><div class="label">Financeiro Puts</div><div class="value" id="top-put-fin">R$ 16,66 mi</div><div class="mini">volume financeiro put</div></div>
+    <div class="card"><div class="label">Δ Financeiro (P-C)</div><div class="value pos" id="top-delta-fin">R$ 861.619,99</div><div class="mini">puts - calls (R$)</div></div>
+    <div class="card"><div class="label">Fin/Neg Calls</div><div class="value" id="top-call-fin-trade">R$ 1.044,01</div><div class="mini">ticket médio call</div></div>
+    <div class="card"><div class="label">Fin/Neg Puts</div><div class="value" id="top-put-fin-trade">R$ 913,39</div><div class="mini">ticket médio put</div></div>
+    <div class="card"><div class="label">Preço Médio Call</div><div class="value" id="top-call-avg-px">2,4026</div><div class="mini">R$ por contrato</div></div>
+    <div class="card"><div class="label">Preço Médio Put</div><div class="value" id="top-put-avg-px">2,8477</div><div class="mini">R$ por contrato</div></div>
+    <div class="card"><div class="label">Delta Vol Calls</div><div class="value neg" id="top-call-dv">-37.147.107</div><div class="mini">eq. ações (calls)</div></div>
+    <div class="card"><div class="label">Delta Vol Puts</div><div class="value pos" id="top-put-dv">+21.134.577</div><div class="mini">eq. ações (puts)</div></div>
+    <div class="card"><div class="label">Delta Vol Líquido</div><div class="value neg" id="top-net-dv">-16.012.530</div><div class="mini">bullish/bearish</div></div>
+    <div class="card"><div class="label">CVD Calls</div><div class="value neg" id="top-call-cvd">-778.609</div><div class="mini">agressão líquida</div></div>
+    <div class="card"><div class="label">CVD Puts</div><div class="value neg" id="top-put-cvd">-410.771</div><div class="mini">agressão líquida</div></div>
+    <div class="card"><div class="label">Proteção Líquida</div><div class="value pos" id="top-net-protection">+99.716</div><div class="mini">put pressure - call pressure</div></div>
+    <div class="card"><div class="label">OI Total</div><div class="value" id="top-total-oi">55.374.790</div><div class="mini">C. Abertos (calls + puts)</div></div>
+    <div class="card"><div class="label">OI Total (R$)</div><div class="value" id="top-total-oi-value">R$ 192,99 mi</div><div class="mini">estimado por bid/ask médio</div></div>
+  </section>
+
+  <div class="panel" style="margin-bottom:14px;">
+    <h2>Filtro de data</h2>
+    <div class="panel-sub">Mostra as datas presentes nos workbooks de Times & Trades.</div>
+    <nav class="tabs" id="date-tabs"><button class="date-tab active" data-date-index="0">27/04/2026</button></nav>
+  </div>
+
+  <nav class="tabs" id="expiry-tabs"><button class="tab active" data-index="0">15 Mai Mensal</button></nav>
+
+  <section class="grid">
+    <div class="panel">
+      <h2 id="chart-title">CVD por strike</h2>
+      <div class="panel-sub" id="chart-sub"></div>
+      <div class="chart-box"><canvas id="cvd-chart"></canvas></div>
+    </div>
+    <div class="panel">
+      <h2>Resumo do vencimento</h2>
+      <div class="panel-sub" id="summary-note"></div>
+      <div id="expiry-cards" class="cards" style="grid-template-columns:repeat(2,1fr); margin-bottom:0;"></div>
+    </div>
+  </section>
+
+  <section class="panel" style="margin-top:14px;">
+    <h2>Rankings</h2>
+    <div class="panel-sub">Maiores leituras de agressão compradora em puts, calls e proteção líquida.</div>
+    <div class="rank-grid">
+      <div><table><thead><tr><th>Put CVD</th><th>CVD</th><th>Vol</th></tr></thead><tbody id="rank-put"></tbody></table></div>
+      <div><table><thead><tr><th>Call CVD</th><th>CVD</th><th>Vol</th></tr></thead><tbody id="rank-call"></tbody></table></div>
+      <div><table><thead><tr><th>Proteção</th><th>Net</th><th>Bias</th></tr></thead><tbody id="rank-net"></tbody></table></div>
+    </div>
+  </section>
+
+  <section class="panel" style="margin-top:14px;">
+    <h2>Detalhe por strike</h2>
+    <div class="panel-sub">VWAP, volume, negócios, CVD, Δ volume (P-C) e OI por strike.</div>
+    <div style="overflow:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Strike</th><th>Bias</th><th>Call VWAP</th><th>Call CVD</th><th>Call Vol</th><th>Call Neg</th>
+            <th>Put VWAP</th><th>Put CVD</th><th>Put Vol</th><th>Put Neg</th><th>ΔVol Call</th><th>ΔVol Put</th><th>ΔVol Líq</th><th>OI Total</th><th>OI Total (R$)</th><th>Proteção</th><th>P/C Vol</th>
+          </tr>
+        </thead>
+        <tbody id="detail-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel source">
+    <h2>Fontes</h2>
+    <table><thead><tr><th>Vencimento</th><th>Calls</th><th>Puts</th></tr></thead><tbody id="source-body"></tbody></table>
+    
   </section>
 </main>
+
 <script>
+const DATE_GROUPS = [{"date": "27/04/2026", "iso": "2026-04-27", "expiries": [{"label": "15 Mai Mensal", "call_file": "/Users/leonardocarneiro/Documents/Dashboad BOVA11/data/CALLS 27ABR VENC 15MAI MENSAL.xlsx", "put_file": "/Users/leonardocarneiro/Documents/Dashboad BOVA11/data/PUTS 27abr VENC 15MAI MENSAL.xlsx", "rows": [{"strike": 178.0, "call": {"ticker": "BOVAE178", "strike": 178.0, "side": "call", "trades": 93, "volume": 122221.0, "financial": 1155851.4700000004, "vwap": 9.45706114333871, "open": 10.68, "high": 10.68, "low": 9.15, "close": 9.15, "buy": 33046.0, "sell": 89175.0, "neutral": 0.0, "cvd": -56129.0, "buy_pct": 27.03790674270379, "sell_pct": 72.9620932572962, "close_vwap_pct": -3.2468981503307126, "avg_trade_qty": 1314.2043010752689, "option_delta": 0.82, "delta_volume": -4602578.0, "delta_volume_buy": 2709771.9999999995, "delta_volume_sell": -7312350.0}, "put": {"ticker": "BOVAQ178", "strike": 178.0, "side": "put", "trades": 240, "volume": 183494.0, "financial": 99227.12000000014, "vwap": 0.5407649296434769, "open": 0.99, "high": 0.99, "low": 0.39, "close": 0.6, "buy": 85448.0, "sell": 98046.0, "neutral": 0.0, "cvd": -12598.0, "buy_pct": 46.56719020785421, "sell_pct": 53.43280979214579, "close_vwap_pct": 10.953940817792397, "avg_trade_qty": 764.5583333333333, "option_delta": -0.18, "delta_volume": 226764.0, "delta_volume_buy": -1538064.0, "delta_volume_sell": 1764828.0}, "call_pressure": 0.0, "put_pressure": 0.0, "net_protection": 0.0, "put_call_volume_ratio": 1.501329558750133, "call_oi": 356120.0, "put_oi": 1370000.0, "total_oi": 1726120.0, "call_oi_value": 3598592.6, "put_oi_value": 780900.0000000001, "total_oi_value": 4379492.600000001, "delta_volume_pc": 61273.0, "delta_financial_pc": -1056624.3500000003, "bias": "Misto/Neutro"}, {"strike": 179.0, "call": {"ticker": "BOVAE179", "strike": 179.0, "side": "call", "trades": 61, "volume": 106084.0, "financial": 990600.4500000002, "vwap": 9.337887428829985, "open": 9.58, "high": 9.69, "low": 9.15, "close": 9.15, "buy": 30681.0, "sell": 75403.0, "neutral": 0.0, "cvd": -44722.0, "buy_pct": 28.92142076090645, "sell_pct": 71.07857923909354, "close_vwap_pct": -2.012097814007663, "avg_trade_qty": 1739.0819672131147, "option_delta": 0.8, "delta_volume": -3577760.0, "delta_volume_buy": 2454480.0000000005, "delta_volume_sell": -6032240.0}, "put": {"ticker": "BOVAQ179", "strike": 179.0, "side": "put", "trades": 383, "volume": 235690.0, "financial": 152915.98999999996, "vwap": 0.6488013492299205, "open": 0.79, "high": 0.79, "low": 0.59, "close": 0.71, "buy": 111773.0, "sell": 123915.0, "neutral": 2.0, "cvd": -12142.0, "buy_pct": 47.42373456659171, "sell_pct": 52.575416861131146, "close_vwap_pct": 9.43257144004368, "avg_trade_qty": 615.378590078329, "option_delta": -0.2, "delta_volume": 242840.0, "delta_volume_buy": -2235460.0, "delta_volume_sell": 2478300.0}, "call_pressure": 0.0, "put_pressure": 0.0, "net_protection": 0.0, "put_call_volume_ratio": 2.221729949851061, "call_oi": 803240.0, "put_oi": 1010000.0, "total_oi": 1813240.0, "call_oi_value": 7409889.0, "put_oi_value": 686799.9999999999, "total_oi_value": 8096689.0, "delta_volume_pc": 129606.0, "delta_financial_pc": -837684.4600000002, "bias": "Misto/Neutro"}, {"strike": 180.0, "call": {"ticker": "BOVAE180", "strike": 180.0, "side": "call", "trades": 277, "volume": 121595.0, "financial": 1064887.52, "vwap": 8.757658785311897, "open": 10.04, "high": 10.04, "low": 8.22, "close": 8.22, "buy": 88250.0, "sell": 33345.0, "neutral": 0.0, "cvd": 54905.0, "buy_pct": 72.57699740943295, "sell_pct": 27.423002590567048, "close_vwap_pct": -6.139298167378282, "avg_trade_qty": 438.971119133574, "option_delta": 0.78, "delta_volume": 4282590.0, "delta_volume_buy": 6883500.0, "delta_volume_sell": -2600910.0}, "put": {"ticker": "BOVAQ180", "strike": 180.0, "side": "put", "trades": 1460, "volume": 384301.0, "financial": 298834.4099999997, "vwap": 0.7776050803927121, "open": 1.32, "high": 1.32, "low": 0.7, "close": 0.85, "buy": 237657.0, "sell": 146641.0, "neutral": 3.0, "cvd": 91016.0, "buy_pct": 61.84136913513105, "sell_pct": 38.157850226775366, "close_vwap_pct": 9.309985419684551, "avg_trade_qty": 263.2198630136986, "option_delta": -0.22, "delta_volume": -2002352.0, "delta_volume_buy": -5228454.0, "delta_volume_sell": 3226102.0}, "call_pressure": 54905.0, "put_pressure": 91016.0, "net_protection": 36111.0, "put_call_volume_ratio": 3.1605000205600557, "call_oi": 1680000.0, "put_oi": 2580000.0, "total_oi": 4260000.0, "call_oi_value": 14044799.999999998, "put_oi_value": 2102700.0, "total_oi_value": 16147499.999999998, "delta_volume_pc": 262706.0, "delta_financial_pc": -766053.1100000003, "bias": "Pressão em Puts"}, {"strike": 181.0, "call": {"ticker": "BOVAE181", "strike": 181.0, "side": "call", "trades": 94, "volume": 10665.0, "financial": 85449.28999999982, "vwap": 8.012122831692436, "open": 8.31, "high": 8.77, "low": 7.42, "close": 7.42, "buy": 9248.0, "sell": 1417.0, "neutral": 0.0, "cvd": 7831.0, "buy_pct": 86.71354899203, "sell_pct": 13.286451007969996, "close_vwap_pct": -7.390336420583299, "avg_trade_qty": 113.45744680851064, "option_delta": 0.76, "delta_volume": 595156.0, "delta_volume_buy": 702848.0, "delta_volume_sell": -107692.0}, "put": {"ticker": "BOVAQ181", "strike": 181.0, "side": "put", "trades": 349, "volume": 190711.0, "financial": 177167.5999999999, "vwap": 0.9289846941183251, "open": 1.09, "high": 1.15, "low": 0.82, "close": 1.15, "buy": 115207.0, "sell": 75304.0, "neutral": 200.0, "cvd": 39903.0, "buy_pct": 60.40920555185595, "sell_pct": 39.48592372752489, "close_vwap_pct": 23.791059990652986, "avg_trade_qty": 546.4498567335244, "option_delta": -0.24, "delta_volume": -957671.9999999999, "delta_volume_buy": -2764968.0, "delta_volume_sell": 1807296.0}, "call_pressure": 7831.0, "put_pressure": 39903.0, "net_protection": 32072.0, "put_call_volume_ratio": 17.881950304735113, "call_oi": 622710.0, "put_oi": 839940.0, "total_oi": 1462650.0, "call_oi_value": 4692119.85, "put_oi_value": 823141.2, "total_oi_value": 5515261.05, "delta_volume_pc": 180046.0, "delta_financial_pc": 91718.31000000007, "bias": "Pressão em Puts"}, {"strike": 182.0, "call": {"ticker": "BOVAE182", "strike": 182.0, "side": "call", "trades": 54, "volume": 10291.0, "financial": 73187.55000000002, "vwap": 7.111801574191042, "open": 7.78, "high": 8.0, "low": 6.65, "close": 6.65, "buy": 3309.0, "sell": 6982.0, "neutral": 0.0, "cvd": -3673.0, "buy_pct": 32.154309590904674, "sell_pct": 67.84569040909533, "close_vwap_pct": -6.49345414623117, "avg_trade_qty": 190.57407407407408, "option_delta": 0.74, "delta_volume": -271802.0, "delta_volume_buy": 244866.0, "delta_volume_sell": -516668.0}, "put": {"ticker": "BOVAQ182", "strike": 182.0, "side": "put", "trades": 437, "volume": 214883.0, "financial": 238015.7999999999, "vwap": 1.1076530018661312, "open": 1.21, "high": 1.24, "low": 0.94, "close": 1.22, "buy": 82444.0, "sell": 132437.0, "neutral": 2.0, "cvd": -49993.0, "buy_pct": 38.36692525700032, "sell_pct": 61.63214400394634, "close_vwap_pct": 10.14279724287217, "avg_trade_qty": 491.72311212814645, "option_delta": -0.26, "delta_volume": 1299818.0, "delta_volume_buy": -2143544.0, "delta_volume_sell": 3443362.0000000005}, "call_pressure": 0.0, "put_pressure": 0.0, "net_protection": 0.0, "put_call_volume_ratio": 20.88067243222233, "call_oi": 1070000.0, "put_oi": 1330000.0, "total_oi": 2400000.0, "call_oi_value": 7217150.0, "put_oi_value": 1569400.0, "total_oi_value": 8786550.0, "delta_volume_pc": 204592.0, "delta_financial_pc": 164828.24999999988, "bias": "Misto/Neutro"}, {"strike": 183.0, "call": {"ticker": "BOVAE183", "strike": 183.0, "side": "call", "trades": 367, "volume": 76162.0, "financial": 479525.3799999999, "vwap": 6.2961237887660495, "open": 7.27, "high": 7.27, "low": 5.87, "close": 5.87, "buy": 32630.0, "sell": 43532.0, "neutral": 0.0, "cvd": -10902.0, "buy_pct": 42.842887529214046, "sell_pct": 57.157112470785954, "close_vwap_pct": -6.768033842129451, "avg_trade_qty": 207.5258855585831, "option_delta": 0.71, "delta_volume": -774041.9999999999, "delta_volume_buy": 2316730.0, "delta_volume_sell": -3090771.9999999995}, "put": {"ticker": "BOVAQ183", "strike": 183.0, "side": "put", "trades": 431, "volume": 254554.0, "financial": 342966.42999999993, "vwap": 1.3473228863031024, "open": 1.42, "high": 1.5, "low": 0.91, "close": 1.45, "buy": 135140.0, "sell": 119412.0, "neutral": 2.0, "cvd": 15728.0, "buy_pct": 53.08893201442523, "sell_pct": 46.910282297665724, "close_vwap_pct": 7.620824580411578, "avg_trade_qty": 590.6125290023202, "option_delta": -0.29, "delta_volume": -456112.0, "delta_volume_buy": -3919060.0, "delta_volume_sell": 3462947.9999999995}, "call_pressure": 0.0, "put_pressure": 15728.0, "net_protection": 15728.0, "put_call_volume_ratio": 3.3422704235708096, "call_oi": 1430000.0, "put_oi": 1180000.0, "total_oi": 2610000.0, "call_oi_value": 8565700.0, "put_oi_value": 1675600.0, "total_oi_value": 10241300.0, "delta_volume_pc": 178392.0, "delta_financial_pc": -136558.94999999995, "bias": "Misto/Neutro"}, {"strike": 184.0, "call": {"ticker": "BOVAE184", "strike": 184.0, "side": "call", "trades": 425, "volume": 77860.0, "financial": 438405.69999999955, "vwap": 5.6306922681736395, "open": 5.62, "high": 6.4, "low": 5.17, "close": 5.2, "buy": 34802.0, "sell": 43058.0, "neutral": 0.0, "cvd": -8256.0, "buy_pct": 44.69817621371693, "sell_pct": 55.30182378628307, "close_vwap_pct": -7.649010950359358, "avg_trade_qty": 183.2, "option_delta": 0.69, "delta_volume": -569664.0, "delta_volume_buy": 2401337.9999999995, "delta_volume_sell": -2971001.9999999995}, "put": {"ticker": "BOVAQ184", "strike": 184.0, "side": "put", "trades": 944, "volume": 360333.0, "financial": 591056.6499999998, "vwap": 1.6403067440395407, "open": 1.66, "high": 1.78, "low": 1.1, "close": 1.77, "buy": 140757.0, "sell": 219574.0, "neutral": 2.0, "cvd": -78817.0, "buy_pct": 39.06303336080792, "sell_pct": 60.93641159705051, "close_vwap_pct": 7.90664651180224, "avg_trade_qty": 381.708686440678, "option_delta": -0.31, "delta_volume": 2443327.0, "delta_volume_buy": -4363467.0, "delta_volume_sell": 6806794.0}, "call_pressure": 0.0, "put_pressure": 0.0, "net_protection": 0.0, "put_call_volume_ratio": 4.627960441818649, "call_oi": 481690.0, "put_oi": 1270000.0, "total_oi": 1751690.0, "call_oi_value": 2543323.1999999997, "put_oi_value": 2165350.0, "total_oi_value": 4708673.199999999, "delta_volume_pc": 282473.0, "delta_financial_pc": 152650.95000000024, "bias": "Misto/Neutro"}, {"strike": 185.0, "call": {"ticker": "BOVAE185", "strike": 185.0, "side": "call", "trades": 679, "volume": 203466.0, "financial": 985577.5000000005, "vwap": 4.84394198539314, "open": 5.85, "high": 5.85, "low": 4.5, "close": 4.51, "buy": 90363.0, "sell": 113103.0, "neutral": 0.0, "cvd": -22740.0, "buy_pct": 44.411842764884554, "sell_pct": 55.588157235115446, "close_vwap_pct": -6.894012901065672, "avg_trade_qty": 299.65537555228275, "option_delta": 0.66, "delta_volume": -1500840.0000000002, "delta_volume_buy": 5963958.0, "delta_volume_sell": -7464798.000000001}, "put": {"ticker": "BOVAQ185", "strike": 185.0, "side": "put", "trades": 1557, "volume": 558453.0, "financial": 1080257.1600000046, "vwap": 1.9343743520045635, "open": 1.7, "high": 2.12, "low": 1.67, "close": 2.1, "buy": 250551.0, "sell": 307902.0, "neutral": 0.0, "cvd": -57351.0, "buy_pct": 44.865190087617044, "sell_pct": 55.134809912382956, "close_vwap_pct": 8.562233459299184, "avg_trade_qty": 358.6724470134875, "option_delta": -0.34, "delta_volume": 1949934.0, "delta_volume_buy": -8518734.000000002, "delta_volume_sell": 10468668.0}, "call_pressure": 0.0, "put_pressure": 0.0, "net_protection": 0.0, "put_call_volume_ratio": 2.7446993600896463, "call_oi": 1580000.0, "put_oi": 2730000.0, "total_oi": 4310000.0, "call_oi_value": 7299600.0, "put_oi_value": 5541900.000000001, "total_oi_value": 12841500.0, "delta_volume_pc": 354987.0, "delta_financial_pc": 94679.6600000041, "bias": "Misto/Neutro"}, {"strike": 186.0, "call": {"ticker": "BOVAE186", "strike": 186.0, "side": "call", "trades": 709, "volume": 154123.0, "financial": 666112.5199999984, "vwap": 4.321954023734279, "open": 5.04, "high": 5.04, "low": 3.92, "close": 3.94, "buy": 91010.0, "sell": 63113.0, "neutral": 0.0, "cvd": 27897.0, "buy_pct": 59.050239094748996, "sell_pct": 40.949760905251004, "close_vwap_pct": -8.837530932461457, "avg_trade_qty": 217.3808180535966, "option_delta": 0.63, "delta_volume": 1757511.0, "delta_volume_buy": 5733630.0, "delta_volume_sell": -3976119.0}, "put": {"ticker": "BOVAQ186", "strike": 186.0, "side": "put", "trades": 1361, "volume": 348771.0, "financial": 812045.6899999989, "vwap": 2.328306223854618, "open": 2.03, "high": 2.5, "low": 2.0, "close": 2.48, "buy": 197062.0, "sell": 151709.0, "neutral": 0.0, "cvd": 45353.0, "buy_pct": 56.50183071413621, "sell_pct": 43.49816928586379, "close_vwap_pct": 6.515198670656219, "avg_trade_qty": 256.2608376193975, "option_delta": -0.37, "delta_volume": -1678061.0, "delta_volume_buy": -7291294.0, "delta_volume_sell": 5613233.0}, "call_pressure": 27897.0, "put_pressure": 45353.0, "net_protection": 17456.0, "put_call_volume_ratio": 2.2629393406564886, "call_oi": 921880.0, "put_oi": 1310000.0, "total_oi": 2231880.0, "call_oi_value": 3687520.0, "put_oi_value": 3157100.0, "total_oi_value": 6844620.0, "delta_volume_pc": 194648.0, "delta_financial_pc": 145933.1700000005, "bias": "Misto/Neutro"}, {"strike": 187.0, "call": {"ticker": "BOVAE187", "strike": 187.0, "side": "call", "trades": 563, "volume": 350993.0, "financial": 1299414.0699999991, "vwap": 3.7021082186824215, "open": 4.46, "high": 4.46, "low": 3.34, "close": 3.35, "buy": 134986.0, "sell": 216007.0, "neutral": 0.0, "cvd": -81021.0, "buy_pct": 38.45831683252943, "sell_pct": 61.54168316747057, "close_vwap_pct": -9.511019070310612, "avg_trade_qty": 623.4333925399645, "option_delta": 0.61, "delta_volume": -4942281.0, "delta_volume_buy": 8234145.999999999, "delta_volume_sell": -13176426.999999998}, "put": {"ticker": "BOVAQ187", "strike": 187.0, "side": "put", "trades": 1970, "volume": 421403.0, "financial": 1133172.9199999995, "vwap": 2.689048060882337, "open": 2.43, "high": 2.93, "low": 2.34, "close": 2.9, "buy": 186769.0, "sell": 234634.0, "neutral": 0.0, "cvd": -47865.0, "buy_pct": 44.32075709000648, "sell_pct": 55.67924290999352, "close_vwap_pct": 7.844855664217643, "avg_trade_qty": 213.91015228426397, "option_delta": -0.39, "delta_volume": 1866735.0000000002, "delta_volume_buy": -7283991.0, "delta_volume_sell": 9150726.0}, "call_pressure": 0.0, "put_pressure": 0.0, "net_protection": 0.0, "put_call_volume_ratio": 1.2006022912137848, "call_oi": 959210.0, "put_oi": 2040000.0, "total_oi": 2999210.0, "call_oi_value": 3299682.4000000004, "put_oi_value": 5773200.0, "total_oi_value": 9072882.4, "delta_volume_pc": 70410.0, "delta_financial_pc": -166241.14999999967, "bias": "Misto/Neutro"}, {"strike": 188.0, "call": {"ticker": "BOVAE188", "strike": 188.0, "side": "call", "trades": 849, "volume": 239958.0, "financial": 773316.2400000007, "vwap": 3.222714975120649, "open": 3.84, "high": 3.84, "low": 2.82, "close": 2.82, "buy": 125278.0, "sell": 114180.0, "neutral": 500.0, "cvd": 11098.0, "buy_pct": 52.20830311971262, "sell_pct": 47.58332708223939, "close_vwap_pct": -12.49614000088769, "avg_trade_qty": 282.63604240282683, "option_delta": 0.58, "delta_volume": 643683.9999999999, "delta_volume_buy": 7266123.999999999, "delta_volume_sell": -6622439.999999999}, "put": {"ticker": "BOVAQ188", "strike": 188.0, "side": "put", "trades": 2121, "volume": 690892.0, "financial": 2144768.2599999825, "vwap": 3.1043466417326915, "open": 2.83, "high": 3.43, "low": 2.8, "close": 3.37, "buy": 337674.0, "sell": 353168.0, "neutral": 50.0, "cvd": -15494.0, "buy_pct": 48.87507743612605, "sell_pct": 51.11768554274764, "close_vwap_pct": 8.557464385453883, "avg_trade_qty": 325.73880245167373, "option_delta": -0.42, "delta_volume": 650748.0, "delta_volume_buy": -14182307.999999998, "delta_volume_sell": 14833056.0}, "call_pressure": 11098.0, "put_pressure": 0.0, "net_protection": -11098.0, "put_call_volume_ratio": 2.8792205302594622, "call_oi": 1790000.0, "put_oi": 2280000.0, "total_oi": 4070000.0, "call_oi_value": 5217850.0, "put_oi_value": 7546799.999999999, "total_oi_value": 12764650.0, "delta_volume_pc": 450934.0, "delta_financial_pc": 1371452.0199999819, "bias": "Misto/Neutro"}, {"strike": 189.0, "call": {"ticker": "BOVAE189", "strike": 189.0, "side": "call", "trades": 630, "volume": 276206.0, "financial": 755845.8999999985, "vwap": 2.7365296191972606, "open": 3.04, "high": 3.25, "low": 2.24, "close": 2.24, "buy": 146859.0, "sell": 129247.0, "neutral": 100.0, "cvd": 17612.0, "buy_pct": 53.170097680716566, "sell_pct": 46.79369745769462, "close_vwap_pct": -18.144500089237603, "avg_trade_qty": 438.4222222222222, "option_delta": 0.55, "delta_volume": 968660.0, "delta_volume_buy": 8077245.000000001, "delta_volume_sell": -7108585.000000001}, "put": {"ticker": "BOVAQ189", "strike": 189.0, "side": "put", "trades": 875, "volume": 372593.0, "financial": 1335562.0600000024, "vwap": 3.5845065795653768, "open": 3.34, "high": 3.94, "low": 3.25, "close": 3.93, "buy": 149882.0, "sell": 222711.0, "neutral": 0.0, "cvd": -72829.0, "buy_pct": 40.22673533855977, "sell_pct": 59.77326466144023, "close_vwap_pct": 9.638521028367443, "avg_trade_qty": 425.82057142857144, "option_delta": -0.45, "delta_volume": 3277305.0000000005, "delta_volume_buy": -6744690.000000001, "delta_volume_sell": 10021995.0}, "call_pressure": 17612.0, "put_pressure": 0.0, "net_protection": -17612.0, "put_call_volume_ratio": 1.348967799396103, "call_oi": 1560000.0, "put_oi": 2040000.0, "total_oi": 3600000.0, "call_oi_value": 3814200.0000000005, "put_oi_value": 7813200.0, "total_oi_value": 11627400.0, "delta_volume_pc": 96387.0, "delta_financial_pc": 579716.1600000039, "bias": "Misto/Neutro"}, {"strike": 190.0, "call": {"ticker": "BOVAE190", "strike": 190.0, "side": "call", "trades": 4612, "volume": 1026944.0, "financial": 2313668.989999975, "vwap": 2.2529650983889824, "open": 2.6, "high": 2.84, "low": 1.94, "close": 1.94, "buy": 501333.0, "sell": 524411.0, "neutral": 1200.0, "cvd": -23078.0, "buy_pct": 48.81794917736507, "sell_pct": 51.065199270846314, "close_vwap_pct": -13.891253735478326, "avg_trade_qty": 222.66782307025153, "option_delta": 0.52, "delta_volume": -1200056.0000000002, "delta_volume_buy": 26069316.0, "delta_volume_sell": -27269372.000000004}, "put": {"ticker": "BOVAQ190", "strike": 190.0, "side": "put", "trades": 2667, "volume": 553440.0, "financial": 2337290.869999993, "vwap": 4.223205532668389, "open": 3.83, "high": 4.54, "low": 3.68, "close": 4.5, "buy": 223119.0, "sell": 330321.0, "neutral": 0.0, "cvd": -107202.0, "buy_pct": 40.31493928881179, "sell_pct": 59.68506071118821, "close_vwap_pct": 6.554132049470063, "avg_trade_qty": 207.5140607424072, "option_delta": -0.48, "delta_volume": 5145696.0, "delta_volume_buy": -10709712.0, "delta_volume_sell": 15855407.999999998}, "call_pressure": 0.0, "put_pressure": 0.0, "net_protection": 0.0, "put_call_volume_ratio": 0.538919356849059, "call_oi": 2130000.0, "put_oi": 2410000.0, "total_oi": 4540000.0, "call_oi_value": 4302599.999999999, "put_oi_value": 10604000.0, "total_oi_value": 14906600.0, "delta_volume_pc": -473504.0, "delta_financial_pc": 23621.88000001805, "bias": "Misto/Neutro"}, {"strike": 191.0, "call": {"ticker": "BOVAE191", "strike": 191.0, "side": "call", "trades": 715, "volume": 351964.0, "financial": 669636.3899999998, "vwap": 1.902570689047743, "open": 2.39, "high": 2.39, "low": 1.6, "close": 1.62, "buy": 170255.0, "sell": 181709.0, "neutral": 0.0, "cvd": -11454.0, "buy_pct": 48.37284495005171, "sell_pct": 51.62715504994829, "close_vwap_pct": -14.852046795127094, "avg_trade_qty": 492.25734265734263, "option_delta": 0.49, "delta_volume": -561246.0, "delta_volume_buy": 8342495.0, "delta_volume_sell": -8903741.0}, "put": {"ticker": "BOVAQ191", "strike": 191.0, "side": "put", "trades": 1388, "volume": 357973.0, "financial": 1658060.4900000033, "vwap": 4.631803208621888, "open": 4.3, "high": 5.14, "low": 4.25, "close": 5.12, "buy": 171147.0, "sell": 186826.0, "neutral": 0.0, "cvd": -15679.0, "buy_pct": 47.81003036541862, "sell_pct": 52.18996963458138, "close_vwap_pct": 10.540102188913302, "avg_trade_qty": 257.9056195965418, "option_delta": -0.51, "delta_volume": 799629.0, "delta_volume_buy": -8728497.0, "delta_volume_sell": 9528126.0}, "call_pressure": 0.0, "put_pressure": 0.0, "net_protection": 0.0, "put_call_volume_ratio": 1.0170727688059007, "call_oi": 1610000.0, "put_oi": 1920000.0, "total_oi": 3530000.0, "call_oi_value": 2664549.9999999995, "put_oi_value": 9638400.0, "total_oi_value": 12302950.0, "delta_volume_pc": 6009.0, "delta_financial_pc": 988424.1000000035, "bias": "Misto/Neutro"}, {"strike": 192.0, "call": {"ticker": "BOVAE192", "strike": 192.0, "side": "call", "trades": 1860, "volume": 1263699.0, "financial": 1999936.5999999982, "vwap": 1.5826051931670424, "open": 3.35, "high": 3.35, "low": 1.29, "close": 1.3, "buy": 488674.0, "sell": 775025.0, "neutral": 0.0, "cvd": -286351.0, "buy_pct": 38.67012635129093, "sell_pct": 61.32987364870907, "close_vwap_pct": -17.85696106566571, "avg_trade_qty": 679.408064516129, "option_delta": 0.47, "delta_volume": -13458497.0, "delta_volume_buy": 22967678.0, "delta_volume_sell": -36426175.0}, "put": {"ticker": "BOVAQ192", "strike": 192.0, "side": "put", "trades": 1063, "volume": 514875.0, "financial": 2776755.1999999955, "vwap": 5.393066666666658, "open": 4.99, "high": 5.84, "low": 4.9, "close": 5.83, "buy": 202239.0, "sell": 312636.0, "neutral": 0.0, "cvd": -110397.0, "buy_pct": 39.279242534595774, "sell_pct": 60.720757465404226, "close_vwap_pct": 8.101760284810311, "avg_trade_qty": 484.36030103480715, "option_delta": -0.53, "delta_volume": 5851041.0, "delta_volume_buy": -10718667.0, "delta_volume_sell": 16569708.000000002}, "call_pressure": 0.0, "put_pressure": 0.0, "net_protection": 0.0, "put_call_volume_ratio": 0.407434840100372, "call_oi": 1550000.0, "put_oi": 1410000.0, "total_oi": 2960000.0, "call_oi_value": 2084750.0000000002, "put_oi_value": 8051100.0, "total_oi_value": 10135850.0, "delta_volume_pc": -748824.0, "delta_financial_pc": 776818.5999999973, "bias": "Misto/Neutro"}, {"strike": 193.0, "call": {"ticker": "BOVAE193", "strike": 193.0, "side": "call", "trades": 562, "volume": 401514.0, "financial": 509883.6800000002, "vwap": 1.2699026185886426, "open": 1.61, "high": 1.61, "low": 1.04, "close": 1.04, "buy": 148499.0, "sell": 253015.0, "neutral": 0.0, "cvd": -104516.0, "buy_pct": 36.98476267328163, "sell_pct": 63.01523732671837, "close_vwap_pct": -18.103956572997237, "avg_trade_qty": 714.4377224199288, "option_delta": 0.44, "delta_volume": -4598704.0, "delta_volume_buy": 6533956.0, "delta_volume_sell": -11132660.0}, "put": {"ticker": "BOVAQ193", "strike": 193.0, "side": "put", "trades": 76, "volume": 56430.0, "financial": 332847.1400000001, "vwap": 5.898407584618112, "open": 6.03, "high": 6.52, "low": 5.51, "close": 6.49, "buy": 42555.0, "sell": 13875.0, "neutral": 0.0, "cvd": 28680.0, "buy_pct": 75.4120148856991, "sell_pct": 24.587985114300903, "close_vwap_pct": 10.029697115618896, "avg_trade_qty": 742.5, "option_delta": -0.56, "delta_volume": -1606080.0, "delta_volume_buy": -2383080.0000000005, "delta_volume_sell": 777000.0000000001}, "call_pressure": 0.0, "put_pressure": 28680.0, "net_protection": 28680.0, "put_call_volume_ratio": 0.14054304457627878, "call_oi": 2890000.0, "put_oi": 2440000.0, "total_oi": 5330000.0, "call_oi_value": 3150100.0, "put_oi_value": 15713599.999999998, "total_oi_value": 18863700.0, "delta_volume_pc": -345084.0, "delta_financial_pc": -177036.54000000015, "bias": "Pressão em Puts"}, {"strike": 194.0, "call": {"ticker": "BOVAE194", "strike": 194.0, "side": "call", "trades": 512, "volume": 618811.0, "financial": 648118.2900000003, "vwap": 1.0473606480815634, "open": 1.01, "high": 1.33, "low": 0.85, "close": 0.85, "buy": 205035.0, "sell": 412776.0, "neutral": 1000.0, "cvd": -207741.0, "buy_pct": 33.13370318239333, "sell_pct": 66.70469658748794, "close_vwap_pct": -18.843618809152918, "avg_trade_qty": 1208.615234375, "option_delta": 0.41, "delta_volume": -8517381.0, "delta_volume_buy": 8406435.0, "delta_volume_sell": -16923816.0}, "put": {"ticker": "BOVAQ194", "strike": 194.0, "side": "put", "trades": 395, "volume": 61983.0, "financial": 429158.38999999856, "vwap": 6.923807979607289, "open": 7.05, "high": 7.35, "low": 6.23, "close": 7.35, "buy": 36786.0, "sell": 25197.0, "neutral": 0.0, "cvd": 11589.0, "buy_pct": 59.34853104883597, "sell_pct": 40.65146895116403, "close_vwap_pct": 6.155456963104333, "avg_trade_qty": 156.91898734177215, "option_delta": -0.59, "delta_volume": -683750.9999999999, "delta_volume_buy": -2170374.0, "delta_volume_sell": 1486623.0}, "call_pressure": 0.0, "put_pressure": 11589.0, "net_protection": 11589.0, "put_call_volume_ratio": 0.10016467063449098, "call_oi": 2520000.0, "put_oi": 3260000.0, "total_oi": 5780000.0, "call_oi_value": 2205000.0, "put_oi_value": 23553500.0, "total_oi_value": 25758500.0, "delta_volume_pc": -556828.0, "delta_financial_pc": -218959.9000000017, "bias": "Misto/Neutro"}, {"strike": 195.0, "call": {"ticker": "BOVAE195", "strike": 195.0, "side": "call", "trades": 1547, "volume": 535395.0, "financial": 458318.3499999987, "vwap": 0.8560377851866354, "open": 1.1, "high": 1.1, "low": 0.68, "close": 0.72, "buy": 274302.0, "sell": 261092.0, "neutral": 1.0, "cvd": 13210.0, "buy_pct": 51.23357521082565, "sell_pct": 48.766238011188, "close_vwap_pct": -15.891563146009513, "avg_trade_qty": 346.08597285067873, "option_delta": 0.26, "delta_volume": 343460.0, "delta_volume_buy": 7131852.0, "delta_volume_sell": -6788392.0}, "put": {"ticker": "BOVAQ195", "strike": 195.0, "side": "put", "trades": 447, "volume": 46295.0, "financial": 355676.3299999998, "vwap": 7.682823847067713, "open": 7.25, "high": 8.2, "low": 6.95, "close": 8.15, "buy": 12972.0, "sell": 33323.0, "neutral": 0.0, "cvd": -20351.0, "buy_pct": 28.02030456852792, "sell_pct": 71.97969543147208, "close_vwap_pct": 6.08078698967689, "avg_trade_qty": 103.5682326621924, "option_delta": -0.74, "delta_volume": 1505974.0, "delta_volume_buy": -959928.0000000001, "delta_volume_sell": 2465902.0}, "call_pressure": 13210.0, "put_pressure": 0.0, "net_protection": -13210.0, "put_call_volume_ratio": 0.0864688687791257, "call_oi": 0.0, "put_oi": 0.0, "total_oi": 0.0, "call_oi_value": 0.0, "put_oi_value": 0.0, "total_oi_value": 0.0, "delta_volume_pc": -489100.0, "delta_financial_pc": -102642.01999999891, "bias": "Misto/Neutro"}, {"strike": 196.0, "call": {"ticker": "BOVAE196", "strike": 196.0, "side": "call", "trades": 521, "volume": 626524.0, "financial": 428172.3800000005, "vwap": 0.6834093825615627, "open": 0.62, "high": 0.89, "low": 0.54, "close": 0.54, "buy": 287471.0, "sell": 338050.0, "neutral": 1003.0, "cvd": -50579.0, "buy_pct": 45.88347772790827, "sell_pct": 53.956432634663635, "close_vwap_pct": -20.984403524580543, "avg_trade_qty": 1202.5412667946257, "option_delta": 0.23, "delta_volume": -1163317.0, "delta_volume_buy": 6611833.0, "delta_volume_sell": -7775150.0}, "put": {"ticker": "BOVAQ196", "strike": 196.0, "side": "put", "trades": 73, "volume": 42330.0, "financial": 361749.75000000006, "vwap": 8.545942593905034, "open": 8.13, "high": 8.93, "low": 7.92, "close": 8.84, "buy": 4.0, "sell": 42326.0, "neutral": 0.0, "cvd": -42322.0, "buy_pct": 0.009449562957713206, "sell_pct": 99.99055043704229, "close_vwap_pct": 3.4409007884594, "avg_trade_qty": 579.8630136986301, "option_delta": -0.77, "delta_volume": 3258794.0, "delta_volume_buy": -308.0, "delta_volume_sell": 3259102.0}, "call_pressure": 0.0, "put_pressure": 0.0, "net_protection": 0.0, "put_call_volume_ratio": 0.06756325376202667, "call_oi": 0.0, "put_oi": 0.0, "total_oi": 0.0, "call_oi_value": 0.0, "put_oi_value": 0.0, "total_oi_value": 0.0, "delta_volume_pc": -584194.0, "delta_financial_pc": -66422.63000000047, "bias": "Misto/Neutro"}], "summary": {"strikes": 19, "call_trades": 15130, "put_trades": 18237, "total_trades": 33367, "call_volume": 6574475.0, "put_volume": 5849404.0, "total_volume": 12423879.0, "call_financial": 15795908.269999972, "put_financial": 16657528.25999998, "total_financial": 32453436.52999995, "financial_per_trade": 972.6207489435654, "call_financial_per_trade": 1044.0124434897537, "put_financial_per_trade": 913.3919098535932, "call_avg_price": 2.4026113522372468, "put_avg_price": 2.847730855998317, "delta_volume_pc": -725071.0, "delta_financial_pc": 861619.9900000077, "call_delta_volume": -37147107.0, "put_delta_volume": 21134577.0, "total_delta_volume": -16012530.0, "call_delta_coverage": 19, "put_delta_coverage": 19, "call_cvd": -778609.0, "put_cvd": -410771.0, "net_protection": 99716.0, "call_oi": 23954850.0, "put_oi": 31419940.0, "total_oi": 55374790.0, "call_oi_value": 85797427.05, "put_oi_value": 107196691.2, "total_oi_value": 192994118.25, "flow_label": "Misto/Neutro", "flow_note": "Fluxo dividido; leitura direcional fraca."}}]}];
+let currentDate = 0;
+let DATA = DATE_GROUPS[currentDate]?.expiries || [];
+let current = 0;
+let cvdChart = null;
+
+function fI(v) {
+  if (v === null || v === undefined || Number.isNaN(v)) return 'N/A';
+  return Math.round(v).toLocaleString('pt-BR');
+}
+function fP(v, d=2) {
+  if (v === null || v === undefined || Number.isNaN(v)) return 'N/A';
+  return v.toLocaleString('pt-BR', { minimumFractionDigits:d, maximumFractionDigits:d });
+}
+function fBRL(v, digits=0, compact=true) {
+  if (v === null || v === undefined || Number.isNaN(v)) return 'N/A';
+  const a = Math.abs(v);
+  const s = v < 0 ? '-' : '';
+  if (compact && a >= 1_000_000_000) return s + 'R$ ' + fP(a / 1_000_000_000, 2) + ' bi';
+  if (compact && a >= 1_000_000) return s + 'R$ ' + fP(a / 1_000_000, 2) + ' mi';
+  return v.toLocaleString('pt-BR', { style:'currency', currency:'BRL', minimumFractionDigits:digits, maximumFractionDigits:digits });
+}
+function fSigned(v) {
+  if (v === null || v === undefined || Number.isNaN(v)) return 'N/A';
+  const sign = v >= 0 ? '+' : '-';
+  return sign + fI(Math.abs(v));
+}
+function cls(v) { return v > 0 ? 'pos' : v < 0 ? 'neg' : 'neu'; }
+function rowHtml(cells) { return '<tr>' + cells.map(x => '<td>' + x + '</td>').join('') + '</tr>'; }
+function biasClass(text) {
+  if (text.includes('Puts')) return 'pos';
+  if (text.includes('Calls')) return 'neg';
+  return 'neu';
+}
+function topRows(rows, getter, desc=true) {
+  return [...rows].sort((a,b) => desc ? getter(b)-getter(a) : getter(a)-getter(b)).slice(0,8);
+}
+function renderRank(target, rows, mapper) {
+  document.getElementById(target).innerHTML = rows.map(mapper).join('');
+}
+function totalsFor(expiries) {
+  return expiries.reduce((acc, exp) => {
+    const s = exp.summary || {};
+    acc.strikes += s.strikes || 0;
+    acc.call_trades += s.call_trades || 0;
+    acc.put_trades += s.put_trades || 0;
+    acc.total_trades += s.total_trades || 0;
+    acc.call_volume += s.call_volume || 0;
+    acc.put_volume += s.put_volume || 0;
+    acc.total_volume += s.total_volume || 0;
+    acc.delta_volume_pc += s.delta_volume_pc || 0;
+    acc.total_financial += s.total_financial || 0;
+    acc.call_financial += s.call_financial || 0;
+    acc.put_financial += s.put_financial || 0;
+    acc.delta_financial_pc += s.delta_financial_pc || 0;
+    acc.call_delta_volume += s.call_delta_volume || 0;
+    acc.put_delta_volume += s.put_delta_volume || 0;
+    acc.total_delta_volume += s.total_delta_volume || 0;
+    acc.call_cvd += s.call_cvd || 0;
+    acc.put_cvd += s.put_cvd || 0;
+    acc.net_protection += s.net_protection || 0;
+    acc.call_oi += s.call_oi || 0;
+    acc.put_oi += s.put_oi || 0;
+    acc.total_oi += s.total_oi || 0;
+    acc.total_oi_value += s.total_oi_value || 0;
+    return acc;
+  }, {
+    strikes:0,
+    call_trades:0,
+    put_trades:0,
+    total_trades:0,
+    call_volume:0,
+    put_volume:0,
+    total_volume:0,
+    delta_volume_pc:0,
+    total_financial:0,
+    call_financial:0,
+    put_financial:0,
+    delta_financial_pc:0,
+    call_delta_volume:0,
+    put_delta_volume:0,
+    total_delta_volume:0,
+    call_cvd:0,
+    put_cvd:0,
+    net_protection:0,
+    call_oi:0,
+    put_oi:0,
+    total_oi:0,
+    total_oi_value:0,
+  });
+}
+function setTone(el, value) {
+  el.classList.remove('pos', 'neg', 'neu');
+  el.classList.add(cls(value));
+}
+function renderTop() {
+  const totals = totalsFor(DATA);
+  const badge = totals.net_protection > 0 ? 'Proteção via puts' : totals.net_protection < 0 ? 'Apetite em calls' : 'Misto/Neutro';
+  document.getElementById('top-badge').textContent = badge;
+  document.getElementById('top-expiries').textContent = fI(DATA.length);
+  document.getElementById('top-strikes').textContent = fI(totals.strikes);
+  document.getElementById('top-total-trades').textContent = fI(totals.total_trades);
+  document.getElementById('top-total-volume').textContent = fI(totals.total_volume);
+  document.getElementById('top-call-fin').textContent = fBRL(totals.call_financial);
+  document.getElementById('top-put-fin').textContent = fBRL(totals.put_financial);
+  document.getElementById('top-call-fin-trade').textContent = fBRL(totals.call_trades > 0 ? totals.call_financial / totals.call_trades : 0, 2);
+  document.getElementById('top-put-fin-trade').textContent = fBRL(totals.put_trades > 0 ? totals.put_financial / totals.put_trades : 0, 2);
+  document.getElementById('top-call-avg-px').textContent = fP(totals.call_volume > 0 ? totals.call_financial / totals.call_volume : 0, 4);
+  document.getElementById('top-put-avg-px').textContent = fP(totals.put_volume > 0 ? totals.put_financial / totals.put_volume : 0, 4);
+  const callDvEl = document.getElementById('top-call-dv');
+  const putDvEl = document.getElementById('top-put-dv');
+  const netDvEl = document.getElementById('top-net-dv');
+  const callEl = document.getElementById('top-call-cvd');
+  const putEl = document.getElementById('top-put-cvd');
+  const netEl = document.getElementById('top-net-protection');
+  const deltaVolEl = document.getElementById('top-delta-vol');
+  const deltaFinEl = document.getElementById('top-delta-fin');
+  callDvEl.textContent = fSigned(totals.call_delta_volume); setTone(callDvEl, totals.call_delta_volume);
+  putDvEl.textContent = fSigned(totals.put_delta_volume); setTone(putDvEl, totals.put_delta_volume);
+  netDvEl.textContent = fSigned(totals.total_delta_volume); setTone(netDvEl, totals.total_delta_volume);
+  callEl.textContent = fSigned(totals.call_cvd); setTone(callEl, totals.call_cvd);
+  putEl.textContent = fSigned(totals.put_cvd); setTone(putEl, totals.put_cvd);
+  netEl.textContent = fSigned(totals.net_protection); setTone(netEl, totals.net_protection);
+  deltaVolEl.textContent = fSigned(totals.delta_volume_pc); setTone(deltaVolEl, totals.delta_volume_pc);
+  deltaFinEl.textContent = fBRL(totals.delta_financial_pc); setTone(deltaFinEl, totals.delta_financial_pc);
+  document.getElementById('top-total-oi').textContent = fI(totals.total_oi);
+  document.getElementById('top-total-oi-value').textContent = fBRL(totals.total_oi_value);
+}
+function renderSources() {
+  document.getElementById('source-body').innerHTML = DATA.map(exp => rowHtml([
+    exp.label,
+    (exp.call_file || '').split('/').pop() || 'N/A',
+    (exp.put_file || '').split('/').pop() || 'N/A',
+  ])).join('');
+}
+function renderExpiryTabs() {
+  document.getElementById('expiry-tabs').innerHTML = DATA.map((exp, i) =>
+    `<button class="tab${i === current ? ' active' : ''}" data-index="${i}">${exp.label}</button>`
+  ).join('');
+  document.querySelectorAll('.tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      current = Number(btn.dataset.index);
+      document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      render();
+    });
+  });
+}
+function render() {
+  const exp = DATA[current];
+  if (!exp) return;
+  const rows = exp.rows || [];
+  const s = exp.summary;
+  document.getElementById('chart-title').textContent = 'CVD por strike · ' + exp.label;
+  document.getElementById('chart-sub').textContent = s.flow_label + ' · ' + s.flow_note;
+  document.getElementById('summary-note').textContent = s.flow_note;
+  document.getElementById('expiry-cards').innerHTML = [
+    ['CVD Calls', fSigned(s.call_cvd), cls(s.call_cvd)],
+    ['CVD Puts', fSigned(s.put_cvd), cls(s.put_cvd)],
+    ['Delta Vol Calls', fSigned(s.call_delta_volume), cls(s.call_delta_volume)],
+    ['Delta Vol Puts', fSigned(s.put_delta_volume), cls(s.put_delta_volume)],
+    ['Delta Vol Líquido', fSigned(s.total_delta_volume), cls(s.total_delta_volume)],
+    ['Proteção Líquida', fSigned(s.net_protection), cls(s.net_protection)],
+    ['Δ Volume (P-C)', fSigned(s.delta_volume_pc), cls(s.delta_volume_pc)],
+    ['Δ Financeiro (P-C)', fBRL(s.delta_financial_pc), cls(s.delta_financial_pc)],
+    ['Strikes', fI(s.strikes), 'neu'],
+    ['Negócios Calls', fI(s.call_trades), 'neu'],
+    ['Negócios Puts', fI(s.put_trades), 'neu'],
+    ['Contratos Calls', fI(s.call_volume), 'neu'],
+    ['Contratos Puts', fI(s.put_volume), 'neu'],
+    ['Financeiro Calls', fBRL(s.call_financial), 'neu'],
+    ['Financeiro Puts', fBRL(s.put_financial), 'neu'],
+    ['Fin/Neg Calls', fBRL(s.call_financial_per_trade || 0, 2), 'neu'],
+    ['Fin/Neg Puts', fBRL(s.put_financial_per_trade || 0, 2), 'neu'],
+    ['Preço Médio Call', fP(s.call_avg_price || 0, 4), 'neu'],
+    ['Preço Médio Put', fP(s.put_avg_price || 0, 4), 'neu'],
+    ['OI Total', fI(s.total_oi), 'neu'],
+    ['OI Total (R$)', fBRL(s.total_oi_value), 'neu'],
+  ].map(([label,value,tone]) => `<div class="card"><div class="label">${label}</div><div class="value ${tone}">${value}</div></div>`).join('');
+
+  renderRank('rank-put', topRows(rows, r => r.put.cvd), r =>
+    rowHtml([`K${fP(r.strike,0)}`, `<span class="${cls(r.put.cvd)}">${fSigned(r.put.cvd)}</span>`, fI(r.put.volume)])
+  );
+  renderRank('rank-call', topRows(rows, r => r.call.cvd), r =>
+    rowHtml([`K${fP(r.strike,0)}`, `<span class="${cls(r.call.cvd)}">${fSigned(r.call.cvd)}</span>`, fI(r.call.volume)])
+  );
+  renderRank('rank-net', topRows(rows, r => r.net_protection), r =>
+    rowHtml([`K${fP(r.strike,0)}`, `<span class="${cls(r.net_protection)}">${fSigned(r.net_protection)}</span>`, `<span class="bias ${biasClass(r.bias)}">${r.bias}</span>`])
+  );
+
+  document.getElementById('detail-body').innerHTML = rows.map(r => rowHtml([
+    `<strong>K${fP(r.strike,0)}</strong>`,
+    `<span class="bias ${biasClass(r.bias)}">${r.bias}</span>`,
+    fP(r.call.vwap, 4),
+    `<span class="${cls(r.call.cvd)}">${fSigned(r.call.cvd)}</span>`,
+    fI(r.call.volume),
+    fI(r.call.trades),
+    fP(r.put.vwap, 4),
+    `<span class="${cls(r.put.cvd)}">${fSigned(r.put.cvd)}</span>`,
+    fI(r.put.volume),
+    fI(r.put.trades),
+    `<span class="${cls(r.call.delta_volume || 0)}">${fSigned(r.call.delta_volume || 0)}</span>`,
+    `<span class="${cls(r.put.delta_volume || 0)}">${fSigned(r.put.delta_volume || 0)}</span>`,
+    `<span class="${cls((r.call.delta_volume || 0) + (r.put.delta_volume || 0))}">${fSigned((r.call.delta_volume || 0) + (r.put.delta_volume || 0))}</span>`,
+    fI(r.total_oi),
+    fBRL(r.total_oi_value),
+    `<span class="${cls(r.net_protection)}">${fSigned(r.net_protection)}</span>`,
+    r.put_call_volume_ratio == null ? 'N/A' : fP(r.put_call_volume_ratio, 2) + 'x',
+  ])).join('');
+
+  const labels = rows.map(r => 'K' + fP(r.strike,0));
+  const callCvd = rows.map(r => r.call.cvd);
+  const putCvd = rows.map(r => r.put.cvd);
+  const ctx = document.getElementById('cvd-chart');
+  if (cvdChart) cvdChart.destroy();
+  cvdChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label:'Calls CVD', data:callCvd, backgroundColor:'rgba(46,107,191,.78)', borderColor:'#2E6BBF', borderWidth:1 },
+        { label:'Puts CVD', data:putCvd, backgroundColor:'rgba(179,53,48,.72)', borderColor:'#B33530', borderWidth:1 },
+      ]
+    },
+    options: {
+      responsive:true,
+      maintainAspectRatio:false,
+      indexAxis:'y',
+      interaction: { mode:'y', intersect:false },
+      plugins: { legend: { position:'bottom' } },
+      scales: {
+        x: { ticks: { callback: v => fI(v) }, grid: { color:'rgba(130,130,130,.15)' } },
+        y: { grid: { display:false } }
+      }
+    }
+  });
+}
+
+document.querySelectorAll('.date-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentDate = Number(btn.dataset.dateIndex);
+    DATA = DATE_GROUPS[currentDate]?.expiries || [];
+    current = 0;
+    document.querySelectorAll('.date-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderTop();
+    renderSources();
+    renderExpiryTabs();
+    render();
+  });
+});
+
 (function() {
   const btn = document.getElementById('theme-toggle');
   const saved = localStorage.getItem('bova11-theme') || 'light';
-  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme','dark');
   btn.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
   btn.onclick = function() {
     const dark = document.documentElement.getAttribute('data-theme') === 'dark';
     document.documentElement.setAttribute('data-theme', dark ? 'light' : 'dark');
     localStorage.setItem('bova11-theme', dark ? 'light' : 'dark');
     btn.textContent = dark ? '🌙' : '☀️';
+    render();
   };
+  renderTop();
+  renderSources();
+  renderExpiryTabs();
+  render();
 })();
 </script>
 </body>
