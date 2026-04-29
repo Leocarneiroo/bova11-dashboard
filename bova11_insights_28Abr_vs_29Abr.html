@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BOVA11 — Insights 28/Abr → 29/Abr 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script>
+(function(){
+  const saved = localStorage.getItem('bova11-theme');
+  if(saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();
+</script>
+<style>
+:root{
+  --bg:#f3f5f7; --surface:#ffffff; --surface-2:#f7f9fb; --surface-3:#eef3f8;
+  --border:#dce2e8; --text:#111827; --muted:#5f6b7a; --soft:#7a8696;
+  --blu:#2563eb; --grn:#15803d; --red:#c2413b; --yel:#b7791f; --pur:#8250df; --org:#bc4c00; --cyn:#0f7b9b;
+  --font:'Instrument Sans',system-ui,sans-serif; --mono:'JetBrains Mono',monospace;
+  --shadow:0 18px 45px rgba(17,24,39,.06);
+}
+[data-theme="dark"]{
+  --bg:#0f141b; --surface:#141b23; --surface-2:#19212b; --surface-3:#1f2933;
+  --border:#273240; --text:#e5ebf3; --muted:#a3afbf; --soft:#7d8a9b;
+  --blu:#6ea8ff; --grn:#4ade80; --red:#f87171; --yel:#f6c768; --pur:#b388ff; --org:#ff8a65; --cyn:#67e8f9;
+  --shadow:0 22px 50px rgba(0,0,0,.28);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased}
+button{font:inherit}
+.page{max-width:1320px;margin:0 auto;padding:28px 24px 44px}
+.page-header{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:18px}
+.page-copy{max-width:72ch}
+.page-kicker{font:.72rem var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--soft);margin-bottom:10px}
+.page-header h1{font-size:1.72rem;letter-spacing:-.05em;line-height:1.05}
+.page-desc{margin-top:8px;color:var(--muted);line-height:1.55}
+.theme-toggle{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:999px;padding:9px 14px;cursor:pointer;transition:border-color .2s,color .2s}
+.theme-toggle:hover{border-color:var(--blu);color:var(--blu)}
+.theme-toggle.hidden{display:none}
+.summary-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.summary-card,.conclusion-box,.selector-wrap,.exp-panel{background:var(--surface);border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow)}
+.summary-card{padding:14px 16px}
+.sc-label{font:.68rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--soft)}
+.sc-value{margin-top:8px;font-size:1.28rem;font-weight:700;letter-spacing:-.04em}
+.sc-detail{margin-top:6px;font-size:.8rem;color:var(--muted);line-height:1.45}
+.conclusion-box{padding:18px 20px;margin-bottom:14px}
+.conclusion-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;margin-bottom:12px}
+.conclusion-head h2{font-size:1.06rem;letter-spacing:-.03em}
+.conclusion-head span{font:.72rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--soft)}
+.conclusion-list{display:grid;gap:10px;padding-left:18px}
+.conclusion-list li{color:var(--muted);line-height:1.55}
+.selector-wrap{padding:16px 18px;margin-bottom:14px}
+.selector-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;margin-bottom:12px}
+.selector-head h3{font-size:1.02rem;letter-spacing:-.03em}
+.selector-head p{font-size:.82rem;color:var(--muted)}
+.exp-selector{display:flex;gap:8px;flex-wrap:wrap}
+.exp-chip{border:1px solid var(--border);background:var(--surface);color:var(--muted);border-radius:999px;padding:10px 14px;cursor:pointer;display:flex;flex-direction:column;gap:3px;transition:border-color .2s,background .2s,color .2s}
+.exp-chip strong{font-size:.9rem;color:var(--text);font-weight:600}
+.exp-chip span{font:.72rem var(--mono);color:var(--soft)}
+.exp-chip.active{background:rgba(37,99,235,.08);border-color:rgba(37,99,235,.2)}
+.exp-panel{display:none;padding:18px 20px}
+.exp-panel.active{display:block}
+.exp-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.exp-eyebrow{font:.72rem var(--mono);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.exp-head h3{font-size:1.2rem;letter-spacing:-.04em}
+.exp-headline{margin-top:6px;color:var(--muted);line-height:1.55;max-width:62ch}
+.exp-meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;min-width:min(520px,100%)}
+.mini-stat{padding:10px 12px;border:1px solid var(--border);border-radius:16px;background:var(--surface-2)}
+.mini-stat span{display:block;font:.68rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--soft)}
+.mini-stat strong{display:block;margin-top:6px;font-size:.95rem}
+.brief-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0}
+.brief-card{padding:14px;border:1px solid var(--border);border-radius:18px;background:var(--surface-2)}
+.brief-label{font:.68rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--soft)}
+.brief-value{margin-top:8px;font-size:1.08rem;font-weight:700;letter-spacing:-.03em}
+.brief-detail{margin-top:6px;font-size:.8rem;color:var(--muted);line-height:1.45}
+.exp-details{border-top:1px solid var(--border);padding-top:14px}
+.exp-details summary{cursor:pointer;list-style:none;font-weight:600;color:var(--text)}
+.exp-details summary::-webkit-details-marker{display:none}
+.details-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.detail-card{padding:16px;border:1px solid var(--border);border-radius:18px;background:var(--surface-2)}
+.detail-card.detail-wide{grid-column:1 / -1}
+.detail-card h4{font:.78rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--soft);margin-bottom:10px}
+.detail-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--border)}
+.detail-row:first-child{padding-top:0;border-top:none}
+.detail-row span{color:var(--muted);font-size:.82rem}
+.detail-row strong{font:600 .85rem var(--mono)}
+.detail-row em{font-style:normal;margin-left:6px}
+.bar-list{display:grid;gap:8px}
+.bar-row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}
+.bar-row span,.bar-row strong{font:.8rem var(--mono)}
+.bar-track{height:10px;border-radius:999px;background:var(--surface-3);overflow:hidden}
+.bar-fill{height:100%;border-radius:999px}
+.narrative{color:var(--muted);line-height:1.65;font-size:.92rem}
+.pos{color:var(--grn)} .neg{color:var(--red)} .neut{color:var(--muted)}
+.disclaimer{text-align:center;color:var(--soft);font:.72rem var(--mono);margin-top:26px}
+@media(max-width:1180px){.summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:980px){.exp-meta,.brief-grid,.details-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){
+  .page{padding:20px 14px 32px}
+  .page-header,.exp-head{flex-direction:column}
+  .summary-grid,.exp-meta,.brief-grid,.details-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="page-header">
+    <div class="page-copy">
+      <div class="page-kicker">Hoje / Insights</div>
+      <h1>Insights analíticos</h1>
+      <p class="page-desc">Comparativo entre 28/Abr e 29/Abr/2026 · Spot 181.37 · leitura rápida do dia no topo e detalhe por vencimento sob demanda.</p>
+    </div>
+    <div><button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()">Tema</button></div>
+  </header>
+
+  <section class="summary-grid"><div class="summary-card"><div class="sc-label">Regime agregado</div><div class="sc-value neg">Short Gamma</div><div class="sc-detail">Flip 190.6 · Spot 181.37</div></div><div class="summary-card"><div class="sc-label">GEX agregado</div><div class="sc-value neg">−711.4M</div><div class="sc-detail">Exposição líquida consolidada</div></div><div class="summary-card"><div class="sc-label">OI total</div><div class="sc-value ">109.7M</div><div class="sc-detail">Call 38.7M · Put 71.0M</div></div><div class="summary-card"><div class="sc-label">ΔOI líquido</div><div class="sc-value pos">+2.6M</div><div class="sc-detail">ΔCall +1.6M · ΔPut +1.0M</div></div><div class="summary-card"><div class="sc-label">ΔVolume</div><div class="sc-value pos">+25.0M</div><div class="sc-detail">Volume D 156.3M · IV média 21.8%</div></div></section>
+
+  <section class="conclusion-box">
+    <div class="conclusion-head">
+      <div><span>Conclusão global</span><h2>O que merece atenção hoje</h2></div>
+      <div class="page-kicker">Spot 181.37</div>
+    </div>
+    <ul class="conclusion-list"><li>Regime agregado em <b class="neg">Short Gamma</b>, com spot 181.37 abaixo do flip 190.6.</li><li>IV call ATM média em 21.8% e variação média de +1.2pp; o extremo do dia ficou em <b>22 mai W4</b>.</li><li>Vencimento dominante: <b>30 abr W5</b>, concentrando 75% do GEX agregado.</li><li>Construção simultânea de OI em <b>8 mai W2, 22 mai W4, 19 jun Mensal</b>, sugerindo rolagem ou abertura nova.</li><li>Faixa de níveis a monitorar: <b>K173, K178, K180, K181, K182, K183, K185, K189, K191</b>.</li></ul>
+  </section>
+
+  <section class="selector-wrap">
+    <div class="selector-head">
+      <div><h3>Por vencimento</h3><p>Selecione um vencimento para manter a leitura focada.</p></div>
+    </div>
+    <div class="exp-selector"><button class="exp-chip active" data-target="exp-0"><strong>30 abr W5</strong><span>1 DTE</span></button><button class="exp-chip" data-target="exp-1"><strong>8 mai W2</strong><span>9 DTE</span></button><button class="exp-chip" data-target="exp-2"><strong>15 mai Mensal</strong><span>16 DTE</span></button><button class="exp-chip" data-target="exp-3"><strong>22 mai W4</strong><span>23 DTE</span></button><button class="exp-chip" data-target="exp-4"><strong>19 jun Mensal</strong><span>51 DTE</span></button></div>
+  </section>
+
+  
+  <article class="exp-panel active" id="exp-0">
+    <div class="exp-head">
+      <div>
+        <div class="exp-eyebrow" style="color:var(--red)">1 DTE</div>
+        <h3>30 abr W5</h3>
+        <p class="exp-headline">Short Gamma com dominante em K181; max pain afastado em 8 pts.</p>
+      </div>
+      <div class="exp-meta">
+        <div class="mini-stat"><span>GEX</span><strong class="neg">−530.9M</strong></div>
+        <div class="mini-stat"><span>Flip</span><strong>187.5</strong></div>
+        <div class="mini-stat"><span>Max Pain</span><strong>K189</strong></div>
+        <div class="mini-stat"><span>PCR OI</span><strong>5.87</strong></div>
+      </div>
+    </div>
+
+    <div class="brief-grid">
+      <div class="brief-card">
+        <div class="brief-label">Regime</div>
+        <div class="brief-value neg">Short Gamma</div>
+        <div class="brief-detail">Dominante em K181</div>
+      </div>
+      <div class="brief-card">
+        <div class="brief-label">IV Call ATM</div>
+        <div class="brief-value pos">20.17%</div>
+        <div class="brief-detail">Δ +0.29pp</div>
+      </div>
+      <div class="brief-card">
+        <div class="brief-label">OI líquido</div>
+        <div class="brief-value neg">−137k</div>
+        <div class="brief-detail">Call +311k · Put −448k</div>
+      </div>
+      <div class="brief-card">
+        <div class="brief-label">Volume</div>
+        <div class="brief-value neg">12.1M</div>
+        <div class="brief-detail">Δ −6.6M</div>
+      </div>
+    </div>
+
+    <details class="exp-details">
+      <summary>Ver leitura completa</summary>
+      <div class="details-grid">
+        <div class="detail-card"><h4>Open interest</h4><div class="detail-row"><span>OI Call</span><strong>3.8M <em class="pos">+311k</em></strong></div><div class="detail-row"><span>OI Put</span><strong>22.5M <em class="neg">−448k</em></strong></div><div class="detail-row"><span>Entrada OI Call</span><strong class="pos">K190 · +556k</strong></div><div class="detail-row"><span>Saída OI Put</span><strong class="neg">K189 · −140k</strong></div></div>
+        <div class="detail-card"><h4>Volume</h4><div class="detail-row"><span>Volume total</span><strong>12.1M <em class="neg">−6.6M</em></strong></div><div class="detail-row"><span>Volume call</span><strong>2.8M <em class="neg">−2.2M</em></strong></div><div class="detail-row"><span>Volume put</span><strong>9.3M <em class="neg">−4.5M</em></strong></div><div class="detail-row"><span>Strike mais negociado</span><strong>K190 · 2.5M</strong></div></div>
+        <div class="detail-card"><h4>Volatilidade implícita</h4><div class="detail-row"><span>IV Call ATM</span><strong>20.17% <em class="pos">+0.29pp</em></strong></div><div class="detail-row"><span>IV Put ATM</span><strong>20.35% <em class="pos">+0.15pp</em></strong></div><div class="detail-row"><span>Skew ATM</span><strong class="pos">+0.18pp</strong></div><div class="detail-row"><span>Maior variação IV Call</span><strong class="pos">K190 · +11.25pp</strong></div></div>
+        <div class="detail-card"><h4>Preço</h4><div class="detail-row"><span>Call em baixa</span><strong class="neg">K186 · -92.0%</strong></div><div class="detail-row"><span>Put em alta</span><strong class="pos">K183 · +310.0%</strong></div></div>
+        <div class="detail-card detail-wide"><h4>Top volume por strike</h4><div class="bar-list"><div class="bar-row"><span>K190</span><div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--red)"></div></div><strong>2.5M</strong></div><div class="bar-row"><span>K189</span><div class="bar-track"><div class="bar-fill" style="width:70%;background:var(--red)"></div></div><strong>1.7M</strong></div><div class="bar-row"><span>K186</span><div class="bar-track"><div class="bar-fill" style="width:59%;background:var(--red)"></div></div><strong>1.5M</strong></div><div class="bar-row"><span>K184</span><div class="bar-track"><div class="bar-fill" style="width:45%;background:var(--red)"></div></div><strong>1.1M</strong></div><div class="bar-row"><span>K182</span><div class="bar-track"><div class="bar-fill" style="width:33%;background:var(--red)"></div></div><strong>823k</strong></div></div></div>
+        <div class="detail-card detail-wide">
+          <h4>Leitura do vencimento</h4>
+          <p class="narrative">Vencimento muito <span class="highlight">curto (1 DTE)</span>. com <span class="highlight">IV relativamente estável</span> (+0.29pp call). O <span class="highlight">PCR OI caiu de 6.52 para 5.87</span>, mostrando que calls ganharam participação relativa. O <span class="highlight red">volume caiu 35%</span> vs D-1 (−6.6M). com <span class="highlight">K190 como o mais negociado (2.5M)</span>. Com <span class="highlight">MaxPain em K189</span> e spot em 181, há uma <span class="highlight red">distância significativa (8 pontos)</span>. O <span class="highlight red">GEX negativo (−530.9M)</span> com flip em 187.5 indica <span class="highlight red">regime Short Gamma</span> — movimentos podem ser amplificados.</p>
+        </div>
+      </div>
+    </details>
+  </article>
+
+  <article class="exp-panel" id="exp-1">
+    <div class="exp-head">
+      <div>
+        <div class="exp-eyebrow" style="color:var(--blu)">9 DTE</div>
+        <h3>8 mai W2</h3>
+        <p class="exp-headline">Long Gamma com dominante em K182; max pain próximo do spot.</p>
+      </div>
+      <div class="exp-meta">
+        <div class="mini-stat"><span>GEX</span><strong class="neg">−15.0M</strong></div>
+        <div class="mini-stat"><span>Flip</span><strong>177.5</strong></div>
+        <div class="mini-stat"><span>Max Pain</span><strong>K180</strong></div>
+        <div class="mini-stat"><span>PCR OI</span><strong>1.09</strong></div>
+      </div>
+    </div>
+
+    <div class="brief-grid">
+      <div class="brief-card">
+        <div class="brief-label">Regime</div>
+        <div class="brief-value neg">Long Gamma</div>
+        <div class="brief-detail">Dominante em K182</div>
+      </div>
+      <div class="brief-card">
+        <div class="brief-label">IV Call ATM</div>
+        <div class="brief-value pos">19.83%</div>
+        <div class="brief-detail">Δ +1.30pp</div>
+      </div>
+      <div class="brief-card">
+        <div class="brief-label">OI líquido</div>
+        <div class="brief-value pos">+763k</div>
+        <div class="brief-detail">Call +317k · Put +445k</div>
+      </div>
+      <div class="brief-card">
+        <div class="brief-label">Volume</div>
+        <div class="brief-value pos">61.5M</div>
+        <div class="brief-detail">Δ +15.1M</div>
+      </div>
+    </div>
+
+    <details class="exp-details">
+      <summary>Ver leitura completa</summary>
+      <div class="details-grid">
+        <div class="detail-card"><h4>Open interest</h4><div class="detail-row"><span>OI Call</span><strong>9.2M <em class="pos">+317k</em></strong></div><div class="detail-row"><span>OI Put</span><strong>10.1M <em class="pos">+445k</em></strong></div><div class="detail-row"><span>Saída OI Call</span><strong class="neg">K181 · −148k</strong></div><div class="detail-row"><span>Entrada OI Put</span><strong class="pos">K182 · +185k</strong></div></div>
+        <div class="detail-card"><h4>Volume</h4><div class="detail-row"><span>Volume total</span><strong>61.5M <em class="pos">+15.1M</em></strong></div><div class="detail-row"><span>Volume call</span><strong>26.2M <em class="pos">+4.0M</em></strong></div><div class="detail-row"><span>Volume put</span><strong>35.4M <em class="pos">+11.1M</em></strong></div><div class="detail-row"><span>Strike mais negociado</span><strong>K189 · 7.2M</strong></div></div>
+        <div class="detail-card"><h4>Volatilidade implícita</h4><div class="detail-row"><span>IV Call ATM</span><strong>19.83% <em class="pos">+1.30pp</em></strong></div><div class="detail-row"><span>IV Put ATM</span><strong>20.23% <em class="pos">+0.71pp</em></strong></div><div class="detail-row"><span>Skew ATM</span><strong class="pos">+0.40pp</strong></div><div class="detail-row"><span>Maior variação IV Call</span><strong class="pos">K189 · +2.21pp</strong></div></div>
+        <div class="detail-card"><h4>Preço</h4><div class="detail-row"><span>Call em baixa</span><strong class="neg">K189 · -67.3%</strong></div><div class="detail-row"><span>Put em alta</span><strong class="pos">K180 · +147.2%</strong></div></div>
+        <div class="detail-card detail-wide"><h4>Top volume por strike</h4><div class="bar-list"><div class="bar-row"><span>K189</span><div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--blu)"></div></div><strong>7.2M</strong></div><div class="bar-row"><span>K182</span><div class="bar-track"><div class="bar-fill" style="width:96%;background:var(--blu)"></div></div><strong>6.9M</strong></div><div class="bar-row"><span>K186</span><div class="bar-track"><div class="bar-fill" style="width:93%;background:var(--blu)"></div></div><strong>6.7M</strong></div><div class="bar-row"><span>K185</span><div class="bar-track"><div class="bar-fill" style="width:83%;background:var(--blu)"></div></div><strong>5.9M</strong></div><div class="bar-row"><span>K187</span><div class="bar-track"><div class="bar-fill" style="width:76%;background:var(--blu)"></div></div><strong>5.5M</strong></div></div></div>
+        <div class="detail-card detail-wide">
+          <h4>Leitura do vencimento</h4>
+          <p class="narrative">Vencimento de <span class="highlight">médio prazo (9 DTE)</span>. com <span class="highlight">IV em queda moderada</span> (+1.30pp call, +0.71pp put). O <span class="highlight grn">volume subiu 32%</span> vs D-1 (+15.1M). com <span class="highlight">K189 como o mais negociado (7.2M)</span>. <span class="highlight">MaxPain em K180</span> próximo do spot (181). O <span class="highlight red">GEX negativo (−15.0M)</span> com flip em 177.5 indica <span class="highlight red">regime Long Gamma</span> — movimentos podem ser amplificados.</p>
+        </div>
+      </div>
+    </details>
+  </article>
+
+  <article class="exp-panel" id="exp-2">
+    <div class="exp-head">
+      <div>
+        <div class="exp-eyebrow" style="color:var(--grn)">16 DTE</div>
+        <h3>15 mai Mensal</h3>
+        <p class="exp-headline">Short Gamma com dominante em K185; max pain afastado em 4 pts.</p>
+      </div>
+      <div class="exp-meta">
+        <div class="mini-stat"><span>GEX</span><strong class="neg">−146.6M</strong></div>
+        <div class="mini-stat"><span>Flip</span><strong>182.8</strong></div>
+        <div class="mini-stat"><span>Max Pain</span><strong>K185</strong></div>
+        <div class="mini-stat"><span>PCR OI</span><strong>1.63</strong></div>
+      </div>
+    </div>
+
+    <div class="brief-grid">
+      <div class="brief-card">
+        <div class="brief-label">Regime</div>
+        <div class="brief-value neg">Short Gamma</div>
+        <div class="brief-detail">Dominante em K185</div>
+      </div>
+      <div class="brief-card">
+        <div class="brief-label">IV Call ATM</div>
+        <div class="brief-value pos">19.71%</div>
+        <div class="brief-detail">Δ +1.31pp</div>
+      </div>
+      <div class="brief-card">
+        <div class="brief-label">OI líquido</div>
+        <div class="brief-value neg">−35k</div>
+        <div class="brief-detail">Call −121k · Put +86k</div>
+      </div>
+      <div class="brief-card">
+        <div class="brief-label">Volume</div>
+        <div class="brief-value pos">52.4M</div>
+        <div class="brief-detail">Δ +11.9M</div>
+      </div>
+    </div>
+
+    <details class="exp-details">
+      <summary>Ver leitura completa</summary>
+      <div class="details-grid">
+        <div class="detail-card"><h4>Open interest</h4><div class="detail-row"><span>OI Call</span><strong>16.6M <em class="neg">−121k</em></strong></div><div class="detail-row"><span>OI Put</span><strong>27.1M <em class="pos">+86k</em></strong></div><div class="detail-row"><span>Saída OI Call</span><strong class="neg">K188 · −160k</strong></div><div class="detail-row"><span>Entrada OI Put</span><strong class="pos">K189 · +410k</strong></div></div>
+        <div class="detail-card"><h4>Volume</h4><div class="detail-row"><span>Volume total</span><strong>52.4M <em class="pos">+11.9M</em></strong></div><div class="detail-row"><span>Volume call</span><strong>21.1M <em class="pos">+3.2M</em></strong></div><div class="detail-row"><span>Volume put</span><strong>31.3M <em class="pos">+8.7M</em></strong></div><div class="detail-row"><span>Strike mais negociado</span><strong>K182 · 6.1M</strong></div></div>
+        <div class="detail-card"><h4>Volatilidade implícita</h4><div class="detail-row"><span>IV Call ATM</span><strong>19.71% <em class="pos">+1.31pp</em></strong></div><div class="detail-row"><span>IV Put ATM</span><strong>20.29% <em class="pos">+0.63pp</em></strong></div><div class="detail-row"><span>Skew ATM</span><strong class="pos">+0.58pp</strong></div><div class="detail-row"><span>Maior variação IV Call</span><strong class="pos">K177 · +2.20pp</strong></div></div>
+        <div class="detail-card"><h4>Preço</h4><div class="detail-row"><span>Call em baixa</span><strong class="neg">K189 · -53.8%</strong></div><div class="detail-row"><span>Put em alta</span><strong class="pos">K179 · +102.6%</strong></div></div>
+        <div class="detail-card detail-wide"><h4>Top volume por strike</h4><div class="bar-list"><div class="bar-row"><span>K182</span><div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--grn)"></div></div><strong>6.1M</strong></div><div class="bar-row"><span>K189</span><div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--grn)"></div></div><strong>6.1M</strong></div><div class="bar-row"><span>K186</span><div class="bar-track"><div class="bar-fill" style="width:97%;background:var(--grn)"></div></div><strong>5.9M</strong></div><div class="bar-row"><span>K185</span><div class="bar-track"><div class="bar-fill" style="width:86%;background:var(--grn)"></div></div><strong>5.2M</strong></div><div class="bar-row"><span>K187</span><div class="bar-track"><div class="bar-fill" style="width:78%;background:var(--grn)"></div></div><strong>4.8M</strong></div></div></div>
+        <div class="detail-card detail-wide">
+          <h4>Leitura do vencimento</h4>
+          <p class="narrative">Vencimento mais longo (<span class="highlight">16 DTE</span>). com <span class="highlight">IV em queda moderada</span> (+1.31pp call, +0.63pp put). O <span class="highlight grn">volume subiu 29%</span> vs D-1 (+11.9M). com <span class="highlight">K182 como o mais negociado (6.1M)</span>. <span class="highlight">MaxPain em K185</span> próximo do spot (181). O <span class="highlight red">GEX negativo (−146.6M)</span> com flip em 182.8 indica <span class="highlight red">regime Short Gamma</span> — movimentos podem ser amplificados.</p>
+        </div>
+      </div>
+    </details>
+  </article>
+
+  <article class="exp-panel" id="exp-3">
+    <div class="exp-head">
+      <div>
+        <div class="exp-eyebrow" style="color:var(--yel)">23 DTE</div>
+        <h3>22 mai W4</h3>
+        <p class="exp-headline">Long Gamma com dominante em K191; max pain afastado em 8 pts.</p>
+      </div>
+      <div class="exp-meta">
+        <div class="mini-stat"><span>GEX</span><strong class="pos">+1.5M</strong></div>
+        <div class="mini-stat"><span>Flip</span><strong>174.0</strong></div>
+        <div class="mini-stat"><span>Max Pain</span><strong>K173</strong></div>
+        <div class="mini-stat"><span>PCR OI</span><strong>0.14</strong></div>
+      </div>
+    </div>
+
+    <div class="brief-grid">
+      <div class="brief-card">
+        <div class="brief-label">Regime</div>
+        <div class="brief-value pos">Long Gamma</div>
+        <div class="brief-detail">Dominante em K191</div>
+      </div>
+      <div class="brief-card">
+        <div class="brief-label">IV Call ATM</div>
+        <div class="brief-value pos">30.55%</div>
+        <div class="brief-detail">Δ +2.83pp</div>
+      </div>
+      <div class="brief-card">
+        <div class="brief-label">OI líquido</div>
+        <div class="brief-value pos">+134k</div>
+        <div class="brief-detail">Call +132k · Put +2k</div>
+      </div>
+      <div class="brief-card">
+        <div class="brief-label">Volume</div>
+        <div class="brief-value neg">346k</div>
+        <div class="brief-detail">Δ −550k</div>
+      </div>
+    </div>
+
+    <details class="exp-details">
+      <summary>Ver leitura completa</summary>
+      <div class="details-grid">
+        <div class="detail-card"><h4>Open interest</h4><div class="detail-row"><span>OI Call</span><strong>194k <em class="pos">+132k</em></strong></div><div class="detail-row"><span>OI Put</span><strong>28k <em class="pos">+2k</em></strong></div><div class="detail-row"><span>Entrada OI Call</span><strong class="pos">K191 · +130k</strong></div><div class="detail-row"><span>Entrada OI Put</span><strong class="pos">K185 · +2k</strong></div></div>
+        <div class="detail-card"><h4>Volume</h4><div class="detail-row"><span>Volume total</span><strong>346k <em class="neg">−550k</em></strong></div><div class="detail-row"><span>Volume call</span><strong>327k <em class="neg">−531k</em></strong></div><div class="detail-row"><span>Volume put</span><strong>19k <em class="neg">−19k</em></strong></div><div class="detail-row"><span>Strike mais negociado</span><strong>K189 · 285k</strong></div></div>
+        <div class="detail-card"><h4>Volatilidade implícita</h4><div class="detail-row"><span>IV Call ATM</span><strong>30.55% <em class="pos">+2.83pp</em></strong></div><div class="detail-row"><span>IV Put ATM</span><strong>26.19% <em class="pos">+8.82pp</em></strong></div><div class="detail-row"><span>Skew ATM</span><strong class="neg">-4.36pp</strong></div><div class="detail-row"><span>Maior variação IV Call</span><strong class="pos">K180 · +13.93pp</strong></div></div>
+        <div class="detail-card"><h4>Preço</h4><div class="detail-row"><span>Call em alta</span><strong class="pos">K183 · +100.0%</strong></div><div class="detail-row"><span>Call em baixa</span><strong class="neg">K189 · -48.6%</strong></div><div class="detail-row"><span>Put em alta</span><strong class="pos">K179 · +84.3%</strong></div></div>
+        <div class="detail-card detail-wide"><h4>Top volume por strike</h4><div class="bar-list"><div class="bar-row"><span>K189</span><div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--yel)"></div></div><strong>285k</strong></div><div class="bar-row"><span>K191</span><div class="bar-track"><div class="bar-fill" style="width:9%;background:var(--yel)"></div></div><strong>27k</strong></div><div class="bar-row"><span>K193</span><div class="bar-track"><div class="bar-fill" style="width:4%;background:var(--yel)"></div></div><strong>10k</strong></div><div class="bar-row"><span>K185</span><div class="bar-track"><div class="bar-fill" style="width:3%;background:var(--yel)"></div></div><strong>8k</strong></div><div class="bar-row"><span>K180</span><div class="bar-track"><div class="bar-fill" style="width:2%;background:var(--yel)"></div></div><strong>5k</strong></div></div></div>
+        <div class="detail-card detail-wide">
+          <h4>Leitura do vencimento</h4>
+          <p class="narrative">Vencimento mais longo (<span class="highlight">23 DTE</span>). com <span class="highlight red">queda acentuada de IV</span> (+2.83pp call, +8.82pp put) — típico theta crush de fim de semana. O <span class="highlight">PCR OI caiu de 0.41 para 0.14</span>, mostrando que calls ganharam participação relativa. O <span class="highlight red">volume caiu 61%</span> vs D-1 (−550k). com <span class="highlight">K189 como o mais negociado (285k)</span>. Com <span class="highlight">MaxPain em K173</span> e spot em 181, há uma <span class="highlight red">distância significativa (8 pontos)</span>. O <span class="highlight grn">GEX positivo (+1.5M)</span> com flip em 174.0 confirma <span class="highlight grn">regime Long Gamma</span> — mercado tende a ficar contido. O <span class="highlight org">skew put-call ATM de -4.36pp</span> mostra que o mercado precifica mais demanda por calls.</p>
+        </div>
+      </div>
+    </details>
+  </article>
+
+  <article class="exp-panel" id="exp-4">
+    <div class="exp-head">
+      <div>
+        <div class="exp-eyebrow" style="color:var(--pur)">51 DTE</div>
+        <h3>19 jun Mensal</h3>
+        <p class="exp-headline">Long Gamma com dominante em K178; max pain próximo do spot.</p>
+      </div>
+      <div class="exp-meta">
+        <div class="mini-stat"><span>GEX</span><strong class="neg">−20.3M</strong></div>
+        <div class="mini-stat"><span>Flip</span><strong>179.2</strong></div>
+        <div class="mini-stat"><span>Max Pain</span><strong>K183</strong></div>
+        <div class="mini-stat"><span>PCR OI</span><strong>1.28</strong></div>
+      </div>
+    </div>
+
+    <div class="brief-grid">
+      <div class="brief-card">
+        <div class="brief-label">Regime</div>
+        <div class="brief-value neg">Long Gamma</div>
+        <div class="brief-detail">Dominante em K178</div>
+      </div>
+      <div class="brief-card">
+        <div class="brief-label">IV Call ATM</div>
+        <div class="brief-value pos">18.49%</div>
+        <div class="brief-detail">Δ +0.50pp</div>
+      </div>
+      <div class="brief-card">
+        <div class="brief-label">OI líquido</div>
+        <div class="brief-value pos">+1.9M</div>
+        <div class="brief-detail">Call +919k · Put +953k</div>
+      </div>
+      <div class="brief-card">
+        <div class="brief-label">Volume</div>
+        <div class="brief-value pos">29.9M</div>
+        <div class="brief-detail">Δ +5.2M</div>
+      </div>
+    </div>
+
+    <details class="exp-details">
+      <summary>Ver leitura completa</summary>
+      <div class="details-grid">
+        <div class="detail-card"><h4>Open interest</h4><div class="detail-row"><span>OI Call</span><strong>8.8M <em class="pos">+919k</em></strong></div><div class="detail-row"><span>OI Put</span><strong>11.3M <em class="pos">+953k</em></strong></div><div class="detail-row"><span>Entrada OI Call</span><strong class="pos">K184 · +320k</strong></div><div class="detail-row"><span>Entrada OI Put</span><strong class="pos">K184 · +238k</strong></div></div>
+        <div class="detail-card"><h4>Volume</h4><div class="detail-row"><span>Volume total</span><strong>29.9M <em class="pos">+5.2M</em></strong></div><div class="detail-row"><span>Volume call</span><strong>14.9M <em class="neg">−1.1M</em></strong></div><div class="detail-row"><span>Volume put</span><strong>15.1M <em class="pos">+6.3M</em></strong></div><div class="detail-row"><span>Strike mais negociado</span><strong>K185 · 5.7M</strong></div></div>
+        <div class="detail-card"><h4>Volatilidade implícita</h4><div class="detail-row"><span>IV Call ATM</span><strong>18.49% <em class="pos">+0.50pp</em></strong></div><div class="detail-row"><span>IV Put ATM</span><strong>20.3% <em class="pos">+0.06pp</em></strong></div><div class="detail-row"><span>Skew ATM</span><strong class="pos">+1.81pp</strong></div><div class="detail-row"><span>Maior variação IV Call</span><strong class="pos">K177 · +0.74pp</strong></div></div>
+        <div class="detail-card"><h4>Preço</h4><div class="detail-row"><span>Call em baixa</span><strong class="neg">K190 · -34.1%</strong></div><div class="detail-row"><span>Put em alta</span><strong class="pos">K179 · +46.4%</strong></div></div>
+        <div class="detail-card detail-wide"><h4>Top volume por strike</h4><div class="bar-list"><div class="bar-row"><span>K185</span><div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--pur)"></div></div><strong>5.7M</strong></div><div class="bar-row"><span>K190</span><div class="bar-track"><div class="bar-fill" style="width:68%;background:var(--pur)"></div></div><strong>3.9M</strong></div><div class="bar-row"><span>K180</span><div class="bar-track"><div class="bar-fill" style="width:51%;background:var(--pur)"></div></div><strong>2.9M</strong></div><div class="bar-row"><span>K184</span><div class="bar-track"><div class="bar-fill" style="width:41%;background:var(--pur)"></div></div><strong>2.3M</strong></div><div class="bar-row"><span>K186</span><div class="bar-track"><div class="bar-fill" style="width:36%;background:var(--pur)"></div></div><strong>2.1M</strong></div></div></div>
+        <div class="detail-card detail-wide">
+          <h4>Leitura do vencimento</h4>
+          <p class="narrative">Vencimento mais longo (<span class="highlight">51 DTE</span>). com <span class="highlight">IV em queda moderada</span> (+0.50pp call, +0.06pp put). O <span class="highlight grn">volume subiu 21%</span> vs D-1 (+5.2M). com <span class="highlight">K185 como o mais negociado (5.7M)</span>. <span class="highlight">MaxPain em K183</span> próximo do spot (181). O <span class="highlight red">GEX negativo (−20.3M)</span> com flip em 179.2 indica <span class="highlight red">regime Long Gamma</span> — movimentos podem ser amplificados. O <span class="highlight org">skew put-call ATM de +1.81pp</span> mostra que o mercado precifica mais risco de queda.</p>
+        </div>
+      </div>
+    </details>
+  </article>
+
+  <div class="disclaimer">Dados de fechamento B3 · Geração automática · Não constitui recomendação de investimento</div>
+</div>
+
+<script>
+document.querySelectorAll('.exp-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const target = chip.dataset.target;
+    document.querySelectorAll('.exp-chip').forEach(item => item.classList.remove('active'));
+    document.querySelectorAll('.exp-panel').forEach(panel => panel.classList.remove('active'));
+    chip.classList.add('active');
+    const panel = document.getElementById(target);
+    if (panel) panel.classList.add('active');
+  });
+});
+
+(function(){
+  const embedded = window.self !== window.top;
+  const btn = document.getElementById('theme-toggle');
+  if (embedded && btn) btn.classList.add('hidden');
+})();
+
+function toggleTheme(){
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if(dark){
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('bova11-theme','light');
+  } else {
+    document.documentElement.setAttribute('data-theme','dark');
+    localStorage.setItem('bova11-theme','dark');
+  }
+}
+</script>
+</body>
+</html>
