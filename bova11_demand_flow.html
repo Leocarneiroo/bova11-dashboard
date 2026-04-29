@@ -3,447 +3,230 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BOVA11 — Demand Flow &amp; PDI</title>
+<title>BOVA11 — Demand Flow v3</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-  :root {
-    --bg:#FAFAF8;--bg2:#F0EFEC;--border:#D8D7D4;
-    --t1:#1A1A18;--t2:#4A4A48;--t3:#8A8A88;
-    --blu:#0969DA;--red:#CF222E;--grn:#1A7F37;
-    --card-bg:#FFFFFF;--hdr-bg:#F6F8FA;
-  }
-  [data-theme="dark"] {
-    --bg:#0d1117;--bg2:#161b22;--border:#30363d;
-    --t1:#c9d1d9;--t2:#8b949e;--t3:#6e7681;
-    --blu:#58a6ff;--red:#f85149;--grn:#3fb950;
-    --card-bg:#161b22;--hdr-bg:#21262d;
-  }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-        background:var(--bg);color:var(--t1);font-size:14px;}
-  /* Header */
-  .hdr{position:sticky;top:0;z-index:100;background:var(--hdr-bg);
-        border-bottom:1px solid var(--border);padding:12px 20px;
-        display:flex;align-items:center;justify-content:space-between;gap:12px;}
-  .hdr-title{font-size:1.1rem;font-weight:700;}
-  .hdr-sub{font-size:0.8rem;color:var(--t3);margin-top:2px;}
-  .theme-btn{background:none;border:1px solid var(--border);border-radius:6px;
-              padding:5px 10px;cursor:pointer;color:var(--t2);font-size:0.85rem;
-              white-space:nowrap;}
-  .theme-btn:hover{color:var(--t1);border-color:var(--blu);}
-  /* Expiry tabs */
-  .exp-wrap{padding:12px 20px 0;background:var(--bg2);
-             border-bottom:1px solid var(--border);}
-  .exp-tabs{display:flex;flex-wrap:wrap;gap:6px;padding-bottom:12px;}
-  .exp-tab{padding:5px 12px;border-radius:20px;cursor:pointer;font-size:0.8rem;
-            font-weight:500;border:1px solid var(--border);color:var(--t2);
-            background:var(--bg);transition:all 0.15s;}
-  .exp-tab:hover{color:var(--t1);border-color:var(--blu);}
-  .exp-tab.on{color:#fff;border-color:transparent;}
-  .exp-tab.agg{border-color:#d2a8ff;color:#d2a8ff;}
-  .exp-tab.agg.on{background:#8250df;border-color:#8250df;color:#fff;}
-  /* Main content */
-  .main{padding:20px;max-width:1400px;margin:0 auto;}
-  /* Cards */
-  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
-  @media(max-width:800px){.cards{grid-template-columns:repeat(2,1fr);}}
-  @media(max-width:480px){.cards{grid-template-columns:1fr;}}
-  .card{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;
-         padding:14px 16px;}
-  .card-label{font-size:0.7rem;font-weight:600;text-transform:uppercase;
-               letter-spacing:.05em;color:var(--t3);margin-bottom:6px;}
-  .card-val{font-size:1.4rem;font-weight:700;font-family:monospace;}
-  .card-badge{display:inline-block;margin-top:6px;padding:2px 8px;border-radius:12px;
-               font-size:0.72rem;font-weight:600;color:#fff;}
-  .card-sub{font-size:0.72rem;color:var(--t3);margin-top:4px;}
-  /* Two-col layout */
-  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
-  @media(max-width:900px){.two-col{grid-template-columns:1fr;}}
-  .panel{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;
-          overflow:hidden;}
-  .panel-hdr{background:var(--hdr-bg);border-bottom:1px solid var(--border);
-              padding:10px 14px;font-weight:600;font-size:0.85rem;}
-  /* NDS table */
-  .nds-wrap{max-height:340px;overflow-y:auto;}
-  .nds-table{width:100%;border-collapse:collapse;font-size:0.82rem;}
-  .nds-table th{position:sticky;top:0;background:var(--hdr-bg);border-bottom:1px solid var(--border);
-                 padding:6px 10px;text-align:right;font-weight:600;color:var(--t3);font-size:0.72rem;}
-  .nds-table th:first-child{text-align:left;}
-  .nds-table td{padding:5px 10px;text-align:right;border-bottom:1px solid var(--border);}
-  .nds-table td:first-child{text-align:left;font-weight:500;}
-  .nds-table tr:last-child td{border-bottom:none;}
-  .nds-bar{display:inline-block;height:8px;border-radius:3px;vertical-align:middle;margin-left:4px;}
-  /* Rankings */
-  .rnk-section{padding:10px 14px;}
-  .rnk-title{font-size:0.75rem;font-weight:600;color:var(--t3);text-transform:uppercase;
-              letter-spacing:.05em;margin:8px 0 6px;}
-  .rnk-list{display:flex;flex-wrap:wrap;gap:6px;}
-  .rnk-badge{padding:3px 9px;border-radius:12px;font-size:0.78rem;font-weight:600;
-              font-family:monospace;color:#fff;}
-  /* Chart section */
-  .chart-panel{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;
-                padding:16px;margin-bottom:20px;}
-  .chart-hdr{display:flex;align-items:center;justify-content:space-between;
-              flex-wrap:wrap;gap:8px;margin-bottom:12px;}
-  .chart-title{font-weight:600;font-size:0.9rem;}
-  .metric-btns{display:flex;gap:6px;}
-  .metric-btn{padding:4px 12px;border-radius:12px;border:1px solid var(--border);
-               background:var(--bg);color:var(--t2);cursor:pointer;font-size:0.78rem;
-               font-weight:500;transition:all 0.15s;}
-  .metric-btn.on{background:var(--blu);color:#fff;border-color:var(--blu);}
-  .metric-btn:hover:not(.on){border-color:var(--blu);color:var(--t1);}
-  .chart-wrap{position:relative;height:220px;}
-  /* Note */
-  .note{font-size:0.72rem;color:var(--t3);padding:10px 14px;
-         border-top:1px solid var(--border);}
-  /* Explainer section */
-  .explainer{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;
-              margin-bottom:20px;overflow:hidden;}
-  .exp-hdr{background:var(--hdr-bg);border-bottom:1px solid var(--border);
-            padding:12px 16px;cursor:pointer;user-select:none;
-            display:flex;align-items:center;justify-content:space-between;}
-  .exp-hdr:hover{background:rgba(88,166,255,0.05);}
-  .exp-toggle{font-size:0.8rem;color:var(--t3);transition:transform 0.2s;}
-  .exp-toggle.open{transform:rotate(180deg);}
-  .exp-body{display:none;padding:14px 16px;font-size:0.85rem;line-height:1.5;color:var(--t2);}
-  .exp-body.open{display:block;}
-  .exp-section{margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);}
-  .exp-section:last-child{border-bottom:none;margin-bottom:0;}
-  .exp-section strong{color:var(--t1);}
-  .exp-section em{color:var(--t3);}
-  .exp-section ul{list-style:disc inside;}
-  .exp-section li{margin:3px 0;}
+:root {
+  --bg:#FAFAF8;--bg2:#F0EFEC;--border:#D8D7D4;--t1:#1A1A18;--t2:#4A4A48;--t3:#8A8A88;
+  --blu:#0969DA;--red:#CF222E;--grn:#1A7F37;--amber:#B8720A;--card:#FFFFFF;--hdr:#F6F8FA;
+}
+[data-theme="dark"] {
+  --bg:#0d1117;--bg2:#161b22;--border:#30363d;--t1:#c9d1d9;--t2:#8b949e;--t3:#6e7681;
+  --blu:#58a6ff;--red:#f85149;--grn:#3fb950;--amber:#d29922;--card:#161b22;--hdr:#21262d;
+}
+* { box-sizing:border-box;margin:0;padding:0; }
+body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--t1);font-size:14px; }
+.hdr { position:sticky;top:0;z-index:10;background:var(--hdr);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;justify-content:space-between;gap:12px;align-items:center; }
+.hdr-title { font-size:1.1rem;font-weight:700; }
+.hdr-sub { font-size:.8rem;color:var(--t3);margin-top:2px; }
+.theme-btn { background:none;border:1px solid var(--border);border-radius:6px;padding:5px 10px;cursor:pointer;color:var(--t2); }
+.exp-wrap { padding:12px 20px 0;background:var(--bg2);border-bottom:1px solid var(--border); }
+.exp-tabs { display:flex;flex-wrap:wrap;gap:6px;padding-bottom:12px; }
+.exp-tab { padding:5px 12px;border-radius:20px;cursor:pointer;font-size:.8rem;font-weight:500;border:1px solid var(--border);color:var(--t2);background:var(--bg); }
+.exp-tab.on { background:var(--blu);border-color:var(--blu);color:#fff; }
+.exp-tab.agg.on { background:#8250df;border-color:#8250df; }
+.main { padding:20px;max-width:1400px;margin:0 auto; }
+.cards { display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px; }
+@media(max-width:900px) { .cards { grid-template-columns:repeat(2,1fr); } }
+@media(max-width:520px) { .cards { grid-template-columns:1fr; } }
+.card,.panel,.chart-panel { background:var(--card);border:1px solid var(--border);border-radius:10px; }
+.card { padding:14px 16px; }
+.card-label { font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--t3);margin-bottom:6px; }
+.card-val { font-size:1.38rem;font-weight:700;font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+.card-sub { font-size:.75rem;color:var(--t3);margin-top:6px;line-height:1.35; }
+.pos { color:var(--red); } .neg { color:var(--grn); } .neu { color:var(--t2); } .amber { color:var(--amber); }
+.two-col { display:grid;grid-template-columns:1.05fr .95fr;gap:16px;margin-bottom:20px; }
+@media(max-width:980px) { .two-col { grid-template-columns:1fr; } }
+.panel-hdr { background:var(--hdr);border-bottom:1px solid var(--border);padding:10px 14px;font-weight:600;font-size:.85rem; }
+.table-wrap { max-height:440px;overflow:auto; }
+table { width:100%;border-collapse:collapse;font-size:.82rem; }
+th,td { padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap; }
+th:first-child,td:first-child { text-align:left; }
+th { position:sticky;top:0;background:var(--hdr);color:var(--t3);font-size:.72rem;text-transform:uppercase; }
+.chart-panel { padding:16px;margin-bottom:20px; }
+.chart-wrap { height:250px; }
+.foot { margin-top:16px;padding-top:12px;border-top:1px solid var(--border);font-size:.78rem;color:var(--t3);text-align:center; }
 </style>
 </head>
 <body>
-
 <div class="hdr">
   <div>
-    <div class="hdr-title">BOVA11 — Demand Flow &amp; PDI</div>
-    <div class="hdr-sub">2026-04-28 | 28abr | Spot D: 185.16 / D-1: 186.06</div>
+    <div class="hdr-title">BOVA11 — Demand Flow v3</div>
+    <div class="hdr-sub">2026-04-28 | 28abr | Spot D: 177.00 | Spot D-1: 176.00</div>
   </div>
-  <button class="theme-btn" id="theme-toggle" onclick="toggleTheme()">◐</button>
+  <button class="theme-btn" id="theme-toggle">◐</button>
 </div>
-
-<div class="exp-wrap">
-  <div class="exp-tabs" id="expTabs"></div>
-</div>
-
-<div class="main">
-  <div id="explainer" class="explainer">
-    <div class="exp-hdr" onclick="toggleExplainer()">
-      <span style="font-weight:600;cursor:pointer">📚 O que significam estes dados?</span>
-      <span id="exp-toggle" style="float:right;cursor:pointer">▼</span>
-    </div>
-    <div id="exp-body" class="exp-body">
-      <div class="exp-section">
-        <strong>ADI — Aggregate Demand Index</strong><br>
-        <em>Mede o fluxo líquido de demanda por puts vs calls através de premium, OI e volume.</em><br>
-        💡 <strong>Importância:</strong> Indica a atitude geral do mercado (proteção vs ganho). ADI positivo = mercado comprando puts (defensivo); ADI negativo = vendendo puts (ofensivo).
-        Útil para detectar mudanças de regime e antecedência de movimentos de volatilidade.
-      </div>
-      <div class="exp-section">
-        <strong>PDI — Put Demand Index (ΔSkew × ΔIV)</strong><br>
-        <em>Combina a mudança na curvatura da volatilidade (skew) com variações de IV ATM.</em><br>
-        💡 <strong>Importância:</strong> Quadrante de regime (Hedge/Defensive/Risk-On/Compression) sinaliza intenção institucional:
-        <ul style="margin:4px 0 4px 20px;font-size:0.8rem">
-          <li><strong>Hedge</strong> (vermelho): Put demand + IV subindo → proteção ativa em mercado crescente</li>
-          <li><strong>Defensive</strong> (amarelo): Put demand + IV caindo → estrutura de proteção, mercado ajustando</li>
-          <li><strong>Risk-On</strong> (verde): Call demand + IV caindo → apetite de risco, compressão de vol</li>
-          <li><strong>Compression</strong> (azul): Call demand + IV subindo → unwind de proteção em stress</li>
-        </ul>
-      </div>
-      <div class="exp-section">
-        <strong>IDS — Institutional Demand Score</strong><br>
-        <em>Score agregado de 7 componentes (premium, OI, IV, GEX, charm, vanna, skew) normalizados.</em><br>
-        💡 <strong>Importância:</strong> Captura comportamento institucional além de simples volume. IDS extremo (+0.5/-0.5) indica posicionamento fortemente desbalanceado.
-        Útil para identificar crowding e reversal setups. Valores intermediários refletem mercado equilibrado.
-      </div>
-      <div class="exp-section">
-        <strong>DFP — Delta Flow Proxy</strong><br>
-        <em>Aproximação do fluxo de delta ponderado por volume: Σ(|Δ|×Vol×Mid) calls − puts.</em><br>
-        💡 <strong>Importância:</strong> Indica direção esperada do hedge dos dealers. DFP positivo = net call delta (dealers vendem calls, compram underlying); DFP negativo = net put delta (dealers compram puts, vendem underlying). Extremos refletem desequilíbrio de delta que pode gerar movimento.
-      </div>
-      <div class="exp-section">
-        <strong>🎨 Como usar em conjunto:</strong><br>
-        ADI + PDI + IDS formam um tripé:<br>
-        • <strong>ADI:</strong> breadth do fluxo (agregado)<br>
-        • <strong>PDI:</strong> regime/intenção (skew + IV)<br>
-        • <strong>IDS:</strong> intensidade institucional (gregas)<br>
-        • <strong>DFP:</strong> direção esperada de movimento<br>
-        <br>
-        <em>Exemplo:</em> ADI alto + PDI "Hedge" + IDS negativo = mercado defensivo mas calls fortemente compradas → setup de short call ou strangle.
-      </div>
-    </div>
-  </div>
-
-  <div class="cards" id="cards"></div>
-
-  <div class="two-col">
+<div class="exp-wrap"><div class="exp-tabs" id="expTabs"></div></div>
+<main class="main">
+  <section class="cards" id="cards"></section>
+  <section class="two-col">
     <div class="panel">
-      <div class="panel-hdr">NDS Heatmap por Strike</div>
-      <div class="nds-wrap"><table class="nds-table" id="ndsTable">
-        <thead><tr>
-          <th>Strike</th><th>NDS</th><th>IDS</th><th>DFP Net (M)</th>
-        </tr></thead>
-        <tbody id="ndsBody"></tbody>
-      </table></div>
+      <div class="panel-hdr">Detalhe por strike</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Strike</th><th>Score</th><th>Peso ATM</th><th>Skew</th><th>Premium</th><th>OI</th><th>IV</th><th>GEX</th><th>Charm</th><th>Vanna</th></tr>
+          </thead>
+          <tbody id="detailBody"></tbody>
+        </table>
+      </div>
     </div>
     <div class="panel">
-      <div class="panel-hdr">Rankings de Fluxo</div>
-      <div class="rnk-section" id="rankingsDiv"></div>
-    </div>
-  </div>
-
-  <div class="chart-panel">
-    <div class="chart-hdr">
-      <span class="chart-title">Evolução Histórica</span>
-      <div class="metric-btns">
-        <button class="metric-btn on" onclick="switchMetric('adi',this)">ADI</button>
-        <button class="metric-btn" onclick="switchMetric('pdi',this)">PDI</button>
-        <button class="metric-btn" onclick="switchMetric('ids',this)">IDS</button>
+      <div class="panel-hdr">Componentes do score</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Componente</th><th>Score</th><th>Peso</th></tr></thead>
+          <tbody id="componentBody"></tbody>
+        </table>
       </div>
     </div>
+  </section>
+  <section class="chart-panel">
+    <div class="panel-hdr" style="margin:-16px -16px 14px -16px;border-radius:10px 10px 0 0;">Histórico do score composto</div>
     <div class="chart-wrap"><canvas id="histChart"></canvas></div>
-    <div class="note">
-      ADI = Aggregate Demand Index (0.4·ΔSPS + 0.3·PIC + 0.2·OIF + 0.1·VIC) &nbsp;|&nbsp;
-      PDI = ΔSkew × ΔIV_ATM &nbsp;|&nbsp;
-      IDS = Institutional Demand Score (7 componentes ponderados) &nbsp;|&nbsp;
-      DFP = Σ(|Δ| × Vol × Mid) calls−puts
-    </div>
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  </section>
+  <div class="foot">Motor transplantado de `bova_options_demand_indicator_v3.py` · Gerado em 28/04/2026 23:53:41</div>
+</main>
 <script>
-const EXP_KEYS   = ["30 abr W5", "8 mai W2", "15 mai Mensal", "22 mai W4", "19 jun Mensal"];
-const DEMAND_DATA = {"30 abr W5": {"adi": -0.004895, "pdi": 0.001829, "ids": 0.920664, "dfp_net_M": 59.0087, "bias_adi": "Calls", "bias_ids": "Bear", "quadrant": "N/A", "atm_strike": 185.0, "sps_d": 0.018085, "sps_d1": 0.018085, "iv_skew_d": 0.1828826317256759, "iv_atm_d": 17.935000000000002, "delta_iv_atm": null, "d1_iv_available": false, "nds_list": [{"strike": 177.0, "nds": -2.8611, "ids_s": 0.0983, "dfp_net": 16.9092}, {"strike": 178.0, "nds": -0.2319, "ids_s": 0.1478, "dfp_net": 5.2543}, {"strike": 179.0, "nds": -0.3131, "ids_s": 0.0743, "dfp_net": 3.3026}, {"strike": 180.0, "nds": -0.6548, "ids_s": 0.9604, "dfp_net": 15.0781}, {"strike": 181.0, "nds": 5.7919, "ids_s": 3.4552, "dfp_net": 7.2185}, {"strike": 182.0, "nds": -0.1398, "ids_s": -0.3914, "dfp_net": 2.1966}, {"strike": 183.0, "nds": -0.5243, "ids_s": -0.4751, "dfp_net": 2.762}, {"strike": 184.0, "nds": 2.7747, "ids_s": 4.144, "dfp_net": 13.9397}, {"strike": 185.0, "nds": -0.2011, "ids_s": 0.0293, "dfp_net": 4.4169}, {"strike": 186.0, "nds": 7.2251, "ids_s": 4.1301, "dfp_net": 0.6778}, {"strike": 187.0, "nds": -0.1295, "ids_s": 0.1059, "dfp_net": 1.0911}, {"strike": 188.0, "nds": 0.0726, "ids_s": -0.4457, "dfp_net": -1.6638}, {"strike": 189.0, "nds": 4.8575, "ids_s": 3.8264, "dfp_net": -2.7475}, {"strike": 190.0, "nds": 1.1941, "ids_s": 0.2938, "dfp_net": -4.5938}, {"strike": 191.0, "nds": 0.5526, "ids_s": -0.1414, "dfp_net": -2.7099}, {"strike": 192.0, "nds": 0.0667, "ids_s": -0.0107, "dfp_net": -1.8348}, {"strike": 193.0, "nds": -1.0243, "ids_s": -0.1498, "dfp_net": -0.2882}], "top_put_strikes": [186.0, 181.0, 189.0, 184.0, 190.0], "top_call_strikes": [177.0, 193.0, 180.0, 183.0, 179.0]}, "8 mai W2": {"adi": -0.059734, "pdi": 0.002664, "ids": -0.117419, "dfp_net_M": 62.1235, "bias_adi": "Calls", "bias_ids": "Base", "quadrant": "Hedge", "atm_strike": 185.0, "sps_d": 0.025143, "sps_d1": -0.014469, "iv_skew_d": 0.17759784075573565, "iv_atm_d": 18.525, "delta_iv_atm": 0.015000000000000568, "d1_iv_available": false, "nds_list": [{"strike": 177.0, "nds": -2.494, "ids_s": -0.6507, "dfp_net": 15.8778}, {"strike": 178.0, "nds": -0.0615, "ids_s": 0.7823, "dfp_net": 4.8146}, {"strike": 179.0, "nds": 0.0807, "ids_s": 0.525, "dfp_net": 2.9389}, {"strike": 180.0, "nds": -1.1223, "ids_s": 0.0744, "dfp_net": 13.1903}, {"strike": 181.0, "nds": -1.6925, "ids_s": -1.5091, "dfp_net": 6.1803}, {"strike": 182.0, "nds": 0.3656, "ids_s": -0.4228, "dfp_net": 1.735}, {"strike": 183.0, "nds": 0.745, "ids_s": 0.0434, "dfp_net": 2.3722}, {"strike": 184.0, "nds": -0.8979, "ids_s": -1.1204, "dfp_net": 13.0774}, {"strike": 185.0, "nds": 1.0097, "ids_s": -0.0027, "dfp_net": 4.826}, {"strike": 186.0, "nds": -0.1037, "ids_s": -0.2436, "dfp_net": 1.4896}, {"strike": 187.0, "nds": -0.4123, "ids_s": 0.0413, "dfp_net": 2.7683}, {"strike": 188.0, "nds": 3.3957, "ids_s": 1.0482, "dfp_net": 0.4628}, {"strike": 189.0, "nds": -1.0727, "ids_s": -0.7128, "dfp_net": -1.6675}, {"strike": 190.0, "nds": -0.2006, "ids_s": -0.263, "dfp_net": -2.2887}, {"strike": 191.0, "nds": 0.4636, "ids_s": 0.2443, "dfp_net": -2.0179}, {"strike": 192.0, "nds": 0.5289, "ids_s": -0.2137, "dfp_net": -1.4187}, {"strike": 193.0, "nds": -0.4801, "ids_s": 0.3838, "dfp_net": -0.2168}], "top_put_strikes": [188.0, 185.0, 183.0, 192.0, 191.0], "top_call_strikes": [177.0, 181.0, 180.0, 189.0, 184.0]}, "15 mai Mensal": {"adi": -0.067002, "pdi": -0.013136, "ids": 0.108137, "dfp_net_M": 63.7105, "bias_adi": "Calls", "bias_ids": "Base", "quadrant": "Defensive", "atm_strike": 185.0, "sps_d": -0.048205, "sps_d1": -0.090745, "iv_skew_d": 0.20209621069604952, "iv_atm_d": 18.605, "delta_iv_atm": -0.06500000000000128, "d1_iv_available": false, "nds_list": [{"strike": 177.0, "nds": 0.1683, "ids_s": 1.5139, "dfp_net": 15.1902}, {"strike": 178.0, "nds": 0.2052, "ids_s": -0.287, "dfp_net": 4.5044}, {"strike": 179.0, "nds": 2.9335, "ids_s": -0.1418, "dfp_net": 2.7934}, {"strike": 180.0, "nds": -0.4062, "ids_s": -0.4932, "dfp_net": 12.338}, {"strike": 181.0, "nds": -1.4165, "ids_s": -0.6061, "dfp_net": 5.9238}, {"strike": 182.0, "nds": 0.0926, "ids_s": -0.0226, "dfp_net": 1.5958}, {"strike": 183.0, "nds": 0.4778, "ids_s": -0.1118, "dfp_net": 2.3235}, {"strike": 184.0, "nds": -2.3743, "ids_s": -0.0839, "dfp_net": 13.0774}, {"strike": 185.0, "nds": -0.1525, "ids_s": 0.6238, "dfp_net": 4.9681}, {"strike": 186.0, "nds": -0.0939, "ids_s": 0.0719, "dfp_net": 1.7941}, {"strike": 187.0, "nds": -1.4363, "ids_s": -0.2728, "dfp_net": 3.4134}, {"strike": 188.0, "nds": -2.3605, "ids_s": 0.2443, "dfp_net": 1.216}, {"strike": 189.0, "nds": 0.0273, "ids_s": 0.6012, "dfp_net": -1.2475}, {"strike": 190.0, "nds": -2.2942, "ids_s": -0.15, "dfp_net": -1.2662}, {"strike": 191.0, "nds": -1.5132, "ids_s": 0.2957, "dfp_net": -1.6299}, {"strike": 192.0, "nds": -2.6514, "ids_s": 0.6304, "dfp_net": -1.1256}, {"strike": 193.0, "nds": -0.8511, "ids_s": 0.0263, "dfp_net": -0.1585}], "top_put_strikes": [179.0, 183.0, 178.0, 177.0, 182.0], "top_call_strikes": [192.0, 184.0, 188.0, 190.0, 191.0]}, "22 mai W4": {"adi": -0.126353, "pdi": 0.0, "ids": 0.598565, "dfp_net_M": 49.6, "bias_adi": "Calls", "bias_ids": "Bear", "quadrant": "N/A", "atm_strike": 185.0, "sps_d": 0.04574, "sps_d1": -0.151744, "iv_skew_d": null, "iv_atm_d": 19.47, "delta_iv_atm": 0.7249999999999979, "d1_iv_available": false, "nds_list": [{"strike": 176.0, "nds": 0.1394, "ids_s": 1.4729, "dfp_net": 0.0001}, {"strike": 177.0, "nds": -2.0455, "ids_s": -0.0842, "dfp_net": 14.663}, {"strike": 178.0, "nds": 0.1885, "ids_s": -0.0682, "dfp_net": 4.3103}, {"strike": 179.0, "nds": -0.2139, "ids_s": 0.0128, "dfp_net": 2.6808}, {"strike": 180.0, "nds": -1.1158, "ids_s": 2.352, "dfp_net": 11.9836}, {"strike": 181.0, "nds": -0.5638, "ids_s": 0.219, "dfp_net": 5.7446}, {"strike": 182.0, "nds": 0.6094, "ids_s": -0.1379, "dfp_net": 1.555}, {"strike": 183.0, "nds": 0.0761, "ids_s": -0.0393, "dfp_net": 2.2732}, {"strike": 185.0, "nds": -0.2721, "ids_s": -0.0972, "dfp_net": 5.1014}, {"strike": 187.0, "nds": -0.3593, "ids_s": -0.0419, "dfp_net": 3.8212}, {"strike": 189.0, "nds": 1.1456, "ids_s": 0.4387, "dfp_net": -1.0051}, {"strike": 191.0, "nds": 1.1427, "ids_s": 0.2, "dfp_net": -1.4086}, {"strike": 193.0, "nds": 0.1882, "ids_s": 2.5435, "dfp_net": -0.12}, {"strike": 194.0, "nds": 0.138, "ids_s": -0.131, "dfp_net": 0.0003}, {"strike": 195.0, "nds": 0.1394, "ids_s": 2.9349, "dfp_net": 0.0001}, {"strike": 196.0, "nds": -1.9872, "ids_s": 0.3586, "dfp_net": 0.0}, {"strike": 197.0, "nds": 0.139, "ids_s": 0.2429, "dfp_net": 0.0001}], "top_put_strikes": [189.0, 191.0, 182.0, 178.0, 193.0], "top_call_strikes": [177.0, 196.0, 180.0, 181.0, 187.0]}, "19 jun Mensal": {"adi": -0.012788, "pdi": -0.001134, "ids": 0.145806, "dfp_net_M": 70.1002, "bias_adi": "Calls", "bias_ids": "Base", "quadrant": "Risk-On", "atm_strike": 185.0, "sps_d": -0.15463, "sps_d1": -0.209126, "iv_skew_d": 0.1636411470665614, "iv_atm_d": 19.005, "delta_iv_atm": 0.2799999999999976, "d1_iv_available": true, "nds_list": [{"strike": 177.0, "nds": -2.5836, "ids_s": 1.2346, "dfp_net": 13.9814}, {"strike": 178.0, "nds": -0.1039, "ids_s": -0.1811, "dfp_net": 4.1268}, {"strike": 179.0, "nds": -0.644, "ids_s": -0.0343, "dfp_net": 2.5752}, {"strike": 180.0, "nds": -0.5421, "ids_s": 0.0041, "dfp_net": 11.4801}, {"strike": 181.0, "nds": -0.81, "ids_s": -0.3, "dfp_net": 5.6638}, {"strike": 182.0, "nds": 1.0285, "ids_s": -0.2447, "dfp_net": 1.5561}, {"strike": 183.0, "nds": -0.181, "ids_s": -0.2773, "dfp_net": 2.3758}, {"strike": 184.0, "nds": 0.5793, "ids_s": -0.2159, "dfp_net": 13.9573}, {"strike": 185.0, "nds": -3.1422, "ids_s": -0.7127, "dfp_net": 5.6126}, {"strike": 186.0, "nds": -0.2423, "ids_s": -0.5202, "dfp_net": 2.5027}, {"strike": 187.0, "nds": -0.6358, "ids_s": 0.0403, "dfp_net": 4.5952}, {"strike": 188.0, "nds": -0.8607, "ids_s": 0.6038, "dfp_net": 2.8846}, {"strike": 189.0, "nds": -0.6144, "ids_s": 0.6357, "dfp_net": -0.4661}, {"strike": 190.0, "nds": 1.9437, "ids_s": 1.961, "dfp_net": 0.7807}, {"strike": 191.0, "nds": -0.138, "ids_s": -0.5115, "dfp_net": -0.8927}, {"strike": 192.0, "nds": -0.1413, "ids_s": 0.6821, "dfp_net": -0.5976}, {"strike": 193.0, "nds": -0.5718, "ids_s": 0.3148, "dfp_net": -0.0356}], "top_put_strikes": [190.0, 182.0, 184.0, 178.0, 191.0], "top_call_strikes": [185.0, 177.0, 188.0, 181.0, 179.0]}, "AGG": {"adi": -0.054154, "pdi": -0.001955, "ids": 0.331151, "dfp_net_M": 304.5429, "bias_adi": "Calls", "bias_ids": "Base", "quadrant": "N/A", "atm_strike": 0.0, "sps_d": 0.0, "sps_d1": 0.0, "iv_skew_d": null, "iv_atm_d": null, "delta_iv_atm": null, "d1_iv_available": false, "nds_list": [{"strike": 176.0, "nds": 0.1394, "ids_s": 0.0, "dfp_net": 0.0}, {"strike": 177.0, "nds": -1.9632, "ids_s": 0.0, "dfp_net": 0.0}, {"strike": 178.0, "nds": -0.0007, "ids_s": 0.0, "dfp_net": 0.0}, {"strike": 179.0, "nds": 0.3686, "ids_s": 0.0, "dfp_net": 0.0}, {"strike": 180.0, "nds": -0.7682, "ids_s": 0.0, "dfp_net": 0.0}, {"strike": 181.0, "nds": 0.2618, "ids_s": 0.0, "dfp_net": 0.0}, {"strike": 182.0, "nds": 0.3913, "ids_s": 0.0, "dfp_net": 0.0}, {"strike": 183.0, "nds": 0.1187, "ids_s": 0.0, "dfp_net": 0.0}, {"strike": 184.0, "nds": 0.0205, "ids_s": 0.0, "dfp_net": 0.0}, {"strike": 185.0, "nds": -0.5516, "ids_s": 0.0, "dfp_net": 0.0}, {"strike": 186.0, "nds": 1.6963, "ids_s": 0.0, "dfp_net": 0.0}, {"strike": 187.0, "nds": -0.5946, "ids_s": 0.0, "dfp_net": 0.0}, {"strike": 188.0, "nds": 0.0618, "ids_s": 0.0, "dfp_net": 0.0}, {"strike": 189.0, "nds": 0.8687, "ids_s": 0.0, "dfp_net": 0.0}, {"strike": 190.0, "nds": 0.1608, "ids_s": 0.0, "dfp_net": 0.0}, {"strike": 191.0, "nds": 0.1015, "ids_s": 0.0, "dfp_net": 0.0}, {"strike": 192.0, "nds": -0.5493, "ids_s": 0.0, "dfp_net": 0.0}, {"strike": 193.0, "nds": -0.5478, "ids_s": 0.0, "dfp_net": 0.0}, {"strike": 194.0, "nds": 0.138, "ids_s": 0.0, "dfp_net": 0.0}, {"strike": 195.0, "nds": 0.1394, "ids_s": 0.0, "dfp_net": 0.0}, {"strike": 196.0, "nds": -1.9872, "ids_s": 0.0, "dfp_net": 0.0}, {"strike": 197.0, "nds": 0.139, "ids_s": 0.0, "dfp_net": 0.0}], "top_put_strikes": [186.0, 189.0, 182.0, 179.0, 181.0], "top_call_strikes": [196.0, 177.0, 180.0, 187.0, 185.0]}};
-const HIST_DATA   = {"2026-03-26": {"27 mar W4": {"adi": 0.077583, "pdi": -0.015263, "ids": -33.601844, "dfp_net_M": 8.8933, "bias_adi": "Puts", "bias_ids": "Bull", "atm_strike": 181.0, "sps_d": 0.233068, "sps_d1": 0.060027, "iv_skew_d": 0.21298245614035088, "quadrant": "Risk-On", "top_put_strikes": [187.0, 186.0, 177.0, 185.0, 184.0], "top_call_strikes": [173.0, 171.0, 172.0, 174.0, 178.0]}, "2 abr W1": {"adi": 0.091926, "pdi": -0.006591, "ids": -3.288528, "dfp_net_M": 7.1578, "bias_adi": "Puts", "bias_ids": "Bull", "atm_strike": 181.0, "sps_d": 0.096433, "sps_d1": -0.099755, "iv_skew_d": 0.17298937784521998, "quadrant": "Risk-On", "top_put_strikes": [186.0, 185.0, 183.0, 187.0, 178.0], "top_call_strikes": [173.0, 171.0, 172.0, 179.0, 182.0]}, "10 abr W2": {"adi": -0.368054, "pdi": 0.013216, "ids": -31.887698, "dfp_net_M": 4.9431, "bias_adi": "Calls", "bias_ids": "Bull", "atm_strike": 181.0, "sps_d": 0.179213, "sps_d1": -0.048737, "iv_skew_d": 0.1589629882312808, "quadrant": "Hedge", "top_put_strikes": [177.0, 176.0, 181.0, 179.0, 182.0], "top_call_strikes": [172.0, 173.0, 171.0, 178.0, 185.0]}, "17 abr Mensal": {"adi": 0.487457, "pdi": -0.013101, "ids": -24.459767, "dfp_net_M": 31.9986, "bias_adi": "Puts", "bias_ids": "Bull", "atm_strike": 181.0, "sps_d": 0.046443, "sps_d1": -0.115538, "iv_skew_d": 0.15907498248072877, "quadrant": "Risk-On", "top_put_strikes": [175.0, 182.0, 187.0, 185.0, 183.0], "top_call_strikes": [171.0, 172.0, 180.0, 173.0, 184.0]}, "15 mai Mensal": {"adi": 0.286876, "pdi": -0.003397, "ids": -40.099774, "dfp_net_M": 47.1717, "bias_adi": "Puts", "bias_ids": "Bull", "atm_strike": 181.0, "sps_d": -0.105243, "sps_d1": -0.155506, "iv_skew_d": 0.14964955483993178, "quadrant": "Risk-On", "top_put_strikes": [185.0, 187.0, 175.0, 184.0, 177.0], "top_call_strikes": [171.0, 172.0, 173.0, 174.0, 181.0]}}, "2026-03-27": {"27 mar W4": {"adi": 0.048481, "pdi": 0.0, "ids": -24.661331, "dfp_net_M": 15.7222, "bias_adi": "Puts", "bias_ids": "Bull", "atm_strike": 178.0, "sps_d": -0.040696, "sps_d1": -0.002353, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [184.0, 182.0, 180.0, 173.0, 181.0], "top_call_strikes": [170.0, 185.0, 169.0, 183.0, 176.0]}, "2 abr W1": {"adi": 0.054803, "pdi": -0.027184, "ids": -14.766222, "dfp_net_M": 6.0158, "bias_adi": "Puts", "bias_ids": "Bull", "atm_strike": 178.0, "sps_d": -0.105399, "sps_d1": -0.143479, "iv_skew_d": 0.17344686218858404, "quadrant": "Risk-On", "top_put_strikes": [170.0, 182.0, 184.0, 174.0, 185.0], "top_call_strikes": [183.0, 177.0, 171.0, 181.0, 186.0]}, "10 abr W2": {"adi": -0.012001, "pdi": -0.010603, "ids": -0.337019, "dfp_net_M": 16.827, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 178.0, "sps_d": -0.173003, "sps_d1": -0.278557, "iv_skew_d": 0.1630520816843438, "quadrant": "Risk-On", "top_put_strikes": [178.0, 185.0, 176.0, 172.0, 184.0], "top_call_strikes": [170.0, 175.0, 181.0, 179.0, 177.0]}, "17 abr Mensal": {"adi": 0.022974, "pdi": -0.016902, "ids": -10.571433, "dfp_net_M": 26.8341, "bias_adi": "Puts", "bias_ids": "Bull", "atm_strike": 178.0, "sps_d": -0.104609, "sps_d1": -0.16653, "iv_skew_d": 0.1563919532770928, "quadrant": "Risk-On", "top_put_strikes": [175.0, 171.0, 181.0, 186.0, 172.0], "top_call_strikes": [170.0, 177.0, 182.0, 183.0, 180.0]}, "24 abr W2": {"adi": 0.054672, "pdi": -0.000488, "ids": -0.589182, "dfp_net_M": -2.2649, "bias_adi": "Puts", "bias_ids": "Bull", "atm_strike": 178.0, "sps_d": -0.853484, "sps_d1": -0.853484, "iv_skew_d": -0.04884720593982024, "quadrant": "N/A", "top_put_strikes": [164.0, 178.0, 188.0, 174.0, 166.0], "top_call_strikes": [180.0, 176.0, 186.0, 182.0, 184.0]}, "15 mai Mensal": {"adi": 0.016038, "pdi": -0.004357, "ids": -12.500688, "dfp_net_M": 55.0086, "bias_adi": "Puts", "bias_ids": "Bull", "atm_strike": 178.0, "sps_d": -0.181871, "sps_d1": -0.233656, "iv_skew_d": 0.15158491234283694, "quadrant": "Risk-On", "top_put_strikes": [180.0, 179.0, 172.0, 185.0, 182.0], "top_call_strikes": [170.0, 177.0, 176.0, 181.0, 175.0]}}, "2026-03-30": {"2 abr W1": {"adi": -0.199069, "pdi": 0.402933, "ids": 2.123349, "dfp_net_M": 129.2467, "bias_adi": "Calls", "bias_ids": "Bear", "atm_strike": 179.0, "sps_d": 0.019157, "sps_d1": -0.023386, "iv_skew_d": 0.07658802177858438, "quadrant": "Compression", "top_put_strikes": [187.0, 177.0, 181.0, 171.0, 175.0], "top_call_strikes": [170.0, 174.0, 172.0, 185.0, 183.0]}, "10 abr W2": {"adi": -0.212909, "pdi": 0.183483, "ids": 4.885827, "dfp_net_M": 146.6015, "bias_adi": "Calls", "bias_ids": "Bear", "atm_strike": 179.0, "sps_d": -0.027962, "sps_d1": 0.082533, "iv_skew_d": 0.08707576276996923, "quadrant": "Compression", "top_put_strikes": [187.0, 175.0, 178.0, 177.0, 181.0], "top_call_strikes": [170.0, 174.0, 171.0, 184.0, 172.0]}, "17 abr Mensal": {"adi": -0.170686, "pdi": 0.100733, "ids": 6.612763, "dfp_net_M": 152.9638, "bias_adi": "Calls", "bias_ids": "Bear", "atm_strike": 179.0, "sps_d": -0.099936, "sps_d1": -0.059012, "iv_skew_d": 0.0983324737837373, "quadrant": "Compression", "top_put_strikes": [187.0, 177.0, 186.0, 178.0, 176.0], "top_call_strikes": [170.0, 174.0, 182.0, 171.0, 180.0]}, "24 abr W2": {"adi": -0.084379, "pdi": 0.0, "ids": -187.997575, "dfp_net_M": 177.6042, "bias_adi": "Calls", "bias_ids": "Bull", "atm_strike": 179.0, "sps_d": -0.18469, "sps_d1": -0.335951, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [194.0, 192.0, 181.0, 176.0, 175.0], "top_call_strikes": [170.0, 174.0, 171.0, 164.0, 166.0]}, "15 mai Mensal": {"adi": -0.163308, "pdi": -0.001379, "ids": -0.049617, "dfp_net_M": 200.6266, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 179.0, "sps_d": -0.203975, "sps_d1": -0.14545, "iv_skew_d": 0.15384615384615385, "quadrant": "Defensive", "top_put_strikes": [177.0, 176.0, 178.0, 175.0, 181.0], "top_call_strikes": [170.0, 174.0, 171.0, 185.0, 183.0]}}, "2026-03-31": {"2 abr W1": {"adi": 0.200018, "pdi": -1.004026, "ids": 0.204407, "dfp_net_M": 40.7766, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 184.0, "sps_d": 0.103942, "sps_d1": 0.313675, "iv_skew_d": 0.2946175637393768, "quadrant": "Defensive", "top_put_strikes": [170.0, 174.0, 172.0, 177.0, 176.0], "top_call_strikes": [180.0, 178.0, 168.0, 182.0, 184.0]}, "10 abr W2": {"adi": 0.671791, "pdi": 1.918483, "ids": -0.000667, "dfp_net_M": -23.1788, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 184.0, "sps_d": -0.094639, "sps_d1": 0.255433, "iv_skew_d": -0.045051194539249155, "quadrant": "Compression", "top_put_strikes": [192.0, 170.0, 174.0, 180.0, 179.0], "top_call_strikes": [168.0, 188.0, 184.0, 187.0, 200.0]}, "17 abr Mensal": {"adi": -0.211104, "pdi": 0.419657, "ids": -0.126171, "dfp_net_M": 229.4136, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 184.0, "sps_d": -0.048795, "sps_d1": 0.154305, "iv_skew_d": -0.009134233518665625, "quadrant": "Compression", "top_put_strikes": [170.0, 198.0, 196.0, 191.0, 194.0], "top_call_strikes": [178.0, 172.0, 168.0, 192.0, 180.0]}, "24 abr W2": {"adi": 9.02565, "pdi": -0.160978, "ids": -14.681878, "dfp_net_M": 9.8161, "bias_adi": "Puts", "bias_ids": "Bull", "atm_strike": 184.0, "sps_d": -0.086083, "sps_d1": -0.1073, "iv_skew_d": 0.025035427491733635, "quadrant": "Defensive", "top_put_strikes": [170.0, 198.0, 196.0, 174.0, 191.0], "top_call_strikes": [182.0, 178.0, 186.0, 180.0, 185.0]}, "15 mai Mensal": {"adi": -0.081574, "pdi": 0.005032, "ids": 1.312107, "dfp_net_M": 92.4967, "bias_adi": "Calls", "bias_ids": "Bear", "atm_strike": 184.0, "sps_d": -0.06871, "sps_d1": -0.062859, "iv_skew_d": 0.15589164035233508, "quadrant": "Hedge", "top_put_strikes": [191.0, 185.0, 179.0, 183.0, 187.0], "top_call_strikes": [180.0, 181.0, 190.0, 186.0, 188.0]}}, "2026-04-01": {"2 abr W1": {"adi": 0.139889, "pdi": 0.833457, "ids": -0.37763, "dfp_net_M": 6.7164, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 184.0, "sps_d": -0.046477, "sps_d1": 0.064917, "iv_skew_d": 0.4940092165898617, "quadrant": "Hedge", "top_put_strikes": [180.0, 190.0, 192.0, 193.0, 179.0], "top_call_strikes": [177.0, 181.0, 184.0, 176.0, 183.0]}, "10 abr W2": {"adi": -0.052958, "pdi": 2.076046, "ids": -0.423813, "dfp_net_M": 16.73, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 184.0, "sps_d": -0.080016, "sps_d1": -0.095477, "iv_skew_d": 0.1381832178598922, "quadrant": "Hedge", "top_put_strikes": [192.0, 190.0, 193.0, 181.0, 187.0], "top_call_strikes": [188.0, 178.0, 186.0, 184.0, 177.0]}, "17 abr Mensal": {"adi": 0.62143, "pdi": 0.049448, "ids": -0.148884, "dfp_net_M": 37.5985, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 184.0, "sps_d": -0.115375, "sps_d1": -0.059947, "iv_skew_d": 0.6501682835082162, "quadrant": "Hedge", "top_put_strikes": [178.0, 180.0, 179.0, 192.0, 184.0], "top_call_strikes": [190.0, 191.0, 198.0, 189.0, 181.0]}, "24 abr W2": {"adi": 0.627671, "pdi": 0.595543, "ids": 60.191407, "dfp_net_M": 36.7509, "bias_adi": "Puts", "bias_ids": "Bear", "atm_strike": 184.0, "sps_d": -0.141638, "sps_d1": -0.086203, "iv_skew_d": 0.5254919499105546, "quadrant": "Hedge", "top_put_strikes": [190.0, 183.0, 182.0, 185.0, 192.0], "top_call_strikes": [176.0, 184.0, 179.0, 198.0, 186.0]}, "15 mai Mensal": {"adi": 0.016611, "pdi": 0.068658, "ids": -1.132649, "dfp_net_M": 52.407, "bias_adi": "Puts", "bias_ids": "Bull", "atm_strike": 184.0, "sps_d": -0.16251, "sps_d1": -0.082567, "iv_skew_d": 0.142713567839196, "quadrant": "Compression", "top_put_strikes": [180.0, 181.0, 179.0, 193.0, 183.0], "top_call_strikes": [185.0, 184.0, 178.0, 191.0, 189.0]}}, "2026-04-02": {"10 abr W2": {"adi": -0.023255, "pdi": -0.458975, "ids": -0.667722, "dfp_net_M": 15.2525, "bias_adi": "Calls", "bias_ids": "Bull", "atm_strike": 185.0, "sps_d": -0.03742, "sps_d1": -0.031972, "iv_skew_d": 0.13420316868592724, "quadrant": "Defensive", "top_put_strikes": [178.0, 190.0, 189.0, 181.0, 187.0], "top_call_strikes": [195.0, 177.0, 184.0, 188.0, 183.0]}, "17 abr Mensal": {"adi": 0.602269, "pdi": -0.012444, "ids": 0.046878, "dfp_net_M": 22.4472, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 185.0, "sps_d": -0.104967, "sps_d1": -0.067489, "iv_skew_d": 0.15360864531069088, "quadrant": "Defensive", "top_put_strikes": [178.0, 180.0, 187.0, 184.0, 189.0], "top_call_strikes": [190.0, 176.0, 177.0, 179.0, 183.0]}, "30 abr W5": {"adi": -1.524413, "pdi": 0.0, "ids": 0.325553, "dfp_net_M": 0.8708, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 184.0, "sps_d": -0.847493, "sps_d1": -2.613333, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [170.0, 188.0, 190.0, 176.0, 189.0], "top_call_strikes": [184.0, 168.0, 186.0, 180.0, 178.0]}, "15 mai Mensal": {"adi": -0.136875, "pdi": -0.000944, "ids": -0.020953, "dfp_net_M": 43.1494, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 185.0, "sps_d": -0.153194, "sps_d1": -0.023505, "iv_skew_d": 0.13888888888888884, "quadrant": "Defensive", "top_put_strikes": [181.0, 193.0, 182.0, 183.0, 186.0], "top_call_strikes": [188.0, 192.0, 179.0, 187.0, 185.0]}, "24 abr W2": {"adi": 1.035768, "pdi": 0.0, "ids": 0.747567, "dfp_net_M": 26.8949, "bias_adi": "Puts", "bias_ids": "Bear", "atm_strike": 185.0, "sps_d": -0.155017, "sps_d1": -2.937465, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [192.0, 190.0, 198.0, 196.0, 188.0], "top_call_strikes": [181.0, 177.0, 178.0, 179.0, 182.0]}}, "2026-04-06": {"10 abr W2": {"adi": -0.019329, "pdi": 0.0, "ids": 0.205047, "dfp_net_M": 22.4845, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 185.0, "sps_d": -0.021575, "sps_d1": -0.000156, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [188.0, 183.0, 184.0, 177.0, 182.0], "top_call_strikes": [178.0, 190.0, 192.0, 181.0, 189.0]}, "17 abr Mensal": {"adi": -0.160563, "pdi": 0.008036, "ids": -0.046878, "dfp_net_M": 196.3228, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 185.0, "sps_d": -0.008579, "sps_d1": -0.036495, "iv_skew_d": 0.15823935976718814, "quadrant": "Hedge", "top_put_strikes": [190.0, 176.0, 177.0, 179.0, 183.0], "top_call_strikes": [178.0, 180.0, 187.0, 184.0, 189.0]}, "24 abr W2": {"adi": 0.868266, "pdi": 0.0, "ids": -0.314533, "dfp_net_M": 1.8959, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 185.0, "sps_d": -2.937465, "sps_d1": -0.155017, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [176.0, 181.0, 177.0, 178.0, 183.0], "top_call_strikes": [192.0, 190.0, 198.0, 188.0, 196.0]}, "30 abr W5": {"adi": 60.015229, "pdi": 0.0, "ids": -0.325553, "dfp_net_M": -0.003, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 184.0, "sps_d": -2.613333, "sps_d1": -0.847493, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [184.0, 168.0, 186.0, 180.0, 178.0], "top_call_strikes": [170.0, 188.0, 190.0, 176.0, 189.0]}, "15 mai Mensal": {"adi": 0.170464, "pdi": -0.001853, "ids": 0.290607, "dfp_net_M": 17.4114, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 185.0, "sps_d": 0.003563, "sps_d1": -0.124164, "iv_skew_d": 0.13372781065088746, "quadrant": "Risk-On", "top_put_strikes": [188.0, 176.0, 192.0, 179.0, 187.0], "top_call_strikes": [181.0, 182.0, 183.0, 186.0, 177.0]}}, "2026-04-07": {"10 abr W2": {"adi": 0.097878, "pdi": -0.119419, "ids": 0.068721, "dfp_net_M": 1.9755, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 185.0, "sps_d": 0.01854, "sps_d1": -0.021575, "iv_skew_d": 0.3271750083977159, "quadrant": "Defensive", "top_put_strikes": [175.0, 178.0, 190.0, 184.0, 180.0], "top_call_strikes": [188.0, 187.0, 170.0, 189.0, 174.0]}, "17 abr Mensal": {"adi": 0.592083, "pdi": 0.013734, "ids": -0.806493, "dfp_net_M": 10.2051, "bias_adi": "Puts", "bias_ids": "Bull", "atm_strike": 185.0, "sps_d": -0.015331, "sps_d1": -0.008579, "iv_skew_d": 0.1998562185478074, "quadrant": "Hedge", "top_put_strikes": [178.0, 192.0, 180.0, 175.0, 198.0], "top_call_strikes": [190.0, 170.0, 185.0, 174.0, 176.0]}, "24 abr W2": {"adi": 1.034683, "pdi": 0.001495, "ids": -7.736299, "dfp_net_M": 18.9036, "bias_adi": "Puts", "bias_ids": "Bull", "atm_strike": 185.0, "sps_d": -0.277383, "sps_d1": -2.937465, "iv_skew_d": 0.14950166112956814, "quadrant": "N/A", "top_put_strikes": [180.0, 186.0, 196.0, 192.0, 182.0], "top_call_strikes": [187.0, 175.0, 191.0, 184.0, 190.0]}, "30 abr W5": {"adi": 0.959211, "pdi": 0.0, "ids": -161509.280266, "dfp_net_M": 25.4841, "bias_adi": "Puts", "bias_ids": "Bull", "atm_strike": 185.0, "sps_d": -0.150825, "sps_d1": -2.613333, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [184.0, 186.0, 190.0, 194.0, 180.0], "top_call_strikes": [183.0, 181.0, 176.0, 175.0, 189.0]}, "15 mai Mensal": {"adi": -0.061512, "pdi": 0.001021, "ids": -0.10798, "dfp_net_M": 35.7951, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 185.0, "sps_d": -0.121303, "sps_d1": 0.003563, "iv_skew_d": 0.13991769547325103, "quadrant": "Hedge", "top_put_strikes": [180.0, 186.0, 177.0, 178.0, 182.0], "top_call_strikes": [175.0, 185.0, 189.0, 188.0, 187.0]}}, "2026-04-08": {"10 abr W2": {"adi": -0.047271, "pdi": 0.0, "ids": 0.086965, "dfp_net_M": -27.5956, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 189.0, "sps_d": -0.000756, "sps_d1": 0.096931, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [193.0, 194.0, 197.0, 196.0, 192.0], "top_call_strikes": [195.0, 191.0, 186.0, 188.0, 183.0]}, "17 abr Mensal": {"adi": -0.105343, "pdi": 0.0, "ids": 1.73968, "dfp_net_M": -8.6367, "bias_adi": "Calls", "bias_ids": "Bear", "atm_strike": 189.0, "sps_d": -0.118764, "sps_d1": 0.14216, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [193.0, 192.0, 194.0, 183.0, 195.0], "top_call_strikes": [190.0, 186.0, 188.0, 180.0, 184.0]}, "24 abr W2": {"adi": -0.03059, "pdi": 0.0, "ids": 1.696909, "dfp_net_M": 35.2312, "bias_adi": "Calls", "bias_ids": "Bear", "atm_strike": 189.0, "sps_d": 0.015353, "sps_d1": 0.091457, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [185.0, 186.0, 193.0, 182.0, 181.0], "top_call_strikes": [187.0, 191.0, 195.0, 194.0, 190.0]}, "30 abr W5": {"adi": 0.056836, "pdi": 0.0, "ids": 40.782489, "dfp_net_M": 65.4641, "bias_adi": "Puts", "bias_ids": "Bear", "atm_strike": 189.0, "sps_d": 0.204258, "sps_d1": 0.049139, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [185.0, 181.0, 187.0, 183.0, 191.0], "top_call_strikes": [180.0, 188.0, 186.0, 190.0, 184.0]}, "15 mai Mensal": {"adi": -0.158634, "pdi": -0.108787, "ids": -0.144009, "dfp_net_M": 131.8692, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 189.0, "sps_d": -0.167444, "sps_d1": -0.014917, "iv_skew_d": 0.1706484641638225, "quadrant": "Defensive", "top_put_strikes": [194.0, 193.0, 196.0, 189.0, 181.0], "top_call_strikes": [183.0, 188.0, 180.0, 187.0, 190.0]}}, "2026-04-09": {"10 abr W2": {"adi": -0.383943, "pdi": -7.446914, "ids": 0.049136, "dfp_net_M": 88.2217, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 192.0, "sps_d": -0.002155, "sps_d1": 0.070225, "iv_skew_d": 0.5287123703516314, "quadrant": "Defensive", "top_put_strikes": [188.0, 191.0, 198.0, 183.0, 199.0], "top_call_strikes": [193.0, 194.0, 185.0, 195.0, 184.0]}, "17 abr Mensal": {"adi": -0.346508, "pdi": -0.561869, "ids": -0.605844, "dfp_net_M": 104.1991, "bias_adi": "Calls", "bias_ids": "Bull", "atm_strike": 192.0, "sps_d": -0.206109, "sps_d1": -0.016305, "iv_skew_d": 0.2754257907542579, "quadrant": "Defensive", "top_put_strikes": [183.0, 199.0, 188.0, 197.0, 198.0], "top_call_strikes": [193.0, 194.0, 190.0, 184.0, 192.0]}, "24 abr W2": {"adi": -0.364895, "pdi": -0.755642, "ids": -1.405129, "dfp_net_M": 103.5866, "bias_adi": "Calls", "bias_ids": "Bull", "atm_strike": 192.0, "sps_d": -0.204667, "sps_d1": 0.104797, "iv_skew_d": 0.26891166422645196, "quadrant": "Defensive", "top_put_strikes": [183.0, 199.0, 198.0, 197.0, 188.0], "top_call_strikes": [193.0, 194.0, 189.0, 192.0, 185.0]}, "30 abr W5": {"adi": -0.341559, "pdi": 0.542773, "ids": -20.150475, "dfp_net_M": 104.172, "bias_adi": "Calls", "bias_ids": "Bull", "atm_strike": 192.0, "sps_d": -0.204879, "sps_d1": 0.177446, "iv_skew_d": 0.2734375000000001, "quadrant": "Hedge", "top_put_strikes": [183.0, 199.0, 198.0, 188.0, 197.0], "top_call_strikes": [193.0, 184.0, 194.0, 190.0, 192.0]}, "15 mai Mensal": {"adi": -0.135128, "pdi": -0.021792, "ids": -0.09934, "dfp_net_M": 103.8696, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 192.0, "sps_d": -0.205366, "sps_d1": -0.058566, "iv_skew_d": 0.2696245733788396, "quadrant": "Defensive", "top_put_strikes": [183.0, 188.0, 199.0, 198.0, 197.0], "top_call_strikes": [184.0, 190.0, 193.0, 192.0, 185.0]}}, "2026-04-10": {"10 abr W2": {"adi": 1.033343, "pdi": 0.0, "ids": 4.488991, "dfp_net_M": 123.2348, "bias_adi": "Puts", "bias_ids": "Bear", "atm_strike": 194.0, "sps_d": 2.174779, "sps_d1": 0.033018, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [184.0, 185.0, 186.0, 189.0, 187.0], "top_call_strikes": [190.0, 178.0, 182.0, 192.0, 199.0]}, "17 abr Mensal": {"adi": -0.051784, "pdi": -0.177951, "ids": 5.158081, "dfp_net_M": 190.3097, "bias_adi": "Calls", "bias_ids": "Bear", "atm_strike": 194.0, "sps_d": -0.052289, "sps_d1": 0.04583, "iv_skew_d": -0.1694510739856802, "quadrant": "Risk-On", "top_put_strikes": [184.0, 185.0, 193.0, 186.0, 187.0], "top_call_strikes": [180.0, 178.0, 182.0, 190.0, 196.0]}, "24 abr W2": {"adi": -0.028173, "pdi": -0.171578, "ids": 10.260949, "dfp_net_M": 216.5147, "bias_adi": "Calls", "bias_ids": "Bear", "atm_strike": 194.0, "sps_d": -0.194019, "sps_d1": 0.046522, "iv_skew_d": 0.10313588850174212, "quadrant": "Risk-On", "top_put_strikes": [200.0, 205.0, 184.0, 194.0, 193.0], "top_call_strikes": [178.0, 182.0, 190.0, 192.0, 185.0]}, "30 abr W5": {"adi": 0.000675, "pdi": -0.18273, "ids": 0.947969, "dfp_net_M": 227.2428, "bias_adi": "Puts", "bias_ids": "Bear", "atm_strike": 194.0, "sps_d": -0.154895, "sps_d1": 0.046503, "iv_skew_d": 0.10345627464625379, "quadrant": "Risk-On", "top_put_strikes": [200.0, 205.0, 184.0, 193.0, 194.0], "top_call_strikes": [178.0, 192.0, 190.0, 185.0, 182.0]}, "8 mai W2": {"adi": -0.162766, "pdi": 0.001026, "ids": -2.064122, "dfp_net_M": 132.1399, "bias_adi": "Calls", "bias_ids": "Bull", "atm_strike": 194.0, "sps_d": -0.220956, "sps_d1": -0.220956, "iv_skew_d": 0.10257568910980566, "quadrant": "N/A", "top_put_strikes": [200.0, 182.0, 194.0, 176.0, 184.0], "top_call_strikes": [180.0, 193.0, 205.0, 195.0, 185.0]}, "15 mai Mensal": {"adi": -0.132046, "pdi": -0.194224, "ids": 4.33575, "dfp_net_M": 192.2489, "bias_adi": "Calls", "bias_ids": "Bear", "atm_strike": 194.0, "sps_d": -0.108506, "sps_d1": 0.046211, "iv_skew_d": 0.08895066018068094, "quadrant": "Risk-On", "top_put_strikes": [205.0, 200.0, 194.0, 193.0, 187.0], "top_call_strikes": [192.0, 185.0, 197.0, 199.0, 196.0]}}, "2026-04-13": {"17 abr Mensal": {"adi": 0.096647, "pdi": -0.083458, "ids": 0.123907, "dfp_net_M": 198.3276, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 194.0, "sps_d": 0.187862, "sps_d1": -0.034704, "iv_skew_d": -0.027996070726915536, "quadrant": "Defensive", "top_put_strikes": [210.0, 190.0, 189.0, 195.0, 193.0], "top_call_strikes": [188.0, 200.0, 187.0, 198.0, 199.0]}, "24 abr W2": {"adi": 0.234017, "pdi": -0.002726, "ids": 0.232695, "dfp_net_M": 115.3776, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 194.0, "sps_d": 0.027197, "sps_d1": -0.176418, "iv_skew_d": 0.19399860432658747, "quadrant": "Defensive", "top_put_strikes": [189.0, 191.0, 186.0, 188.0, 190.0], "top_call_strikes": [205.0, 200.0, 192.0, 194.0, 199.0]}, "30 abr W5": {"adi": 0.228611, "pdi": 0.008162, "ids": -0.472911, "dfp_net_M": 108.6768, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 194.0, "sps_d": 0.027815, "sps_d1": -0.154926, "iv_skew_d": 0.18937644341801377, "quadrant": "Hedge", "top_put_strikes": [220.0, 186.0, 192.0, 195.0, 187.0], "top_call_strikes": [205.0, 178.0, 197.0, 193.0, 194.0]}, "8 mai W2": {"adi": 0.069454, "pdi": 0.169745, "ids": -0.057236, "dfp_net_M": 223.5525, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 194.0, "sps_d": -0.039614, "sps_d1": -0.189232, "iv_skew_d": 0.16385542168674694, "quadrant": "Hedge", "top_put_strikes": [193.0, 186.0, 198.0, 196.0, 180.0], "top_call_strikes": [192.0, 194.0, 195.0, 205.0, 199.0]}, "15 mai Mensal": {"adi": 0.036756, "pdi": 0.002226, "ids": -0.054957, "dfp_net_M": 157.0023, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 194.0, "sps_d": -0.057058, "sps_d1": -0.104382, "iv_skew_d": 0.10204550678005052, "quadrant": "Hedge", "top_put_strikes": [189.0, 195.0, 192.0, 205.0, 200.0], "top_call_strikes": [210.0, 188.0, 187.0, 193.0, 197.0]}}, "2026-04-14": {"17 abr Mensal": {"adi": -0.024821, "pdi": -0.214284, "ids": 0.252647, "dfp_net_M": 194.5841, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 195.0, "sps_d": 0.135099, "sps_d1": 0.187862, "iv_skew_d": 0.14139827179890022, "quadrant": "Defensive", "top_put_strikes": [205.0, 200.0, 210.0, 196.0, 215.0], "top_call_strikes": [194.0, 189.0, 188.0, 178.0, 191.0]}, "24 abr W2": {"adi": -0.150342, "pdi": -0.0525, "ids": 0.052065, "dfp_net_M": 196.5337, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 195.0, "sps_d": -0.030736, "sps_d1": 0.027197, "iv_skew_d": 0.24172591321402304, "quadrant": "Defensive", "top_put_strikes": [210.0, 186.0, 196.0, 200.0, 187.0], "top_call_strikes": [215.0, 205.0, 188.0, 220.0, 199.0]}, "30 abr W5": {"adi": -0.163568, "pdi": -0.465011, "ids": -0.306907, "dfp_net_M": 196.1204, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 195.0, "sps_d": -0.013218, "sps_d1": 0.027815, "iv_skew_d": 0.5312962050271071, "quadrant": "Defensive", "top_put_strikes": [200.0, 210.0, 199.0, 230.0, 240.0], "top_call_strikes": [215.0, 205.0, 220.0, 187.0, 190.0]}, "8 mai W2": {"adi": -0.009542, "pdi": -1.624594, "ids": -0.201344, "dfp_net_M": 196.5682, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 195.0, "sps_d": 0.02055, "sps_d1": -0.039614, "iv_skew_d": 0.5260837619397503, "quadrant": "Defensive", "top_put_strikes": [205.0, 200.0, 196.0, 192.0, 187.0], "top_call_strikes": [194.0, 188.0, 189.0, 190.0, 215.0]}, "15 mai Mensal": {"adi": -0.013461, "pdi": -0.025225, "ids": -0.073229, "dfp_net_M": 192.6934, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 195.0, "sps_d": -0.010764, "sps_d1": -0.057058, "iv_skew_d": 0.12130105160185867, "quadrant": "Defensive", "top_put_strikes": [190.0, 196.0, 187.0, 200.0, 205.0], "top_call_strikes": [194.0, 189.0, 191.0, 195.0, 199.0]}}, "2026-04-15": {"17 abr Mensal": {"adi": 0.062612, "pdi": 0.370072, "ids": 0.208718, "dfp_net_M": 135.1584, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 194.0, "sps_d": 0.137267, "sps_d1": 0.135099, "iv_skew_d": -0.007824255191092542, "quadrant": "Compression", "top_put_strikes": [188.0, 189.0, 194.0, 195.0, 190.0], "top_call_strikes": [205.0, 210.0, 200.0, 186.0, 196.0]}, "24 abr W2": {"adi": 0.156392, "pdi": -0.680391, "ids": 0.393887, "dfp_net_M": 72.1928, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 194.0, "sps_d": 0.164292, "sps_d1": -0.030736, "iv_skew_d": 0.3303185214313802, "quadrant": "Defensive", "top_put_strikes": [205.0, 190.0, 192.0, 189.0, 194.0], "top_call_strikes": [210.0, 196.0, 186.0, 200.0, 187.0]}, "30 abr W5": {"adi": 0.065031, "pdi": 0.017563, "ids": 0.103479, "dfp_net_M": 78.0425, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 194.0, "sps_d": -0.004198, "sps_d1": -0.013218, "iv_skew_d": 0.32467211086364756, "quadrant": "Compression", "top_put_strikes": [220.0, 188.0, 176.0, 189.0, 194.0], "top_call_strikes": [205.0, 210.0, 200.0, 195.0, 185.0]}, "8 mai W2": {"adi": 0.023101, "pdi": -0.866655, "ids": 0.11039, "dfp_net_M": 82.3739, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 194.0, "sps_d": -0.068509, "sps_d1": 0.02055, "iv_skew_d": 0.27487953069348414, "quadrant": "Risk-On", "top_put_strikes": [190.0, 188.0, 189.0, 195.0, 194.0], "top_call_strikes": [205.0, 196.0, 186.0, 200.0, 187.0]}, "15 mai Mensal": {"adi": 0.037275, "pdi": 0.010513, "ids": 0.057166, "dfp_net_M": 79.465, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 194.0, "sps_d": -0.072998, "sps_d1": -0.010764, "iv_skew_d": 0.1002757583354224, "quadrant": "Compression", "top_put_strikes": [190.0, 194.0, 188.0, 195.0, 189.0], "top_call_strikes": [205.0, 210.0, 196.0, 198.0, 187.0]}}, "2026-04-16": {"17 abr Mensal": {"adi": 0.085178, "pdi": 1.373374, "ids": 0.424292, "dfp_net_M": 216.0834, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 193.0, "sps_d": 0.177334, "sps_d1": 0.137267, "iv_skew_d": 0.6946688206785139, "quadrant": "Hedge", "top_put_strikes": [186.0, 187.0, 191.0, 190.0, 189.0], "top_call_strikes": [210.0, 200.0, 195.0, 184.0, 197.0]}, "24 abr W2": {"adi": -0.051357, "pdi": -2.747003, "ids": 0.014491, "dfp_net_M": 147.9295, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 193.0, "sps_d": 0.135946, "sps_d1": 0.164292, "iv_skew_d": -0.07544264819091603, "quadrant": "Risk-On", "top_put_strikes": [200.0, 195.0, 194.0, 198.0, 192.0], "top_call_strikes": [210.0, 205.0, 185.0, 188.0, 186.0]}, "30 abr W5": {"adi": -0.024466, "pdi": 0.104695, "ids": -0.231603, "dfp_net_M": 153.7864, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 193.0, "sps_d": 0.032942, "sps_d1": -0.004198, "iv_skew_d": 0.13431696769269907, "quadrant": "Compression", "top_put_strikes": [200.0, 194.0, 198.0, 195.0, 193.0], "top_call_strikes": [205.0, 190.0, 185.0, 210.0, 199.0]}, "8 mai W2": {"adi": -0.06265, "pdi": 0.591919, "ids": -0.510336, "dfp_net_M": 155.0805, "bias_adi": "Calls", "bias_ids": "Bull", "atm_strike": 193.0, "sps_d": -0.141094, "sps_d1": -0.068509, "iv_skew_d": 0.13242009132420088, "quadrant": "Compression", "top_put_strikes": [185.0, 195.0, 191.0, 205.0, 193.0], "top_call_strikes": [190.0, 188.0, 186.0, 192.0, 210.0]}, "15 mai Mensal": {"adi": -0.053319, "pdi": -0.002378, "ids": 0.072095, "dfp_net_M": 156.9503, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 193.0, "sps_d": -0.117037, "sps_d1": -0.072998, "iv_skew_d": 0.10924796747967473, "quadrant": "Defensive", "top_put_strikes": [200.0, 194.0, 191.0, 195.0, 192.0], "top_call_strikes": [185.0, 190.0, 188.0, 205.0, 186.0]}}, "2026-04-17": {"17 abr Mensal": {"adi": 0.003421, "pdi": 0.0, "ids": 0.672764, "dfp_net_M": 57.4457, "bias_adi": "Puts", "bias_ids": "Bear", "atm_strike": 192.0, "sps_d": 0.556933, "sps_d1": 0.177334, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [196.0, 198.0, 191.0, 185.0, 183.0], "top_call_strikes": [188.0, 190.0, 184.0, 186.0, 178.0]}, "24 abr W2": {"adi": 0.087984, "pdi": 0.0, "ids": 0.031715, "dfp_net_M": 43.7515, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 192.0, "sps_d": 0.155637, "sps_d1": 0.135946, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [185.0, 190.0, 186.0, 188.0, 187.0], "top_call_strikes": [200.0, 195.0, 194.0, 197.0, 198.0]}, "30 abr W5": {"adi": 0.093071, "pdi": 0.0, "ids": 0.060422, "dfp_net_M": 42.8567, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 192.0, "sps_d": -0.021027, "sps_d1": 0.032942, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [184.0, 189.0, 191.0, 186.0, 185.0], "top_call_strikes": [200.0, 196.0, 194.0, 195.0, 198.0]}, "8 mai W2": {"adi": 0.116596, "pdi": 0.0, "ids": -0.061066, "dfp_net_M": 149.5218, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 192.0, "sps_d": -0.236195, "sps_d1": -0.141094, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [195.0, 191.0, 185.0, 187.0, 193.0], "top_call_strikes": [200.0, 194.0, 198.0, 192.0, 196.0]}, "15 mai Mensal": {"adi": 0.042747, "pdi": 0.0, "ids": 0.427723, "dfp_net_M": 89.2962, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 192.0, "sps_d": -0.108194, "sps_d1": -0.117037, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [186.0, 188.0, 197.0, 187.0, 185.0], "top_call_strikes": [200.0, 195.0, 198.0, 199.0, 196.0]}, "22 mai Mensal": {"adi": -0.379771, "pdi": 0.0, "ids": 0.549147, "dfp_net_M": 0.3996, "bias_adi": "Calls", "bias_ids": "Bear", "atm_strike": 193.0, "sps_d": -0.311032, "sps_d1": -0.311032, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [198.0, 181.0, 183.0, 187.0, 194.0], "top_call_strikes": [196.0, 209.0, 195.0, 193.0, 199.0]}}, "2026-04-20": {"24 abr W2": {"adi": 0.06334, "pdi": 0.044277, "ids": 0.42902, "dfp_net_M": 7.6348, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 193.0, "sps_d": 0.034071, "sps_d1": 0.155637, "iv_skew_d": -0.03728362183755009, "quadrant": "Compression", "top_put_strikes": [205.0, 220.0, 184.0, 188.0, 186.0], "top_call_strikes": [200.0, 190.0, 198.0, 185.0, 191.0]}, "30 abr W5": {"adi": 0.073125, "pdi": 0.02131, "ids": 0.143228, "dfp_net_M": 7.7185, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 193.0, "sps_d": -0.048179, "sps_d1": -0.021027, "iv_skew_d": 0.09414893617021274, "quadrant": "Compression", "top_put_strikes": [205.0, 220.0, 184.0, 188.0, 192.0], "top_call_strikes": [200.0, 190.0, 198.0, 185.0, 194.0]}, "8 mai W2": {"adi": -0.055876, "pdi": -1.081974, "ids": 0.026988, "dfp_net_M": 7.7121, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 193.0, "sps_d": -0.181831, "sps_d1": -0.236195, "iv_skew_d": 0.13946032594175792, "quadrant": "Defensive", "top_put_strikes": [192.0, 200.0, 220.0, 205.0, 190.0], "top_call_strikes": [178.0, 195.0, 197.0, 193.0, 191.0]}, "15 mai Mensal": {"adi": 0.149682, "pdi": -0.079915, "ids": 0.056565, "dfp_net_M": 13.6768, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 193.0, "sps_d": -0.08132, "sps_d1": -0.108194, "iv_skew_d": 0.13778371161548741, "quadrant": "Defensive", "top_put_strikes": [187.0, 185.0, 188.0, 192.0, 200.0], "top_call_strikes": [205.0, 197.0, 194.0, 195.0, 184.0]}, "19 jun Mensal": {"adi": -0.263315, "pdi": 0.001567, "ids": -0.159455, "dfp_net_M": 76.0151, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 193.0, "sps_d": -0.22844, "sps_d1": -0.22844, "iv_skew_d": 0.15671641791044766, "quadrant": "N/A", "top_put_strikes": [195.0, 191.0, 196.0, 194.0, 197.0], "top_call_strikes": [186.0, 187.0, 190.0, 185.0, 192.0]}}, "2026-04-22": {"24 abr W2": {"adi": 0.082995, "pdi": -0.249052, "ids": 0.222821, "dfp_net_M": 7.1651, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 189.0, "sps_d": 0.088503, "sps_d1": 0.034071, "iv_skew_d": 0.1550343249427916, "quadrant": "Defensive", "top_put_strikes": [183.0, 184.0, 193.0, 197.0, 190.0], "top_call_strikes": [200.0, 192.0, 185.0, 189.0, 174.0]}, "30 abr W5": {"adi": 0.047259, "pdi": -0.018457, "ids": 0.37355, "dfp_net_M": 12.6538, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 189.0, "sps_d": -0.051046, "sps_d1": -0.048179, "iv_skew_d": 0.1468834688346882, "quadrant": "Defensive", "top_put_strikes": [193.0, 198.0, 190.0, 200.0, 197.0], "top_call_strikes": [192.0, 174.0, 194.0, 185.0, 187.0]}, "8 mai W2": {"adi": 0.021383, "pdi": 0.000315, "ids": 0.304653, "dfp_net_M": 17.6298, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 189.0, "sps_d": -0.143778, "sps_d1": -0.181831, "iv_skew_d": 0.14430244941427034, "quadrant": "Hedge", "top_put_strikes": [190.0, 193.0, 197.0, 198.0, 182.0], "top_call_strikes": [192.0, 189.0, 191.0, 185.0, 220.0]}, "15 mai Mensal": {"adi": 0.162471, "pdi": -7.1e-05, "ids": 0.071601, "dfp_net_M": 11.3558, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 189.0, "sps_d": -0.07889, "sps_d1": -0.08132, "iv_skew_d": 0.1349333333333332, "quadrant": "Risk-On", "top_put_strikes": [193.0, 183.0, 184.0, 195.0, 196.0], "top_call_strikes": [192.0, 190.0, 188.0, 186.0, 181.0]}, "19 jun Mensal": {"adi": 0.078376, "pdi": -0.000725, "ids": 0.647218, "dfp_net_M": 27.6379, "bias_adi": "Puts", "bias_ids": "Bear", "atm_strike": 189.0, "sps_d": -0.263879, "sps_d1": -0.22844, "iv_skew_d": 0.15091342335186647, "quadrant": "Risk-On", "top_put_strikes": [193.0, 190.0, 186.0, 197.0, 185.0], "top_call_strikes": [192.0, 189.0, 191.0, 196.0, 184.0]}}, "2026-04-23": {"24 abr W2": {"adi": -0.095399, "pdi": -7.667841, "ids": -0.153376, "dfp_net_M": 29.0034, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 188.0, "sps_d": -0.025411, "sps_d1": 0.088503, "iv_skew_d": -0.3404642694583523, "quadrant": "Risk-On", "top_put_strikes": [189.0, 191.0, 198.0, 190.0, 176.0], "top_call_strikes": [193.0, 195.0, 187.0, 180.0, 196.0]}, "30 abr W5": {"adi": -0.081422, "pdi": -1.090573, "ids": 0.213685, "dfp_net_M": 31.8222, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 188.0, "sps_d": -0.134856, "sps_d1": -0.051046, "iv_skew_d": -0.56128064032016, "quadrant": "Risk-On", "top_put_strikes": [180.0, 196.0, 189.0, 191.0, 198.0], "top_call_strikes": [193.0, 182.0, 195.0, 183.0, 200.0]}, "8 mai W2": {"adi": -0.03937, "pdi": -1.30184, "ids": 0.469347, "dfp_net_M": 35.1111, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 188.0, "sps_d": -0.101944, "sps_d1": -0.143778, "iv_skew_d": -0.5426844014510277, "quadrant": "Risk-On", "top_put_strikes": [189.0, 195.0, 185.0, 220.0, 184.0], "top_call_strikes": [200.0, 180.0, 182.0, 188.0, 187.0]}, "15 mai Mensal": {"adi": -0.072601, "pdi": -0.015394, "ids": -0.146949, "dfp_net_M": 41.2433, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 188.0, "sps_d": -0.123813, "sps_d1": -0.07889, "iv_skew_d": 0.1411909146715777, "quadrant": "Defensive", "top_put_strikes": [189.0, 191.0, 195.0, 186.0, 184.0], "top_call_strikes": [180.0, 187.0, 193.0, 196.0, 182.0]}, "19 jun Mensal": {"adi": -0.072898, "pdi": 0.284552, "ids": 5.3e-05, "dfp_net_M": 46.9492, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 188.0, "sps_d": -0.33558, "sps_d1": -0.263879, "iv_skew_d": 0.08099898751265604, "quadrant": "Compression", "top_put_strikes": [189.0, 191.0, 184.0, 196.0, 185.0], "top_call_strikes": [180.0, 187.0, 193.0, 190.0, 188.0]}}, "2026-04-24": {"30 abr W5": {"adi": 0.197192, "pdi": -1.09585, "ids": 0.205519, "dfp_net_M": -18.5009, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 187.0, "sps_d": 0.010236, "sps_d1": -0.134856, "iv_skew_d": 0.14800759013282735, "quadrant": "Defensive", "top_put_strikes": [191.0, 192.0, 195.0, 188.0, 187.0], "top_call_strikes": [189.0, 194.0, 190.0, 180.0, 181.0]}, "8 mai W2": {"adi": 0.125491, "pdi": -1.090566, "ids": 0.191313, "dfp_net_M": -0.8127, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 187.0, "sps_d": -0.064319, "sps_d1": -0.101944, "iv_skew_d": 0.1497382198952879, "quadrant": "Defensive", "top_put_strikes": [191.0, 195.0, 188.0, 186.0, 183.0], "top_call_strikes": [189.0, 194.0, 190.0, 181.0, 193.0]}, "15 mai Mensal": {"adi": 0.109081, "pdi": 0.051759, "ids": 0.158087, "dfp_net_M": 9.3595, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 187.0, "sps_d": -0.047835, "sps_d1": -0.123813, "iv_skew_d": 0.15935214211076285, "quadrant": "Hedge", "top_put_strikes": [191.0, 187.0, 195.0, 188.0, 185.0], "top_call_strikes": [179.0, 190.0, 194.0, 193.0, 189.0]}, "22 mai W4": {"adi": -0.221484, "pdi": 0.0, "ids": -0.604367, "dfp_net_M": 18.0076, "bias_adi": "Calls", "bias_ids": "Bull", "atm_strike": 187.0, "sps_d": -2.294735, "sps_d1": -2.294735, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [179.0, 183.0, 180.0, 185.0, 182.0], "top_call_strikes": [192.0, 190.0, 186.0, 184.0, 188.0]}, "19 jun Mensal": {"adi": 0.085005, "pdi": 0.36303, "ids": 0.040057, "dfp_net_M": 27.0424, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 187.0, "sps_d": -0.216695, "sps_d1": -0.33558, "iv_skew_d": 0.16522875816993465, "quadrant": "Hedge", "top_put_strikes": [191.0, 187.0, 188.0, 180.0, 195.0], "top_call_strikes": [192.0, 190.0, 194.0, 193.0, 189.0]}}, "2026-04-27": {"8 mai W2": {"adi": -0.057368, "pdi": 0.0, "ids": 0.223879, "dfp_net_M": 10.9519, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 186.0, "sps_d": -0.014469, "sps_d1": -0.064319, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [179.0, 194.0, 180.0, 177.0, 176.0], "top_call_strikes": [191.0, 184.0, 190.0, 195.0, 185.0]}, "15 mai Mensal": {"adi": -0.021676, "pdi": 0.0, "ids": 0.541844, "dfp_net_M": 2.6823, "bias_adi": "Calls", "bias_ids": "Bear", "atm_strike": 186.0, "sps_d": -0.090745, "sps_d1": -0.047835, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [192.0, 190.0, 188.0, 189.0, 195.0], "top_call_strikes": [191.0, 179.0, 186.0, 183.0, 180.0]}, "22 mai W4": {"adi": 1.070107, "pdi": 0.0, "ids": 0.241451, "dfp_net_M": 3.1594, "bias_adi": "Puts", "bias_ids": "Base", "atm_strike": 186.0, "sps_d": -0.151744, "sps_d1": -2.294735, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [191.0, 194.0, 181.0, 180.0, 195.0], "top_call_strikes": [186.0, 188.0, 190.0, 189.0, 183.0]}, "29 mai W5": {"adi": -0.16276, "pdi": 0.0, "ids": -0.793441, "dfp_net_M": 30.0053, "bias_adi": "Calls", "bias_ids": "Bull", "atm_strike": 186.0, "sps_d": -0.200561, "sps_d1": -0.200561, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [177.0, 173.0, 209.0, 179.0, 136.0], "top_call_strikes": [180.0, 192.0, 190.0, 182.0, 194.0]}, "19 jun Mensal": {"adi": -0.026883, "pdi": -0.000985, "ids": 0.183641, "dfp_net_M": 45.1082, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 186.0, "sps_d": -0.209126, "sps_d1": -0.216695, "iv_skew_d": 0.1676902536715621, "quadrant": "Defensive", "top_put_strikes": [178.0, 192.0, 189.0, 180.0, 185.0], "top_call_strikes": [191.0, 186.0, 182.0, 183.0, 181.0]}}, "2026-04-28": {"30 abr W5": {"adi": -0.004895, "pdi": 0.001829, "ids": 0.920664, "dfp_net_M": 59.0087, "bias_adi": "Calls", "bias_ids": "Bear", "atm_strike": 185.0, "sps_d": 0.018085, "sps_d1": 0.018085, "iv_skew_d": 0.1828826317256759, "quadrant": "N/A", "top_put_strikes": [186.0, 181.0, 189.0, 184.0, 190.0], "top_call_strikes": [177.0, 193.0, 180.0, 183.0, 179.0]}, "8 mai W2": {"adi": -0.059734, "pdi": 0.002664, "ids": -0.117419, "dfp_net_M": 62.1235, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 185.0, "sps_d": 0.025143, "sps_d1": -0.014469, "iv_skew_d": 0.17759784075573565, "quadrant": "Hedge", "top_put_strikes": [188.0, 185.0, 183.0, 192.0, 191.0], "top_call_strikes": [177.0, 181.0, 180.0, 189.0, 184.0]}, "15 mai Mensal": {"adi": -0.067002, "pdi": -0.013136, "ids": 0.108137, "dfp_net_M": 63.7105, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 185.0, "sps_d": -0.048205, "sps_d1": -0.090745, "iv_skew_d": 0.20209621069604952, "quadrant": "Defensive", "top_put_strikes": [179.0, 183.0, 178.0, 177.0, 182.0], "top_call_strikes": [192.0, 184.0, 188.0, 190.0, 191.0]}, "22 mai W4": {"adi": -0.126353, "pdi": 0.0, "ids": 0.598565, "dfp_net_M": 49.6, "bias_adi": "Calls", "bias_ids": "Bear", "atm_strike": 185.0, "sps_d": 0.04574, "sps_d1": -0.151744, "iv_skew_d": null, "quadrant": "N/A", "top_put_strikes": [189.0, 191.0, 182.0, 178.0, 193.0], "top_call_strikes": [177.0, 196.0, 180.0, 181.0, 187.0]}, "19 jun Mensal": {"adi": -0.012788, "pdi": -0.001134, "ids": 0.145806, "dfp_net_M": 70.1002, "bias_adi": "Calls", "bias_ids": "Base", "atm_strike": 185.0, "sps_d": -0.15463, "sps_d1": -0.209126, "iv_skew_d": 0.1636411470665614, "quadrant": "Risk-On", "top_put_strikes": [190.0, 182.0, 184.0, 178.0, 191.0], "top_call_strikes": [185.0, 177.0, 188.0, 181.0, 179.0]}}};
-const PALETTE     = ["#f85149", "#58a6ff", "#3fb950", "#d2a8ff", "#e3b341", "#79c0ff", "#ffa657", "#ff7b72"];
-
-let curExp    = EXP_KEYS[0] || 'AGG';
-let curMetric = 'adi';
+const DEMAND_DATA = {"30 Abr — W5": {"score": 2.343007, "signal": "Bear", "spot_proxy": 177.0, "net_gex": -46930904626.67, "gex_abs": 65212155090.93, "strikes": 17, "dominant_component": "gex", "components": {"skew": -0.226701, "premium": 0.464024, "oi": 3.530644, "iv": 0.867453, "gex": 7.660106, "charm": 3.156292, "vanna": 2.762443}, "rows": [{"strike": 177.0, "moneyness": 0.0, "atm_weight": 0.08898852046133601, "row_score": 0.469235892948067, "z_skew": -1.344800124533001, "z_premium": -0.6738544357853798, "z_oi": -0.3194601146003034, "z_iv": 6.5831199999999805, "z_gex": -0.44143642813650774, "z_charm": -0.11515729478679299, "z_vanna": -0.5566422333551888}, {"strike": 178.0, "moneyness": 0.005649717514124353, "atm_weight": 0.08410030576396887, "row_score": -0.15965771070577786, "z_skew": -1.1768051058530509, "z_premium": -1.213503084297507, "z_oi": 0.18892517274310433, "z_iv": 2.104439999999991, "z_gex": -0.3122728184837652, "z_charm": -0.010105155419676704, "z_vanna": -0.5560621186531236}, {"strike": 179.0, "moneyness": 0.011299435028248483, "atm_weight": 0.07948060483448659, "row_score": -0.14821899598856608, "z_skew": -1.0096500622665006, "z_premium": -0.21292166766805612, "z_oi": 0.13242949834278972, "z_iv": 0.701479999999997, "z_gex": -0.17267456930627004, "z_charm": -0.033799453971186784, "z_vanna": -0.6247014814908991}, {"strike": 180.0, "moneyness": 0.016949152542372836, "atm_weight": 0.0751146679845041, "row_score": 0.8673400392176478, "z_skew": -0.8416550435865502, "z_premium": -0.6745, "z_oi": 3.497881748216392, "z_iv": 1.025240000000006, "z_gex": 2.4256752803076513, "z_charm": 0.9933302997392538, "z_vanna": -0.9542151150370743}, {"strike": 181.0, "moneyness": 0.02259887005649719, "atm_weight": 0.07098855573849548, "row_score": 6.907863505482171, "z_skew": -0.6745, "z_premium": -1.7731369869480211, "z_oi": 18.575595865400818, "z_iv": -0.161879999999997, "z_gex": 22.781773975989807, "z_charm": 11.392134474580331, "z_vanna": 0.2764509470640792}, {"strike": 182.0, "moneyness": 0.02824858757062154, "atm_weight": 0.0670890943281156, "row_score": -0.5412442371705453, "z_skew": -0.5056650062266501, "z_premium": -0.7018450350071376, "z_oi": -0.336018538284366, "z_iv": 0.1349000000000075, "z_gex": 0.0, "z_charm": -0.6745, "z_vanna": -2.240967715782481}, {"strike": 183.0, "moneyness": 0.03389830508474567, "atm_weight": 0.0634038336312573, "row_score": -0.5628416494555242, "z_skew": -0.3385099626400996, "z_premium": -0.4525217551216311, "z_oi": -0.4947823717768664, "z_iv": -0.242820000000003, "z_gex": -0.22536075838652245, "z_charm": -0.6758615843343125, "z_vanna": -2.0506911192668156}, {"strike": 184.0, "moneyness": 0.039548022598870025, "atm_weight": 0.05992100742155093, "row_score": 8.184453856620598, "z_skew": -0.17051494396014938, "z_premium": -0.09656514685486593, "z_oi": 10.958190494916016, "z_iv": -0.2697999999999925, "z_gex": 32.80045552222053, "z_charm": 15.354316986024187, "z_vanna": 9.1377600705399}, {"strike": 185.0, "moneyness": 0.04519774011299438, "atm_weight": 0.056629495801393884, "row_score": 0.3309515329436076, "z_skew": 0.0, "z_premium": 0.0, "z_oi": 0.0, "z_iv": 0.8094, "z_gex": 1.3978649416257003, "z_charm": 0.38949448466126996, "z_vanna": 0.10638181175621912}, {"strike": 186.0, "moneyness": 0.05084745762711873, "atm_weight": 0.05351878969856417, "row_score": 16.06227094442516, "z_skew": 0.1663150684931507, "z_premium": 0.054241468593459616, "z_oi": 18.546684933430704, "z_iv": 0.0, "z_gex": 58.375898528574055, "z_charm": 25.529599298920353, "z_vanna": 32.696626364038366}, {"strike": 187.0, "moneyness": 0.05649717514124286, "atm_weight": 0.050578957313065886, "row_score": 0.4157557465113718, "z_skew": 0.33347011207970106, "z_premium": 0.2463533032276069, "z_oi": -0.048917448457951804, "z_iv": 0.4047000000000075, "z_gex": 1.0319329898894132, "z_charm": 0.0, "z_vanna": 1.4171109995875488}, {"strike": 188.0, "moneyness": 0.062146892655367214, "atm_weight": 0.047800612407077066, "row_score": 0.03230330773340216, "z_skew": 0.5014651307596513, "z_premium": 0.4966414412142305, "z_oi": -0.9786142070670186, "z_iv": 1.5918199999999956, "z_gex": -1.295655033833714, "z_charm": -1.215828808124269, "z_vanna": 0.6745}, {"strike": 189.0, "moneyness": 0.06779661016949157, "atm_weight": 0.04517488433675877, "row_score": 9.269211524150567, "z_skew": 0.6686201743462017, "z_premium": 14.371206469393696, "z_oi": 11.061519605640132, "z_iv": -0.6745, "z_gex": 18.468800007330778, "z_charm": 3.431803065893348, "z_vanna": 16.927480368407092}, {"strike": 190.0, "moneyness": 0.07344632768361592, "atm_weight": 0.04269338973024096, "row_score": 0.4522319480316301, "z_skew": 0.834935242839352, "z_premium": 0.7388408413036323, "z_oi": 0.44851730239874166, "z_iv": -0.6745, "z_gex": 0.6701438270642797, "z_charm": -0.988526305843434, "z_vanna": 1.8935987808501364}, {"strike": 191.0, "moneyness": 0.07909604519774005, "atm_weight": 0.04034820572136137, "row_score": -0.05350832952136887, "z_skew": 1.0037702366127021, "z_premium": 0.719425221736125, "z_oi": -0.7480087916409189, "z_iv": -0.6745, "z_gex": -0.5867149279032684, "z_charm": -0.2764378242560619, "z_vanna": -0.04661333743438304}, {"strike": 192.0, "moneyness": 0.0847457627118644, "atm_weight": 0.03813184465369709, "row_score": 0.08679303178948469, "z_skew": 1.1692453300124532, "z_premium": 0.9660292104141252, "z_oi": -0.6745, "z_iv": -0.6745, "z_gex": -0.5194355216710697, "z_charm": 0.20759566006650013, "z_vanna": 0.0}, {"strike": 193.0, "moneyness": 0.09039548022598876, "atm_weight": 0.036037230174125995, "row_score": 0.34311396016818585, "z_skew": 1.338080323785803, "z_premium": 3.2006291750430234, "z_oi": -1.6023779843828998, "z_iv": -0.6745, "z_gex": -0.6745, "z_charm": 0.41529422236798264, "z_vanna": -0.2835686432114785}]}, "8 Mai — W2": {"score": -1.29193, "signal": "Bull", "spot_proxy": 177.0, "net_gex": -506711110.57, "gex_abs": 53402503856.47, "strikes": 17, "dominant_component": "charm", "components": {"skew": -0.224565, "premium": -0.523054, "oi": 0.316538, "iv": 0.681791, "gex": 0.194465, "charm": -11.606594, "vanna": -4.140185}, "rows": [{"strike": 177.0, "moneyness": 0.0, "atm_weight": 0.08898852046133601, "row_score": 0.2283988643088659, "z_skew": -1.3464642857142857, "z_premium": -1.3584493855976476, "z_oi": -0.0021499565343378727, "z_iv": 4.763656250000031, "z_gex": -0.09850886427910514, "z_charm": 0.25863512566888175, "z_vanna": -0.20929808247616652}, {"strike": 178.0, "moneyness": 0.005649717514124353, "atm_weight": 0.08410030576396887, "row_score": 0.12464828684118294, "z_skew": -1.1774166666666666, "z_premium": -0.3465392896241651, "z_oi": -0.41337800637496375, "z_iv": 3.9626875000000323, "z_gex": -0.2592558729871506, "z_charm": -0.24895125886931166, "z_vanna": -0.9013207349099309}, {"strike": 179.0, "moneyness": 0.011299435028248483, "atm_weight": 0.07948060483448659, "row_score": 0.896003949598519, "z_skew": -1.0100595238095236, "z_premium": 0.0026664450329563294, "z_oi": 2.2562816574905824, "z_iv": 2.445062500000003, "z_gex": 1.1258182431033323, "z_charm": 1.061047100270854, "z_vanna": 0.08981925471171105}, {"strike": 180.0, "moneyness": 0.016949152542372836, "atm_weight": 0.0751146679845041, "row_score": -23.89967805791175, "z_skew": -0.8410119047619047, "z_premium": -1.7498435265896113, "z_oi": 4.155084178499004, "z_iv": 1.68625, "z_gex": 2.8767666083394463, "z_charm": -84.39943141279082, "z_vanna": -181.00769382556808}, {"strike": 181.0, "moneyness": 0.02259887005649719, "atm_weight": 0.07098855573849548, "row_score": -2.5353467779623826, "z_skew": -0.6728095238095236, "z_premium": -4.580389906489235, "z_oi": -3.085383077368878, "z_iv": 1.0117500000000117, "z_gex": -2.365194503232871, "z_charm": -3.0930426477174113, "z_vanna": -5.217665004139961}, {"strike": 182.0, "moneyness": 0.02824858757062154, "atm_weight": 0.0670890943281156, "row_score": 0.17337219353088268, "z_skew": -0.5054523809523809, "z_premium": -0.5260336870719272, "z_oi": 1.0855325992465952, "z_iv": 0.25293750000000875, "z_gex": 0.9138196226233828, "z_charm": 0.4510529706790654, "z_vanna": -0.4639294913032627}, {"strike": 183.0, "moneyness": 0.03389830508474567, "atm_weight": 0.0634038336312573, "row_score": 0.2667475528698656, "z_skew": -0.3355595238095238, "z_premium": 0.0, "z_oi": 0.6745, "z_iv": 0.12646874999999855, "z_gex": 0.6363821485068724, "z_charm": 0.6745, "z_vanna": 0.32885311120469707}, {"strike": 184.0, "moneyness": 0.039548022598870025, "atm_weight": 0.05992100742155093, "row_score": -2.001596664915273, "z_skew": -0.16820238095238088, "z_premium": -2.673380601139604, "z_oi": -2.0438268617791944, "z_iv": -0.6745, "z_gex": -2.0898554990057017, "z_charm": -2.935800042908462, "z_vanna": -4.461031518752953}, {"strike": 185.0, "moneyness": 0.04519774011299438, "atm_weight": 0.056629495801393884, "row_score": -0.08710335883157486, "z_skew": 0.0, "z_premium": -0.6745, "z_oi": 0.3369568241089539, "z_iv": -0.4215625000000146, "z_gex": 0.36928540301759544, "z_charm": 0.0, "z_vanna": -0.006745970154749296}, {"strike": 186.0, "moneyness": 0.05084745762711873, "atm_weight": 0.05351878969856417, "row_score": 0.17743762437401453, "z_skew": 0.16820238095238096, "z_premium": -0.26480966729075117, "z_oi": 0.611174007534048, "z_iv": -0.46371874999999857, "z_gex": 0.6745, "z_charm": -0.14780434183619245, "z_vanna": 0.8337655902939319}, {"strike": 187.0, "moneyness": 0.05649717514124286, "atm_weight": 0.050578957313065886, "row_score": 0.05501465544920636, "z_skew": 0.3355595238095238, "z_premium": 0.39613921204528973, "z_oi": -0.008599826137351491, "z_iv": -0.6323437500000044, "z_gex": 0.0, "z_charm": 0.17782015323840714, "z_vanna": 0.07798799937118255}, {"strike": 188.0, "moneyness": 0.062146892655367214, "atm_weight": 0.047800612407077066, "row_score": 2.076576942314759, "z_skew": 0.505452380952381, "z_premium": 1.0773910014187738, "z_oi": 3.335168936540133, "z_iv": -0.16862499999998246, "z_gex": 3.4221564475073505, "z_charm": 1.1001269065027057, "z_vanna": 6.44871921359019}, {"strike": 189.0, "moneyness": 0.06779661016949157, "atm_weight": 0.04517488433675877, "row_score": -0.6175837904802238, "z_skew": 0.6745, "z_premium": 0.3849688002403404, "z_oi": -1.8300039119095914, "z_iv": 0.0, "z_gex": -1.7580465473756477, "z_charm": -1.891702280766198, "z_vanna": -0.6745}, {"strike": 190.0, "moneyness": 0.07344632768361592, "atm_weight": 0.04269338973024096, "row_score": 1.147815363634963, "z_skew": 0.842702380952381, "z_premium": 1.7724239544113711, "z_oi": 0.31135279629093016, "z_iv": 0.6323437500000044, "z_gex": 0.2501485577066578, "z_charm": -3.19406635144043, "z_vanna": 7.353105750420803}, {"strike": 191.0, "moneyness": 0.07909604519774005, "atm_weight": 0.04034820572136137, "row_score": -0.23274418197579017, "z_skew": 1.0092142857142856, "z_premium": 0.423046483046344, "z_oi": 0.0, "z_iv": -3.414656250000019, "z_gex": -0.03439810835994749, "z_charm": 0.03158415845207496, "z_vanna": 0.4506385638482872}, {"strike": 192.0, "moneyness": 0.0847457627118644, "atm_weight": 0.03813184465369709, "row_score": 14.615756102394837, "z_skew": 1.1782619047619047, "z_premium": 2.3760754387606036, "z_oi": -1.122081860330339, "z_iv": -3.414656250000019, "z_gex": -0.7920168303311594, "z_charm": -127.56903503710728, "z_vanna": 250.00981361102822}, {"strike": 193.0, "moneyness": 0.09039548022598876, "atm_weight": 0.036037230174125995, "row_score": -0.08351092474402795, "z_skew": 1.3464642857142857, "z_premium": 1.6355160111928888, "z_oi": -0.35122471747319617, "z_iv": -3.414656250000019, "z_gex": -0.2587739578514185, "z_charm": 0.01140607621329621, "z_vanna": 0.0}]}, "15 Mai — Mensal": {"score": 0.155758, "signal": "Base", "spot_proxy": 177.0, "net_gex": -10874791305.48, "gex_abs": 70569663595.08, "strikes": 17, "dominant_component": "iv", "components": {"skew": -0.225351, "premium": 0.16101, "oi": 0.253829, "iv": 0.734941, "gex": 0.052048, "charm": 0.005636, "vanna": -0.10345}, "rows": [{"strike": 177.0, "moneyness": 0.0, "atm_weight": 0.08898852046133601, "row_score": 1.409150641256525, "z_skew": -1.3625407779171892, "z_premium": 0.0, "z_oi": 1.0660986287583343, "z_iv": 8.993333333333487, "z_gex": 0.15923185322768793, "z_charm": 0.900452173402166, "z_vanna": -0.3983196406708228}, {"strike": 178.0, "moneyness": 0.005649717514124353, "atm_weight": 0.08410030576396887, "row_score": 0.4624595248237539, "z_skew": -1.17550878293601, "z_premium": -0.8055763790399532, "z_oi": 1.0622293118631274, "z_iv": 3.2825666666667246, "z_gex": 0.43693691310846755, "z_charm": 0.9953784393668675, "z_vanna": -0.36992449022853546}, {"strike": 179.0, "moneyness": 0.011299435028248483, "atm_weight": 0.07948060483448659, "row_score": -0.014706795283114832, "z_skew": -1.0087879548306147, "z_premium": -0.1627950252220696, "z_oi": -0.08035620832809158, "z_iv": 1.9335666666666997, "z_gex": -0.5475469053803272, "z_charm": 0.35452841621429926, "z_vanna": -0.6745}, {"strike": 180.0, "moneyness": 0.016949152542372836, "atm_weight": 0.0751146679845041, "row_score": 0.006023549392931982, "z_skew": -0.8403745294855709, "z_premium": -0.980682457137947, "z_oi": 0.9173844886149201, "z_iv": 1.30403333333335, "z_gex": 0.755667804010428, "z_charm": -0.2500465097247609, "z_vanna": -1.2154209318290001}, {"strike": 181.0, "moneyness": 0.02259887005649719, "atm_weight": 0.07098855573849548, "row_score": -0.21211637741508949, "z_skew": -0.671961104140527, "z_premium": -0.09481117297649011, "z_oi": -0.37844634545225814, "z_iv": 0.7644333333333375, "z_gex": -0.7876188583026632, "z_charm": 0.3321063924206879, "z_vanna": -0.6338995650559685}, {"strike": 182.0, "moneyness": 0.02824858757062154, "atm_weight": 0.0670890943281156, "row_score": -0.294607356846579, "z_skew": -0.5027013801756588, "z_premium": -0.6744999999999999, "z_oi": -0.1687395521449239, "z_iv": 0.5396000000000125, "z_gex": -0.44040052521818396, "z_charm": 0.0, "z_vanna": -0.7864617636506518}, {"strike": 183.0, "moneyness": 0.03389830508474567, "atm_weight": 0.0634038336312573, "row_score": -0.6345087797487432, "z_skew": -0.3351342534504393, "z_premium": -0.18751248711547291, "z_oi": -0.9663618945779343, "z_iv": 0.04496666666667498, "z_gex": -1.6510309018952785, "z_charm": -0.6745, "z_vanna": -1.0812505716506375}, {"strike": 184.0, "moneyness": 0.039548022598870025, "atm_weight": 0.05992100742155093, "row_score": 0.18276812831177527, "z_skew": -0.16672082810539518, "z_premium": -0.5516442672970997, "z_oi": 0.6745000000000001, "z_iv": -0.13490000000001248, "z_gex": 1.066949392167832, "z_charm": 0.9425772365858316, "z_vanna": 0.0}, {"strike": 185.0, "moneyness": 0.04519774011299438, "atm_weight": 0.056629495801393884, "row_score": 0.473154096925639, "z_skew": 0.0, "z_premium": -0.5133393568136555, "z_oi": 1.5113585734054598, "z_iv": -0.5396, "z_gex": 2.5935146883885896, "z_charm": 0.2732388294825279, "z_vanna": 0.21409384642045104}, {"strike": 186.0, "moneyness": 0.05084745762711873, "atm_weight": 0.05351878969856417, "row_score": 0.03629789606864741, "z_skew": 0.16841342534504375, "z_premium": 0.4541695777605093, "z_oi": 0.0, "z_iv": -0.5845666666666874, "z_gex": 0.0, "z_charm": 0.16291981813470102, "z_vanna": -0.05146618735983993}, {"strike": 187.0, "moneyness": 0.05649717514124286, "atm_weight": 0.050578957313065886, "row_score": 0.6070776815641534, "z_skew": 0.33598055207026334, "z_premium": 0.682956984642165, "z_oi": 1.0192086174361552, "z_iv": -0.6744999999999999, "z_gex": 1.8004073361544024, "z_charm": 0.4588509847513568, "z_vanna": 0.6466551921931306}, {"strike": 188.0, "moneyness": 0.062146892655367214, "atm_weight": 0.047800612407077066, "row_score": 0.42592386158601603, "z_skew": 0.506086574654956, "z_premium": 1.5725575361334425, "z_oi": 0.17067421059252735, "z_iv": -0.2248333333333375, "z_gex": 0.28012958253276227, "z_charm": -0.7375176082271747, "z_vanna": 0.604753847968218}, {"strike": 189.0, "moneyness": 0.06779661016949157, "atm_weight": 0.04517488433675877, "row_score": 0.8452772100781348, "z_skew": 0.6745, "z_premium": 2.7152013523027425, "z_oi": 0.3743224682349981, "z_iv": 0.0, "z_gex": 0.5796417744531638, "z_charm": -0.42088402575083905, "z_vanna": 0.9031115509627415}, {"strike": 190.0, "moneyness": 0.07344632768361592, "atm_weight": 0.04269338973024096, "row_score": 0.40415755186172325, "z_skew": 0.8412208281053951, "z_premium": 2.1854361038685535, "z_oi": -0.3554171216505221, "z_iv": 0.0, "z_gex": -0.6745, "z_charm": -1.4560563367795085, "z_vanna": 1.0939513814466835}, {"strike": 191.0, "moneyness": 0.07909604519774005, "atm_weight": 0.04034820572136137, "row_score": -0.3533461278819759, "z_skew": 1.009634253450439, "z_premium": 1.102241337765495, "z_oi": -0.016003358913070826, "z_iv": -4.991300000000088, "z_gex": -0.1940106823898491, "z_charm": -0.6835432567718704, "z_vanna": 1.0462088075851812}, {"strike": 192.0, "moneyness": 0.0847457627118644, "atm_weight": 0.03813184465369709, "row_score": -0.6917069773283597, "z_skew": 1.1763550815558343, "z_premium": 0.735523853217064, "z_oi": -0.6778601962511007, "z_iv": -4.991300000000088, "z_gex": -1.1935496192537325, "z_charm": -0.7499647358083963, "z_vanna": 0.7222516222020509}, {"strike": 193.0, "moneyness": 0.09039548022598876, "atm_weight": 0.036037230174125995, "row_score": -1.0634653454089813, "z_skew": 1.347307402760351, "z_premium": 0.5232505707094282, "z_oi": -1.5094239149578563, "z_iv": -4.991300000000088, "z_gex": -2.255297622817536, "z_charm": -2.2111544777544396, "z_vanna": 1.2789628598512424}]}, "22 Mai — W4": {"score": -24.124185, "signal": "Bull", "spot_proxy": 177.0, "net_gex": 38171425.91, "gex_abs": 81822221.86, "strikes": 17, "dominant_component": "premium", "components": {"skew": -0.072603, "premium": -118.976246, "oi": -0.313272, "iv": -0.230342, "gex": -0.339431, "charm": -1.621245, "vanna": -0.504087}, "rows": [{"strike": 176.0, "moneyness": -0.005649717514124242, "atm_weight": 0.08693024366268999, "row_score": -0.06703307609465958, "z_skew": -0.6935844785772028, "z_premium": 0.18502297845960416, "z_oi": 0.0, "z_iv": 0.0, "z_gex": 0.0, "z_charm": 0.0, "z_vanna": 0.0}, {"strike": 177.0, "moneyness": 0.0, "atm_weight": 0.09198294461136733, "row_score": 0.11053682555691957, "z_skew": -0.8855198059822148, "z_premium": -0.12274028368360852, "z_oi": 0.6745, "z_iv": 0.0, "z_gex": 0.4765382834482324, "z_charm": 0.5498056096073292, "z_vanna": 0.3184381040859927}, {"strike": 178.0, "moneyness": 0.005649717514124353, "atm_weight": 0.0869302436626899, "row_score": 0.22379061674959486, "z_skew": -0.5828945028294258, "z_premium": 0.3017166787451213, "z_oi": 0.5733250000000001, "z_iv": 0.0, "z_gex": 0.4638407487636174, "z_charm": 0.5227401972933684, "z_vanna": 0.38736350789880875}, {"strike": 179.0, "moneyness": 0.011299435028248483, "atm_weight": 0.08215509185080784, "row_score": 0.25585053516744877, "z_skew": -0.7006729991915923, "z_premium": 0.0, "z_oi": 0.7578580188679245, "z_iv": 0.0, "z_gex": 0.681863410524868, "z_charm": 0.7513284001202322, "z_vanna": 0.6745}, {"strike": 180.0, "moneyness": 0.016949152542372836, "atm_weight": 0.07764224316687955, "row_score": 7.331837412045851, "z_skew": -0.3587881972514148, "z_premium": 16.903456812684997, "z_oi": 8.036731132075472, "z_iv": 0.0, "z_gex": 7.784388880292949, "z_charm": 8.014182643140522, "z_vanna": 8.223567755950727}, {"strike": 181.0, "moneyness": 0.02259887005649719, "atm_weight": 0.073377289078225, "row_score": 1.5991974932890693, "z_skew": -0.30426111560226365, "z_premium": 4.886036327043806, "z_oi": 1.2026462264150943, "z_iv": 0.0, "z_gex": 1.2875474109030893, "z_charm": 1.3366861147585072, "z_vanna": 1.6565957144857757}, {"strike": 182.0, "moneyness": 0.02824858757062154, "atm_weight": 0.06934661252505117, "row_score": -0.19593986745442027, "z_skew": -0.2540962004850444, "z_premium": -2.662407785364406, "z_oi": 0.5733250000000001, "z_iv": 0.14859579417453744, "z_gex": 0.6745, "z_charm": 0.6745, "z_vanna": 1.028017505650369}, {"strike": 183.0, "moneyness": 0.03389830508474567, "atm_weight": 0.0655373444441772, "row_score": 0.221310387571871, "z_skew": -0.12813864187550522, "z_premium": 0.30276998685922346, "z_oi": 0.2577099056603774, "z_iv": 0.0, "z_gex": 0.34123319923668055, "z_charm": 0.324105585525726, "z_vanna": 0.6155877459881687}, {"strike": 185.0, "moneyness": 0.04519774011299438, "atm_weight": 0.05853505315814831, "row_score": 7.128777386975672, "z_skew": 0.0, "z_premium": 35.70850844982494, "z_oi": 0.8469429245283019, "z_iv": -4.11115030549561, "z_gex": 1.122102592535286, "z_charm": 0.8453127716870658, "z_vanna": 2.320823250901659}, {"strike": 187.0, "moneyness": 0.05649717514124286, "atm_weight": 0.05228091673970285, "row_score": 0.06975359358828864, "z_skew": 0.27209013742926436, "z_premium": 0.2584598586929948, "z_oi": -0.06299575471698113, "z_iv": 0.0, "z_gex": -0.03864920831399246, "z_charm": -0.04398781593920889, "z_vanna": -0.019958175484879288}, {"strike": 189.0, "moneyness": 0.06779661016949157, "atm_weight": 0.046694999110345047, "row_score": -7.069911054701929, "z_skew": 0.5556309620048504, "z_premium": -32.15742899614945, "z_oi": -0.8813042452830189, "z_iv": 0.0, "z_gex": -1.0924556850677074, "z_charm": -2.3779634741843454, "z_vanna": -2.24177290573291}, {"strike": 191.0, "moneyness": 0.07909604519774005, "atm_weight": 0.041705904905437255, "row_score": -576.4621582018895, "z_skew": 0.6745, "z_premium": -2881.8017447043985, "z_oi": -0.30161603773584905, "z_iv": 0.0, "z_gex": -0.32709777021335124, "z_charm": -0.6459881270664914, "z_vanna": -0.5173027087165425}, {"strike": 193.0, "moneyness": 0.09039548022598876, "atm_weight": 0.03724986694765821, "row_score": -14.911677315289793, "z_skew": 0.8522582861762327, "z_premium": -22.956648637026433, "z_oi": -15.98374103773585, "z_iv": 0.0, "z_gex": -17.34973745422662, "z_charm": -35.001704238362166, "z_vanna": -23.69333289687603}, {"strike": 194.0, "moneyness": 0.09604519774011289, "atm_weight": 0.03520370024947584, "row_score": -0.11450497693894648, "z_skew": 1.0883605497170574, "z_premium": -1.2750358031590256, "z_oi": -0.06299575471698113, "z_iv": 0.0, "z_gex": -0.03864920831399246, "z_charm": -0.04398781593920889, "z_vanna": -0.019958175484879288}, {"strike": 195.0, "moneyness": 0.10169491525423724, "atm_weight": 0.03326993121871684, "row_score": -8.939578542452416, "z_skew": 1.0616422797089733, "z_premium": -0.6745, "z_oi": -16.034646698113207, "z_iv": 0.0, "z_gex": -15.028117893307202, "z_charm": -29.4757859910107, "z_vanna": -15.955585183084002}, {"strike": 196.0, "moneyness": 0.10734463276836159, "atm_weight": 0.03144238575644133, "row_score": -1.5454482427941076, "z_skew": 1.2579397736459175, "z_premium": 0.113206328746431, "z_oi": -3.441858962264151, "z_iv": 0.0, "z_gex": -2.9223810923719635, "z_charm": -5.653421379717664, "z_vanna": -2.6544924067540236}, {"strike": 197.0, "moneyness": 0.11299435028248594, "atm_weight": 0.02971522891218632, "row_score": 0.0018701968628903332, "z_skew": 1.357724333063864, "z_premium": -0.286068707488933, "z_oi": -0.32134198113207546, "z_iv": 0.0, "z_gex": -0.23952150130944808, "z_charm": -0.42907831530728646, "z_vanna": -0.1723746999077086}]}, "19 Jun — Mensal": {"score": -0.065138, "signal": "Base", "spot_proxy": 177.0, "net_gex": -1174256848.31, "gex_abs": 22737860552.65, "strikes": 17, "dominant_component": "iv", "components": {"skew": -0.224431, "premium": -0.532459, "oi": 0.151023, "iv": 1.587866, "gex": 0.056139, "charm": -1.38453, "vanna": -0.893408}, "rows": [{"strike": 177.0, "moneyness": 0.0, "atm_weight": 0.08898852046133601, "row_score": 0.3905137531132361, "z_skew": -1.3472815286624202, "z_premium": -2.3407781708175763, "z_oi": -0.17116985484956262, "z_iv": 7.75674999999979, "z_gex": -0.30933059271519503, "z_charm": 0.31310685734879234, "z_vanna": -0.5644578991602143}, {"strike": 178.0, "moneyness": 0.005649717514124353, "atm_weight": 0.08410030576396887, "row_score": 1.4880395569704228, "z_skew": -1.178012101910828, "z_premium": -0.21478072606665063, "z_oi": 2.2936112179179085, "z_iv": 6.407749999999812, "z_gex": 1.6320710983607165, "z_charm": 0.9506537431676704, "z_vanna": 0.15911942630123976}, {"strike": 179.0, "moneyness": 0.011299435028248483, "atm_weight": 0.07948060483448659, "row_score": 0.48590497200235017, "z_skew": -1.010461146496815, "z_premium": 0.0, "z_oi": -0.04337599730846871, "z_iv": 4.805812499999871, "z_gex": -0.1724608757837926, "z_charm": 0.1677846691580085, "z_vanna": -0.6745}, {"strike": 180.0, "moneyness": 0.016949152542372836, "atm_weight": 0.0751146679845041, "row_score": -2.0964947042330575, "z_skew": -0.8411917197452228, "z_premium": -1.9129652780121003, "z_oi": -2.600874074786119, "z_iv": 3.878374999999883, "z_gex": -2.4171748563276645, "z_charm": -6.885999602067404, "z_vanna": -8.083633747869005}, {"strike": 181.0, "moneyness": 0.02259887005649719, "atm_weight": 0.07098855573849548, "row_score": 0.4968753884125604, "z_skew": -0.6727815286624204, "z_premium": -0.7025415664733362, "z_oi": 0.8225230222051331, "z_iv": 2.8666249999999063, "z_gex": 0.6745, "z_charm": 0.7311073498543266, "z_vanna": 0.04373988577232049}, {"strike": 182.0, "moneyness": 0.02824858757062154, "atm_weight": 0.0670890943281156, "row_score": 0.09750626445098298, "z_skew": -0.5052305732484075, "z_premium": 0.33578138808483754, "z_oi": 1.6783722964529464, "z_iv": 1.7705624999999647, "z_gex": 1.562289860548441, "z_charm": -3.7784784384891075, "z_vanna": -3.8032076965599173}, {"strike": 183.0, "moneyness": 0.03389830508474567, "atm_weight": 0.0634038336312573, "row_score": 0.3820375689916635, "z_skew": -0.3368203821656051, "z_premium": 0.03568944421494749, "z_oi": 0.6745, "z_iv": 1.0117499999999766, "z_gex": 0.6280264161723993, "z_charm": 0.6745, "z_vanna": 0.09437067532830337}, {"strike": 184.0, "moneyness": 0.039548022598870025, "atm_weight": 0.05992100742155093, "row_score": -0.7508833114560679, "z_skew": -0.1684101910828024, "z_premium": -2.6826013519437764, "z_oi": -0.46637301739882725, "z_iv": 0.6744999999999999, "z_gex": -0.5271633336036594, "z_charm": -0.45437662104890786, "z_vanna": -0.9739217920877503}, {"strike": 185.0, "moneyness": 0.04519774011299438, "atm_weight": 0.056629495801393884, "row_score": 0.1346676677593875, "z_skew": 0.0, "z_premium": -0.7898219438963193, "z_oi": 1.0918561953282708, "z_iv": 0.0, "z_gex": 1.1518055264545102, "z_charm": -0.4499978398271057, "z_vanna": -0.2795601851537556}, {"strike": 186.0, "moneyness": 0.05084745762711873, "atm_weight": 0.05351878969856417, "row_score": -0.611809841532287, "z_skew": 0.16841019108280253, "z_premium": 0.022957911840936776, "z_oi": -1.0780459002210896, "z_iv": -0.2529374999999649, "z_gex": -1.2006424225054089, "z_charm": -1.3552916944131632, "z_vanna": -1.3561272126498}, {"strike": 187.0, "moneyness": 0.05649717514124286, "atm_weight": 0.050578957313065886, "row_score": -0.2642461038500394, "z_skew": 0.3368203821656051, "z_premium": -0.7431542342516458, "z_oi": -0.22777261366913393, "z_iv": -0.5901874999999649, "z_gex": -0.26035918304906036, "z_charm": 0.20584298441681886, "z_vanna": -0.17280003378187697}, {"strike": 188.0, "moneyness": 0.062146892655367214, "atm_weight": 0.047800612407077066, "row_score": -0.059126515132972464, "z_skew": 0.5060898089171976, "z_premium": -0.2957936823527429, "z_oi": 0.0, "z_iv": -0.5058750000000234, "z_gex": 0.0, "z_charm": 0.0, "z_vanna": 0.0}, {"strike": 189.0, "moneyness": 0.06779661016949157, "atm_weight": 0.04517488433675877, "row_score": 0.47630255535168553, "z_skew": 0.6745, "z_premium": 0.720144486707406, "z_oi": 0.6709987984235317, "z_iv": -0.5901875000000117, "z_gex": 0.7677671658489295, "z_charm": 0.4707674434543582, "z_vanna": 0.5563356794727938}, {"strike": 190.0, "moneyness": 0.07344632768361592, "atm_weight": 0.04269338973024096, "row_score": -0.02848980790371264, "z_skew": 0.8429101910828023, "z_premium": 0.2227362344287482, "z_oi": 0.44646803806594254, "z_iv": -0.5901874999999415, "z_gex": 0.5120393785687692, "z_charm": -4.142390994719583, "z_vanna": 0.697074880842344}, {"strike": 191.0, "moneyness": 0.07909604519774005, "atm_weight": 0.04034820572136137, "row_score": -0.298094957828145, "z_skew": 1.0113203821656052, "z_premium": 0.7884304451618132, "z_oi": -0.2667396904739018, "z_iv": -0.42156249999996487, "z_gex": -0.3017555616583785, "z_charm": -7.712196945483646, "z_vanna": 1.6228963194712378}, {"strike": 192.0, "moneyness": 0.0847457627118644, "atm_weight": 0.03813184465369709, "row_score": -0.8385875107574222, "z_skew": 1.1797305732484076, "z_premium": 0.6745, "z_oi": -2.08217754493896, "z_iv": -0.16862499999999997, "z_gex": -2.3368645093391622, "z_charm": -6.912032967290462, "z_vanna": 1.2466854074704505}, {"strike": 193.0, "moneyness": 0.09039548022598876, "atm_weight": 0.036037230174125995, "row_score": -1.7261894477142967, "z_skew": 1.34985923566879, "z_premium": 0.5293615364969985, "z_oi": 0.958291838892627, "z_iv": -16.60956249999952, "z_gex": 1.0459843366743216, "z_charm": 0.4314858681172266, "z_vanna": 1.0519837700709078}]}, "AGG": {"score": -4.596498, "signal": "Bull", "spot_proxy": 177.0, "net_gex": -59448492465.12, "gex_abs": 212004005316.99, "strikes": 85, "dominant_component": "premium", "components": {"skew": -0.19473, "premium": -23.881345, "oi": 0.787752, "iv": 0.728342, "gex": 1.524665, "charm": -2.290088, "vanna": -0.575737}, "rows": []}};
+const HISTORY_DATA = {"2026-03-26": {"27 mar W4": null, "2 abr W1": null, "10 abr W2": null, "17 abr Mensal": null, "15 mai Mensal": null}, "2026-03-27": {"27 mar W4": null, "2 abr W1": null, "10 abr W2": null, "17 abr Mensal": null, "24 abr W2": null, "15 mai Mensal": null}, "2026-03-30": {"2 abr W1": null, "10 abr W2": null, "17 abr Mensal": null, "24 abr W2": null, "15 mai Mensal": null}, "2026-03-31": {"2 abr W1": null, "10 abr W2": null, "17 abr Mensal": null, "24 abr W2": null, "15 mai Mensal": null}, "2026-04-01": {"2 abr W1": null, "10 abr W2": null, "17 abr Mensal": null, "24 abr W2": null, "15 mai Mensal": null}, "2026-04-02": {"10 abr W2": null, "17 abr Mensal": null, "30 abr W5": null, "15 mai Mensal": null, "24 abr W2": null}, "2026-04-06": {"10 abr W2": null, "17 abr Mensal": null, "24 abr W2": null, "30 abr W5": null, "15 mai Mensal": null}, "2026-04-07": {"10 abr W2": null, "17 abr Mensal": null, "24 abr W2": null, "30 abr W5": null, "15 mai Mensal": null}, "2026-04-08": {"10 abr W2": null, "17 abr Mensal": null, "24 abr W2": null, "30 abr W5": null, "15 mai Mensal": null}, "2026-04-09": {"10 abr W2": null, "17 abr Mensal": null, "24 abr W2": null, "30 abr W5": null, "15 mai Mensal": null}, "2026-04-10": {"10 abr W2": null, "17 abr Mensal": null, "24 abr W2": null, "30 abr W5": null, "8 mai W2": null, "15 mai Mensal": null}, "2026-04-13": {"17 abr Mensal": null, "24 abr W2": null, "30 abr W5": null, "8 mai W2": null, "15 mai Mensal": null}, "2026-04-14": {"17 abr Mensal": null, "24 abr W2": null, "30 abr W5": null, "8 mai W2": null, "15 mai Mensal": null}, "2026-04-15": {"17 abr Mensal": null, "24 abr W2": null, "30 abr W5": null, "8 mai W2": null, "15 mai Mensal": null}, "2026-04-16": {"17 abr Mensal": null, "24 abr W2": null, "30 abr W5": null, "8 mai W2": null, "15 mai Mensal": null}, "2026-04-17": {"17 abr Mensal": null, "24 abr W2": null, "30 abr W5": null, "8 mai W2": null, "15 mai Mensal": null, "22 mai Mensal": null}, "2026-04-20": {"24 abr W2": null, "30 abr W5": null, "8 mai W2": null, "15 mai Mensal": null, "19 jun Mensal": null}, "2026-04-22": {"24 abr W2": null, "30 abr W5": null, "8 mai W2": null, "15 mai Mensal": null, "19 jun Mensal": null}, "2026-04-23": {"24 abr W2": null, "30 abr W5": null, "8 mai W2": null, "15 mai Mensal": null, "19 jun Mensal": null}, "2026-04-24": {"30 abr W5": null, "8 mai W2": null, "15 mai Mensal": null, "22 mai W4": null, "19 jun Mensal": null}, "2026-04-27": {"8 mai W2": null, "15 mai Mensal": null, "22 mai W4": null, "29 mai W5": null, "19 jun Mensal": null}, "2026-04-28": {"30 abr W5": null, "8 mai W2": null, "15 mai Mensal": null, "22 mai W4": null, "19 jun Mensal": null, "30 Abr — W5": 2.343007, "8 Mai — W2": -1.29193, "15 Mai — Mensal": 0.155758, "22 Mai — W4": -24.124185, "19 Jun — Mensal": -0.065138}};
+const EXP_KEYS = ["30 Abr — W5", "8 Mai — W2", "15 Mai — Mensal", "22 Mai — W4", "19 Jun — Mensal"];
+let curExp = 'AGG';
 let histChart = null;
 
-// ── Explainer ──────────────────────────────────────
-function toggleExplainer() {
-  const body = document.getElementById('exp-body');
-  const toggle = document.getElementById('exp-toggle');
-  body.classList.toggle('open');
-  toggle.classList.toggle('open');
-}
-
-// ── Theme ──────────────────────────────────────────
 function toggleTheme() {
-  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-  const next = dark ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  document.getElementById('theme-toggle').textContent = '◐';
-  try { localStorage.setItem('bova11-theme', next); } catch(e) {}
-  if (histChart) { histChart.update(); }
+  const root = document.documentElement;
+  const dark = root.getAttribute('data-theme') === 'dark';
+  root.setAttribute('data-theme', dark ? 'light' : 'dark');
+  localStorage.setItem('bova11-theme', dark ? 'light' : 'dark');
+  render();
 }
-(function() {
-  const saved = localStorage.getItem('bova11-theme');
-  if (saved === 'dark') {
-    document.documentElement.setAttribute('data-theme', 'dark');
-    const btn = document.getElementById('theme-toggle');
-    if (btn) btn.textContent = '◐';
-  }
-})();
 
-// ── Tabs ───────────────────────────────────────────
+function tone(v) {
+  if (v > 0.25) return 'pos';
+  if (v < -0.25) return 'neg';
+  return 'neu';
+}
+
+function fmt(v, d=4) {
+  if (v === null || v === undefined || Number.isNaN(v)) return 'N/A';
+  return Number(v).toLocaleString('pt-BR', { minimumFractionDigits:d, maximumFractionDigits:d });
+}
+
+function fmtInt(v) {
+  if (v === null || v === undefined || Number.isNaN(v)) return 'N/A';
+  return Math.round(Number(v)).toLocaleString('pt-BR');
+}
+
 function renderTabs() {
-  const wrap = document.getElementById('expTabs');
-  let html = EXP_KEYS.map((k, i) =>
-    `<div class="exp-tab ${k===curExp?'on':''}"
-          style="${k===curExp?'background:'+PALETTE[i%PALETTE.length]+';border-color:'+PALETTE[i%PALETTE.length]:''}"
-          onclick="switchExp('${k}')">${k}</div>`
-  ).join('');
-  html += `<div class="exp-tab agg ${curExp==='AGG'?'on':''}" onclick="switchExp('AGG')">🔗 AGREGADO</div>`;
-  wrap.innerHTML = html;
-}
-
-function switchExp(key) {
-  curExp = key;
-  renderTabs();
-  renderCards();
-  renderHeatmap();
-  renderRankings();
-}
-
-// ── Cards ──────────────────────────────────────────
-function biasColor(b) {
-  if (!b) return '#8b949e';
-  const l = b.toLowerCase();
-  if (l==='puts'||l==='bear') return '#f85149';
-  if (l==='calls'||l==='bull') return '#3fb950';
-  return '#8b949e';
-}
-function quadColor(q) {
-  if (q==='Hedge')       return '#f85149';
-  if (q==='Defensive')   return '#e3b341';
-  if (q==='Risk-On')     return '#3fb950';
-  if (q==='Compression') return '#58a6ff';
-  return '#8b949e';
-}
-function fmtNum(v, d=4) {
-  if (v===null||v===undefined) return 'N/A';
-  return (v>=0?'+':'')+v.toFixed(d);
+  const host = document.getElementById('expTabs');
+  host.innerHTML = '';
+  const agg = document.createElement('button');
+  agg.className = 'exp-tab agg' + (curExp === 'AGG' ? ' on' : '');
+  agg.textContent = 'AGREGADO';
+  agg.onclick = () => { curExp = 'AGG'; render(); };
+  host.appendChild(agg);
+  EXP_KEYS.forEach(exp => {
+    const btn = document.createElement('button');
+    btn.className = 'exp-tab' + (curExp === exp ? ' on' : '');
+    btn.textContent = exp;
+    btn.onclick = () => { curExp = exp; render(); };
+    host.appendChild(btn);
+  });
 }
 
 function renderCards() {
   const d = DEMAND_DATA[curExp];
-  if (!d) { document.getElementById('cards').innerHTML=''; return; }
-  const d1Warn = d.d1_iv_available===false && curExp !== 'AGG' ?
-    '<div class="card-sub">D-1 IV indisponível</div>' : '';
-  document.getElementById('cards').innerHTML = `
-    <div class="card">
-      <div class="card-label">ADI — Aggregate Demand</div>
-      <div class="card-val" style="color:${biasColor(d.bias_adi)}">${fmtNum(d.adi,4)}</div>
-      <span class="card-badge" style="background:${biasColor(d.bias_adi)}">${d.bias_adi}</span>
-      <div class="card-sub">ΔSPS·0.4 + PIC·0.3 + OIF·0.2 + VIC·0.1</div>
-    </div>
-    <div class="card">
-      <div class="card-label">PDI — Put Demand Index</div>
-      <div class="card-val" style="color:${quadColor(d.quadrant)}">${fmtNum(d.pdi,5)}</div>
-      <span class="card-badge" style="background:${quadColor(d.quadrant)}">${d.quadrant}</span>
-      <div class="card-sub">ΔSkew = ${fmtNum(d.iv_skew_d,4)} | ΔIV = ${fmtNum(d.delta_iv_atm,2)}</div>
-      ${d1Warn}
-    </div>
-    <div class="card">
-      <div class="card-label">IDS — Institutional Score</div>
-      <div class="card-val" style="color:${biasColor(d.bias_ids)}">${fmtNum(d.ids,4)}</div>
-      <span class="card-badge" style="background:${biasColor(d.bias_ids)}">${d.bias_ids}</span>
-      <div class="card-sub">Pesos: Prem·0.20, OI·0.20, IV·0.15, GEX·0.12…</div>
-    </div>
-    <div class="card">
-      <div class="card-label">DFP — Delta Flow Proxy</div>
-      <div class="card-val" style="color:${d.dfp_net_M>=0?'var(--grn)':'var(--red)'}">${fmtNum(d.dfp_net_M,2)}M</div>
-      <span class="card-badge" style="background:${d.dfp_net_M>=0?'var(--grn)':'var(--red)'}">${d.dfp_net_M>=0?'Bullish':'Bearish'}</span>
-      <div class="card-sub">Σ(|Δ|×Vol×Mid) calls − puts</div>
-    </div>`;
+  const host = document.getElementById('cards');
+  const cls = tone(d.score);
+  host.innerHTML = [
+    ['Score Composto', `<span class="${cls}">${fmt(d.score, 4)}</span>`, `${d.signal} · dominante: ${d.dominant_component}`],
+    ['Spot Proxy', fmt(d.spot_proxy, 2), `${fmtInt(d.strikes)} strikes no modelo`],
+    ['Net GEX', `<span class="${tone(-d.net_gex)}">${fmt(d.net_gex, 2)}</span>`, `GEX absoluto: ${fmt(d.gex_abs, 2)}`],
+    ['Leitura', `<span class="${cls}">${d.signal}</span>`, `Bear >= +0,25 | Bull <= -0,25`],
+  ].map(([label,val,sub]) => `<div class="card"><div class="card-label">${label}</div><div class="card-val">${val}</div><div class="card-sub">${sub}</div></div>`).join('');
 }
 
-// ── NDS Heatmap ────────────────────────────────────
-function ndsColor(v, maxAbs) {
-  const norm = maxAbs > 0 ? Math.min(Math.abs(v) / maxAbs, 1.0) : 0;
-  const alpha = 0.15 + norm * 0.55;
-  if (v > 0.05)  return `rgba(248,81,73,${alpha})`;
-  if (v < -0.05) return `rgba(63,185,80,${alpha})`;
-  return 'transparent';
-}
-
-function renderHeatmap() {
+function renderComponents() {
   const d = DEMAND_DATA[curExp];
-  const tbody = document.getElementById('ndsBody');
-  if (!d || !d.nds_list || d.nds_list.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--t3);padding:20px">Sem dados</td></tr>';
+  const tbody = document.getElementById('componentBody');
+  const rows = Object.entries(d.components || {}).sort((a,b) => Math.abs(b[1]) - Math.abs(a[1]));
+  tbody.innerHTML = rows.map(([k,v]) => `<tr><td>${k}</td><td class="${tone(v)}">${fmt(v,4)}</td><td>${fmt(({skew:0.15,premium:0.20,oi:0.20,iv:0.15,gex:0.12,charm:0.08,vanna:0.10}[k]||0),2)}</td></tr>`).join('');
+}
+
+function renderDetail() {
+  const d = DEMAND_DATA[curExp];
+  const tbody = document.getElementById('detailBody');
+  if (!d.rows || !d.rows.length) {
+    tbody.innerHTML = '<tr><td colspan="10">Sem detalhe por strike no agregado.</td></tr>';
     return;
   }
-  const sorted = [...d.nds_list].sort((a,b) => b.strike - a.strike);
-  const maxAbs = Math.max(...sorted.map(r => Math.abs(r.nds)), 0.01);
-  tbody.innerHTML = sorted.map(r => {
-    const bg = ndsColor(r.nds, maxAbs);
-    const barW = Math.round(Math.min(Math.abs(r.nds) / maxAbs, 1.0) * 50);
-    const barColor = r.nds > 0 ? '#f85149' : '#3fb950';
-    return `<tr style="background:${bg}">
-      <td><strong>${r.strike.toFixed(0)}</strong></td>
-      <td>${fmtNum(r.nds,3)}
-        <span class="nds-bar" style="width:${barW}px;background:${barColor}"></span></td>
-      <td>${fmtNum(r.ids_s,3)}</td>
-      <td style="color:${r.dfp_net>=0?'var(--grn)':'var(--red)'}">${fmtNum(r.dfp_net,2)}M</td>
-    </tr>`;
-  }).join('');
+  tbody.innerHTML = d.rows.map(r => `
+    <tr>
+      <td><strong>${fmt(r.strike,0)}</strong></td>
+      <td class="${tone(r.row_score)}">${fmt(r.row_score,3)}</td>
+      <td>${fmt(r.atm_weight,3)}</td>
+      <td>${fmt(r.z_skew,3)}</td>
+      <td>${fmt(r.z_premium,3)}</td>
+      <td>${fmt(r.z_oi,3)}</td>
+      <td>${fmt(r.z_iv,3)}</td>
+      <td>${fmt(r.z_gex,3)}</td>
+      <td>${fmt(r.z_charm,3)}</td>
+      <td>${fmt(r.z_vanna,3)}</td>
+    </tr>`).join('');
 }
 
-// ── Rankings ───────────────────────────────────────
-function renderRankings() {
-  const d = DEMAND_DATA[curExp];
-  const div = document.getElementById('rankingsDiv');
-  if (!d) { div.innerHTML=''; return; }
-  const putColor  = '#f85149';
-  const callColor = '#3fb950';
-  const mkBadge = (s, color) =>
-    `<span class="rnk-badge" style="background:${color}">${s}</span>`;
-  div.innerHTML = `
-    <div class="rnk-title">🔴 Top-5 demanda por puts (NDS +)</div>
-    <div class="rnk-list">${(d.top_put_strikes||[]).map(s=>mkBadge(s.toFixed(0),putColor)).join('')}</div>
-    <div class="rnk-title" style="margin-top:16px">🟢 Top-5 demanda por calls (NDS −)</div>
-    <div class="rnk-list">${(d.top_call_strikes||[]).map(s=>mkBadge(s.toFixed(0),callColor)).join('')}</div>
-    <div class="rnk-title" style="margin-top:16px">ATM Strike</div>
-    <div class="rnk-list">
-      ${d.atm_strike?mkBadge(d.atm_strike.toFixed(0),'#58a6ff'):''}
-    </div>
-    ${d.sps_d!==undefined?`
-    <div class="rnk-title" style="margin-top:16px">Synthetic Premium Skew</div>
-    <div style="font-family:monospace;font-size:0.82rem;color:var(--t2)">
-      D: ${fmtNum(d.sps_d,4)} &nbsp; D-1: ${fmtNum(d.sps_d1,4)} &nbsp;
-      ΔSPS: <span style="color:${(d.sps_d-d.sps_d1)>=0?'var(--red)':'var(--grn)'}">
-        ${fmtNum(d.sps_d-d.sps_d1,4)}</span>
-    </div>`:''}
-    ${d.iv_atm_d!==null&&d.iv_atm_d!==undefined?`
-    <div class="rnk-title" style="margin-top:12px">IV ATM (D)</div>
-    <div style="font-family:monospace;font-size:0.82rem;color:var(--t2)">
-      ${d.iv_atm_d.toFixed(2)}%
-    </div>`:''}
-  `;
-}
-
-// ── Historical Chart ───────────────────────────────
-function switchMetric(metric, btn) {
-  curMetric = metric;
-  document.querySelectorAll('.metric-btn').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
-  buildHistChart();
-}
-
-function buildHistChart() {
+function buildHistoryChart() {
   const ctx = document.getElementById('histChart').getContext('2d');
-  const dates = Object.keys(HIST_DATA).sort();
-  if (dates.length === 0) return;
+  const dates = Object.keys(HISTORY_DATA).sort();
+  if (histChart) histChart.destroy();
+  const expSeries = curExp === 'AGG'
+    ? [{
+        label: 'Agregado',
+        data: dates.map(dt => {
+          const values = Object.values(HISTORY_DATA[dt] || {}).map(v => v.score).filter(v => v !== null && v !== undefined);
+          if (!values.length) return null;
+          return values.reduce((a,b) => a + b, 0) / values.length;
+        }),
+        borderColor: '#8250df',
+        backgroundColor: 'rgba(130,80,223,.15)',
+      }]
+    : [{
+        label: curExp,
+        data: dates.map(dt => HISTORY_DATA[dt] && HISTORY_DATA[dt][curExp] ? HISTORY_DATA[dt][curExp].score : null),
+        borderColor: '#0969DA',
+        backgroundColor: 'rgba(9,105,218,.12)',
+      }];
 
-  const datasets = EXP_KEYS.map((exp, i) => {
-    const data = dates.map(dt => {
-      const v = HIST_DATA[dt] && HIST_DATA[dt][exp] ? HIST_DATA[dt][exp][curMetric] : null;
-      return v !== undefined && v !== null ? v : null;
-    });
-    return {
-      label: exp,
-      data: data,
-      borderColor: PALETTE[i % PALETTE.length],
-      backgroundColor: PALETTE[i % PALETTE.length] + '22',
-      tension: 0.3,
-      pointRadius: 3,
-      spanGaps: true,
-    };
-  });
-
-  const metricLabels = {adi:'ADI', pdi:'PDI', ids:'IDS'};
-  if (histChart) { histChart.destroy(); }
   histChart = new Chart(ctx, {
     type: 'line',
-    data: { labels: dates, datasets },
+    data: { labels: dates, datasets: expSeries.map(s => Object.assign(s, { tension:0.25, pointRadius:3, spanGaps:true, fill:true })) },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: { labels: { color: getComputedStyle(document.documentElement).getPropertyValue('--t2'), font: { size: 11 } } },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y !== null ? ctx.parsed.y.toFixed(4) : 'N/A'}` } },
-      },
+      plugins: { legend: { labels: { color: getComputedStyle(document.documentElement).getPropertyValue('--t2') } } },
       scales: {
-        x: { ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--t3'), font: { size: 10 } }, grid: { color: 'rgba(128,128,128,0.1)' } },
-        y: { ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--t3'), font: { size: 10 } }, grid: { color: 'rgba(128,128,128,0.1)' }, title: { display: true, text: metricLabels[curMetric]||curMetric, color: 'var(--t3)', font:{size:10} } },
+        x: { ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--t3') }, grid: { color: 'rgba(128,128,128,.10)' } },
+        y: { ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--t3') }, grid: { color: 'rgba(128,128,128,.10)' } },
       },
     },
   });
 }
 
-// ── Init ───────────────────────────────────────────
-renderTabs();
-renderCards();
-renderHeatmap();
-renderRankings();
-buildHistChart();
+function render() {
+  renderTabs();
+  renderCards();
+  renderComponents();
+  renderDetail();
+  buildHistoryChart();
+}
+
+(function() {
+  const saved = localStorage.getItem('bova11-theme') || 'light';
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  document.getElementById('theme-toggle').onclick = toggleTheme;
+  render();
+})();
 </script>
 </body>
 </html>

@@ -1,488 +1,227 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IV Skew Signal — BOVA11</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <style>
-        :root {
-            --bg: #ffffff; --bg2: #f6f8fa; --bg3: #eaeef2;
-            --text: #1f2328; --text2: #636c76; --border: #d0d7de;
-            --grn: #1a7f37; --red: #cf222e; --blu: #0969da;
-            --yel: #9a6700;
-        }
-        [data-theme="dark"] {
-            --bg: #0d1117; --bg2: #161b22; --bg3: #21262d;
-            --text: #c9d1d9; --text2: #8b949e; --border: #30363d;
-            --grn: #3fb950; --red: #f85149; --blu: #58a6ff;
-            --yel: #d29922;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: var(--bg); color: var(--text); padding: 30px; line-height: 1.5;
-        }
-        header { margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
-        h1 { font-size: 1.8rem; margin-bottom: 6px; }
-        .meta { color: var(--text2); font-size: 0.92rem; }
-
-        .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin-bottom:18px; }
-        .card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:14px; }
-        .card .label { color:var(--text2); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; }
-        .tip {
-            display:inline-flex; align-items:center; justify-content:center;
-            width:16px; height:16px; margin-left:6px; border-radius:50%;
-            border:1px solid var(--border); color:var(--text2); font-size:0.68rem;
-            cursor:help; vertical-align:middle;
-        }
-        .card .value { margin-top:6px; font-size:1.35rem; font-weight:700; }
-        .card .sub { margin-top:4px; color:var(--text2); font-size:0.78rem; }
-        .expand { margin-top:8px; border-top:1px dashed var(--border); padding-top:8px; }
-        .expand summary {
-            cursor:pointer; color:var(--blu); font-size:0.78rem; font-weight:600;
-            list-style:none; user-select:none;
-        }
-        .expand summary::-webkit-details-marker { display:none; }
-        .expand summary::after { content:" ▼"; font-size:0.68rem; color:var(--text2); }
-        .expand[open] summary::after { content:" ▲"; }
-        .expand .sub { margin-top:6px; }
-
-        .box { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:18px; margin-bottom:16px; }
-        .box h2 { font-size:1.02rem; margin-bottom:12px; }
-        canvas { max-height:330px; }
-        .guide p { margin-bottom:8px; color:var(--text2); }
-        .guide ul { margin:6px 0 10px 20px; color:var(--text2); }
-        .guide li { margin-bottom:4px; }
-        .threshold-scale { margin-top:8px; }
-        .threshold-track {
-            display:flex; width:100%; border:1px solid var(--border);
-            border-radius:10px; overflow:hidden; background:var(--bg);
-        }
-        .threshold-part {
-            padding:8px 10px; font-size:0.78rem; font-weight:600; text-align:center;
-            border-right:1px solid var(--border);
-        }
-        .threshold-part:last-child { border-right:0; }
-        .threshold-bull { color:var(--grn); background:rgba(26,127,55,0.09); width:30%; }
-        .threshold-neutral { color:var(--text2); background:var(--bg); width:40%; }
-        .threshold-bear { color:var(--red); background:rgba(207,34,46,0.09); width:30%; }
-        .threshold-note { margin-top:6px; color:var(--text2); font-size:0.78rem; }
-
-        .table-wrap { overflow-x:auto; }
-        table { width:100%; border-collapse:collapse; font-size:0.88rem; }
-        th, td { padding:8px 10px; border-bottom:1px solid var(--border); text-align:left; white-space:nowrap; }
-        th { color:var(--text2); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; }
-        tr:hover td { background:rgba(88,166,255,0.06); }
-
-        .dir-bear { color:var(--red); font-weight:700; }
-        .dir-bull { color:var(--grn); font-weight:700; }
-        .dir-neut { color:var(--text2); font-weight:700; }
-        .bt-hit { color:var(--grn); font-weight:700; }
-        .bt-miss { color:var(--red); font-weight:700; }
-        .bt-na { color:var(--text2); font-weight:700; }
-
-        .decomp-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; }
-        .metric { border:1px solid var(--border); border-radius:8px; background:var(--bg); padding:10px; }
-        .metric .k { color:var(--text2); font-size:0.78rem; }
-        .metric .v { margin-top:4px; font-size:1.1rem; font-weight:700; }
-
-        .controls { margin-top:10px; text-align:center; }
-        .btn {
-            background:var(--bg3); color:var(--text); border:1px solid var(--border);
-            padding:8px 16px; border-radius:8px; cursor:pointer; font-size:0.84rem;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BOVA11 — IV Skew Signal v2.2</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+  --bg:#FAFAF8;--bg2:#F0EFEC;--card:#FFFFFF;--border:#D8D7D4;--text:#1A1A18;--text2:#4A4A48;--text3:#8A8A88;
+  --blue:#0969DA;--green:#1A7F37;--red:#CF222E;--amber:#B8720A;
+}
+[data-theme="dark"] {
+  --bg:#0d1117;--bg2:#161b22;--card:#161b22;--border:#30363d;--text:#c9d1d9;--text2:#8b949e;--text3:#6e7681;
+  --blue:#58a6ff;--green:#3fb950;--red:#f85149;--amber:#d29922;
+}
+* { box-sizing:border-box;margin:0;padding:0; }
+body { background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:14px; }
+.page { max-width:1420px;margin:0 auto;padding:28px 20px 36px; }
+.hdr { display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px; }
+.kicker { color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-size:.78rem;font-weight:800; }
+h1 { margin:.35rem 0 .45rem;font-size:clamp(1.8rem,3vw,2.8rem);line-height:1.05; }
+.sub { color:var(--text2);max-width:860px;line-height:1.45; }
+.theme-btn { border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:999px;padding:7px 10px;cursor:pointer; }
+.cards { display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:18px 0; }
+@media(max-width:980px) { .cards { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:560px) { .cards { grid-template-columns:1fr; } }
+.card,.panel { background:var(--card);border:1px solid var(--border);border-radius:12px; }
+.card { padding:15px;min-height:108px; }
+.label { color:var(--text3);font-size:.74rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em; }
+.value { font-size:1.45rem;font-weight:850;margin-top:8px;line-height:1.15; }
+.mini { color:var(--text3);font-size:.8rem;margin-top:6px;line-height:1.35; }
+.bear { color:var(--red); } .bull { color:var(--green); } .neu { color:var(--text2); }
+.grid { display:grid;grid-template-columns:1.05fr .95fr;gap:16px;margin-top:6px; }
+@media(max-width:1040px) { .grid { grid-template-columns:1fr; } }
+.panel-h { padding:12px 14px;border-bottom:1px solid var(--border);background:var(--bg2);font-weight:700;font-size:.9rem; }
+.chart-wrap { height:280px;padding:14px; }
+.chart-wrap.tall { height:330px; }
+.table-wrap { overflow:auto;max-height:520px; }
+table { width:100%;border-collapse:collapse;font-size:.84rem; }
+th,td { padding:8px 9px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap; }
+th:first-child,td:first-child { text-align:left; }
+th { position:sticky;top:0;background:var(--bg2);color:var(--text3);font-size:.72rem;text-transform:uppercase; }
+.foot { margin-top:16px;padding-top:12px;border-top:1px solid var(--border);color:var(--text3);font-size:.78rem;text-align:center; }
+</style>
 </head>
 <body>
-    <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="position:fixed;top:12px;right:16px;z-index:9999;background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:1rem;line-height:1;transition:all 0.2s;">◐</button>
-    <header>
-        <h1>IV Skew Signal — BOVA11</h1>
-        <div class="meta">39 sessões | Última sessão: 28/04/2026 | Modelo v3 (M1+M2+M3 + Backtest)</div>
-    </header>
+<main class="page">
+  <header class="hdr">
+    <div>
+      <div class="kicker">IV Skew Signal v2.2</div>
+      <h1>Motor institucional transplantado</h1>
+      <div class="sub">Superfície, flow, greeks e regime agora seguem a formulação do anexo `sinal_iv_skew_v2_2.py`, com saída HTML integrada ao dashboard.</div>
+    </div>
+    <button class="theme-btn" id="theme-toggle">◐</button>
+  </header>
 
-    <section class="cards">
-        <div class="card">
-            <div class="label">Direção Atual</div>
-            <div class="value" style="color:var(--grn)">↑ BULLISH</div>
-            <div class="sub">Força: FRACO <span class="tip" title="Escala da força pelo Z-Score: FRACO se |z| < 1; MODERADO se 1 <= |z| < 1.5; FORTE se |z| >= 1.5.">?</span></div>
-        </div>
-        <div class="card">
-            <div class="label">Sinal Ajustado <span class="tip" title="Score contínuo (não é probabilidade). Positivo indica viés de baixa (bearish) e negativo viés de alta (bullish) no setup atual.">?</span></div>
-            <div class="value">-0.5645</div>
-            <div class="sub">Base: -0.3097</div>
-        </div>
-        <div class="card">
-            <div class="label">Backtest V3 (Principal)</div>
-            <div class="value">26.3%</div>
-            <div class="sub">5/19 acertos | Erros: 14</div>
-            <div class="sub">Operados: 20</div>
-            <details class="expand">
-                <summary>Ver detalhes</summary>
-                <div class="sub">N/A(price=1, feature=0)</div>
-                <div class="sub">Bull=9 | Bear=11</div>
-                <div class="sub">Viés por operação: Bull=45.0% | Bear=55.0%</div>
-                <div class="sub">Cobertura preço: 50.0% | Missing price: 1</div>
-                <div class="sub">Alta: 2/8 (25.0%) | Baixa: 3/11 (27.3%)</div>
-                <div class="sub">Estados: NEUTRO=19 FLAT=0 N/A=1</div>
-            </details>
-        </div>
-        <div class="card">
-            <div class="label">Backtest Híbrido (Shadow)</div>
-            <div class="value">52.2%</div>
-            <div class="sub">12/23 acertos | Erros: 11</div>
-            <div class="sub">Operados: 24</div>
-            <details class="expand">
-                <summary>Ver detalhes</summary>
-                <div class="sub">N/A(price=1, feature=1)</div>
-                <div class="sub">Bull=13 | Bear=11</div>
-                <div class="sub">Viés por operação: Bull=54.2% | Bear=45.8%</div>
-                <div class="sub">Fallback bear (observacional): 11</div>
-                <div class="sub">Cobertura preço: 60.5% | Missing price: 1</div>
-                <div class="sub">Alta: 5/12 (41.7%) | Baixa: 7/11 (63.6%)</div>
-                <div class="sub">Estados: NEUTRO=14 FLAT=0 N/A=2</div>
-            </details>
-        </div>
-        <div class="card">
-            <div class="label">Overlap V3 x Híbrido</div>
-            <div class="value">14</div>
-            <div class="sub">both_operated</div>
-            <div class="sub">same=14 | disagree=0</div>
-            <details class="expand">
-                <summary>Ver detalhes</summary>
-                <div class="sub">hybrid_only=10 | v3_only=6</div>
-                <div class="sub">conflicts_raw=6</div>
-                <div class="sub">resolved_to_bull=6 | resolved_to_bear=0</div>
-            </details>
-        </div>
-        <div class="card">
-            <div class="label">Estados (Legenda)</div>
-            <div class="value">NEUTRO / FLAT / N/A</div>
-            <details class="expand">
-                <summary>Ver detalhes</summary>
-                <div class="sub">NEUTRO: sem trade</div>
-                <div class="sub">FLAT: |D+1 - D| <= epsilon</div>
-                <div class="sub">N/A: missing_price ou missing_feature</div>
-                <div class="sub">Status: OK manual+mercado (42 pregões)</div>
-            </details>
-        </div>
-        <div class="card">
-            <div class="label">Z-Score <span class="tip" title="Z-Score do skew atual contra a média móvel do skew na janela (até 20 sessões), dividido pelo desvio padrão da mesma janela.">?</span></div>
-            <div class="value">-0.15</div>
-            <div class="sub">Skew: +1.0758</div>
-        </div>
-        <div class="card">
-            <div class="label">VOL/OI Call vs Put</div>
-            <div class="value">2.10 | 1.38</div>
-            <div class="sub">Confiança: 1.50x</div>
-        </div>
-        <div class="card">
-            <div class="label">IV ATM (Call / Put)</div>
-            <div class="value">17.90% | 18.98%</div>
-            <div class="sub">Skew = Put - Call</div>
-        </div>
-        <div class="card">
-            <div class="label">Vencimentos Usados</div>
-            <div class="value">5</div>
-            <div class="sub">Volume pond.: 62174</div>
-        </div>
-    </section>
+  <section class="cards">
+    <div class="card"><div class="label">Último Sinal</div><div class="value bull">BULL MODERADO</div><div class="mini">Driver: greeks:bullish</div></div>
+    <div class="card"><div class="label">Prob Bear</div><div class="value bear">42.6%</div><div class="mini">Modelo probabilístico v2.2</div></div>
+    <div class="card"><div class="label">Prob Bull</div><div class="value bull">57.4%</div><div class="mini">Complementar ao bear</div></div>
+    <div class="card"><div class="label">Score Final</div><div class="value">-0.2983</div><div class="mini">Suavização EWM do score bruto</div></div>
+    <div class="card"><div class="label">Backtest</div><div class="value">28.6%</div><div class="mini">N=35 | Bear=5.0% | Bull=60.0%</div></div>
+  </section>
 
-    <section class="box">
-        <h2>Como Ler os Indicadores</h2>
-        <div class="guide">
-            <p>Resumo rápido para leitura leiga do painel.</p>
-            <details class="expand">
-                <summary>Ver explicação</summary>
-                <p><strong>Sinal Ajustado</strong> é um score numérico contínuo. Não é chance (%) e não tem limite fixo de 0 a 1.</p>
-                <p><strong>Direção no setup atual:</strong> valor positivo puxa para baixa (bearish) e valor negativo puxa para alta (bullish).</p>
-                <p><strong>Z-Score</strong> compara o skew de hoje com a média recente do skew, em unidades de desvio padrão.</p>
-                <p><strong>Força</strong> usa o tamanho do Z-Score: FRACO se |z| &lt; 1, MODERADO se 1 &le; |z| &lt; 1.5, FORTE se |z| &ge; 1.5.</p>
-                <div class="threshold-scale">
-                    <div class="threshold-track">
-                        <div class="threshold-part threshold-bull">BULLISH: sinal &le; -0.04</div>
-                        <div class="threshold-part threshold-neutral">NEUTRO: entre -0.04 e +0.35</div>
-                        <div class="threshold-part threshold-bear">BEARISH: sinal &ge; +0.35</div>
-                    </div>
-                    <div class="threshold-note">Esses cortes vêm dos parâmetros atuais do modelo.</div>
-                </div>
-            </details>
-        </div>
-    </section>
+  <section class="cards">
+    <div class="card"><div class="label">Surface</div><div class="value">-0.1941</div><div class="mini">ATM IV 18.4573 | RR25 2.199</div></div>
+    <div class="card"><div class="label">Flow</div><div class="value">0.235</div><div class="mini">ΔFlow 0.0 | Vega 0.0</div></div>
+    <div class="card"><div class="label">Greeks</div><div class="value">-1.3757</div><div class="mini">Net GEX -61329464415.39 | Net DEX -2344012690.35</div></div>
+    <div class="card"><div class="label">Regime</div><div class="value">-0.1496</div><div class="mini">Term slope -0.8817 | BF25 0.1539</div></div>
+    <div class="card"><div class="label">Saída</div><div class="value">bova11_skew_prediction.html</div><div class="mini">Config: z=20 | smooth=3</div></div>
+  </section>
 
-    <section class="box">
-        <h2>Guia Operacional (Referência)</h2>
-        <div class="guide">
-            <p>Regras de operação resumidas.</p>
-            <details class="expand">
-                <summary>Ver detalhes</summary>
-                <p><strong>Direção principal:</strong> use <code>hybrid_pred_dir</code>.</p>
-                <p><strong>Confirmação de qualidade:</strong> use o overlap com V3.</p>
-                <ul>
-                    <li><code>same_signal</code>: opera normal (maior confiança).</li>
-                    <li><code>hybrid_only</code>: opera com mão menor (ex.: 50%).</li>
-                    <li><code>disagreement</code>: não opera.</li>
-                    <li><code>v3_only</code>: ignora por enquanto.</li>
-                </ul>
-                <p><code>NEUTRO</code> = sem trade. <code>FLAT</code> e <code>N/A</code> não entram como acerto/erro.</p>
-            </details>
-        </div>
-    </section>
+  <section class="grid">
+    <div class="panel">
+      <div class="panel-h">Histórico de score e probabilidade</div>
+      <div class="chart-wrap tall"><canvas id="scoreChart"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-h">Blocos do modelo</div>
+      <div class="chart-wrap"><canvas id="blocksChart"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-h">Tabela diária</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Data</th><th>Sinal</th><th>Prob Bear</th><th>Score</th><th>ATM IV</th><th>RR25</th><th>BF25</th><th>ΔFlow</th><th>Vega</th><th>Net GEX</th><th>Net DEX</th><th>Hit</th></tr>
+          </thead>
+          <tbody id="rowsBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-h">Configuração ativa</div>
+      <div class="table-wrap">
+        <table>
+          <tbody id="cfgBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 
-    <section class="box">
-        <h2>Histórico: Skew x Sinal Base x Sinal Ajustado</h2>
-        <canvas id="mainChart"></canvas>
-    </section>
+  <div class="foot">Gerado em 28/04/2026 23:53:36</div>
+</main>
+<script>
+const ROWS = [{"date": "03/03/2026", "atm_iv": 24.8086, "rr25": 2.4886, "bf25": 1.2653, "term_slope": 6.0964, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": -27329557633.96, "net_dex": -2773761371.49, "score_surface": 0.0, "score_flow": 0.0, "score_greeks": 0.0, "score_regime": 0.0, "score_final": null, "prob_bear": null, "prob_bull": null, "signal_label": "SEM DADOS", "main_driver": "surface:bullish", "close": null, "next_close": null, "hit": null}, {"date": "04/03/2026", "atm_iv": 22.5784, "rr25": 3.7243, "bf25": 0.02, "term_slope": 9.8182, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": -22194036462.98, "net_dex": -344332535.3, "score_surface": 0.0, "score_flow": 0.0, "score_greeks": 0.0, "score_regime": 0.0, "score_final": null, "prob_bear": null, "prob_bull": null, "signal_label": "SEM DADOS", "main_driver": "surface:bullish", "close": null, "next_close": null, "hit": null}, {"date": "05/03/2026", "atm_iv": 25.8828, "rr25": 4.1908, "bf25": 0.5413, "term_slope": 3.225, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": -19939573474.6, "net_dex": -3618785653.72, "score_surface": 0.0, "score_flow": 0.0, "score_greeks": 0.0, "score_regime": 0.0, "score_final": null, "prob_bear": null, "prob_bull": null, "signal_label": "SEM DADOS", "main_driver": "surface:bullish", "close": null, "next_close": null, "hit": null}, {"date": "06/03/2026", "atm_iv": 24.2652, "rr25": 1.3472, "bf25": 1.7702, "term_slope": 5.5707, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": -24415223238.86, "net_dex": -3645680800.98, "score_surface": 0.0, "score_flow": 0.0, "score_greeks": 0.0, "score_regime": 0.0, "score_final": null, "prob_bear": null, "prob_bull": null, "signal_label": "SEM DADOS", "main_driver": "surface:bullish", "close": null, "next_close": null, "hit": null}, {"date": "09/03/2026", "atm_iv": 25.8642, "rr25": 4.5548, "bf25": 0.1372, "term_slope": 4.2235, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": -11448584321.57, "net_dex": -3335344623.0, "score_surface": 0.1202, "score_flow": 0.1055, "score_greeks": 0.5895, "score_regime": 0.0, "score_final": 0.1856, "prob_bear": 0.5463, "prob_bull": 0.4537, "signal_label": "NEUTRO", "main_driver": "greeks:bearish", "close": null, "next_close": null, "hit": 0}, {"date": "10/03/2026", "atm_iv": 24.953, "rr25": 2.9393, "bf25": -0.5035, "term_slope": 8.4925, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": -18767875184.62, "net_dex": -1667214316.74, "score_surface": -0.175, "score_flow": 0.2258, "score_greeks": 0.3619, "score_regime": 0.0, "score_final": 0.1366, "prob_bear": 0.5341, "prob_bull": 0.4659, "signal_label": "NEUTRO", "main_driver": "greeks:bearish", "close": null, "next_close": null, "hit": 0}, {"date": "11/03/2026", "atm_iv": 24.6621, "rr25": 2.1931, "bf25": 0.3424, "term_slope": -18.7523, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": -19394815460.99, "net_dex": -1876410523.18, "score_surface": -0.5732, "score_flow": -0.254, "score_greeks": 0.2428, "score_regime": 0.0, "score_final": -0.0315, "prob_bear": 0.4921, "prob_bull": 0.5079, "signal_label": "NEUTRO", "main_driver": "surface:bullish", "close": null, "next_close": null, "hit": 1}, {"date": "12/03/2026", "atm_iv": 26.8733, "rr25": 4.257, "bf25": 0.2726, "term_slope": 4.8345, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": -34859037764.52, "net_dex": -1486687862.98, "score_surface": 0.5812, "score_flow": 0.0109, "score_greeks": -0.6052, "score_regime": 0.0, "score_final": 0.0126, "prob_bear": 0.5031, "prob_bull": 0.4969, "signal_label": "NEUTRO", "main_driver": "greeks:bullish", "close": null, "next_close": null, "hit": 0}, {"date": "13/03/2026", "atm_iv": 25.0113, "rr25": -0.0246, "bf25": 3.0644, "term_slope": 0.01, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": -104851972342.58, "net_dex": -5363743780.04, "score_surface": -0.7244, "score_flow": 1.128, "score_greeks": -1.7053, "score_regime": 0.0, "score_final": -0.1037, "prob_bear": 0.4741, "prob_bull": 0.5259, "signal_label": "NEUTRO", "main_driver": "greeks:bullish", "close": null, "next_close": null, "hit": 1}, {"date": "16/03/2026", "atm_iv": 25.8364, "rr25": 5.6971, "bf25": 2.3439, "term_slope": 2.5942, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": -38761241790.05, "net_dex": -1718684433.96, "score_surface": 0.8594, "score_flow": -0.5566, "score_greeks": 0.0688, "score_regime": 0.0, "score_final": 0.0005, "prob_bear": 0.5001, "prob_bull": 0.4999, "signal_label": "NEUTRO", "main_driver": "surface:bearish", "close": null, "next_close": null, "hit": 0}, {"date": "17/03/2026", "atm_iv": 24.9123, "rr25": 10.5304, "bf25": 6.193, "term_slope": 2.6088, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": -51076372962.06, "net_dex": -1908826402.59, "score_surface": 1.426, "score_flow": 0.0234, "score_greeks": -0.1645, "score_regime": 0.0, "score_final": 0.2012, "prob_bear": 0.5501, "prob_bull": 0.4499, "signal_label": "BEAR MODERADO", "main_driver": "surface:bearish", "close": null, "next_close": null, "hit": 0}, {"date": "18/03/2026", "atm_iv": 27.1889, "rr25": 5.3329, "bf25": 1.9031, "term_slope": 4.235, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": -44389873948.42, "net_dex": -1984277475.41, "score_surface": -0.7552, "score_flow": -0.1751, "score_greeks": -0.0621, "score_regime": 0.0, "score_final": -0.0451, "prob_bear": 0.4887, "prob_bull": 0.5113, "signal_label": "NEUTRO", "main_driver": "surface:bullish", "close": null, "next_close": null, "hit": 1}, {"date": "19/03/2026", "atm_iv": 26.1219, "rr25": 3.6929, "bf25": 1.6616, "term_slope": 4.486, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": -29132089461.87, "net_dex": -1506309559.68, "score_surface": -0.1782, "score_flow": -0.1, "score_greeks": 0.3042, "score_regime": 0.0, "score_final": -0.0339, "prob_bear": 0.4915, "prob_bull": 0.5085, "signal_label": "NEUTRO", "main_driver": "greeks:bearish", "close": null, "next_close": null, "hit": 1}, {"date": "20/03/2026", "atm_iv": 28.2775, "rr25": 3.446, "bf25": -0.154, "term_slope": 1.117, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": -46353754049.56, "net_dex": -8379420259.94, "score_surface": -0.2915, "score_flow": 0.3856, "score_greeks": -1.0361, "score_regime": 0.0, "score_final": -0.1064, "prob_bear": 0.4734, "prob_bull": 0.5266, "signal_label": "NEUTRO", "main_driver": "greeks:bullish", "close": null, "next_close": null, "hit": 1}, {"date": "23/03/2026", "atm_iv": 25.8171, "rr25": 3.8777, "bf25": 0.5237, "term_slope": 2.7129, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": -2475724172.3, "net_dex": 101414924.7, "score_surface": 0.1075, "score_flow": -0.5475, "score_greeks": 0.9654, "score_regime": 0.0, "score_final": -0.0227, "prob_bear": 0.4943, "prob_bull": 0.5057, "signal_label": "NEUTRO", "main_driver": "greeks:bearish", "close": null, "next_close": null, "hit": 1}, {"date": "24/03/2026", "atm_iv": 26.1034, "rr25": 3.6328, "bf25": 0.3792, "term_slope": 2.6394, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": 1388729849.41, "net_dex": 225070877.74, "score_surface": -0.0745, "score_flow": -0.0644, "score_greeks": 0.9625, "score_regime": 0.0, "score_final": 0.0641, "prob_bear": 0.516, "prob_bull": 0.484, "signal_label": "NEUTRO", "main_driver": "greeks:bearish", "close": null, "next_close": null, "hit": 0}, {"date": "25/03/2026", "atm_iv": 25.5293, "rr25": 3.3664, "bf25": 0.3292, "term_slope": 1.62, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": 15478746001.08, "net_dex": 3182440031.12, "score_surface": -0.1252, "score_flow": -0.1057, "score_greeks": 1.3828, "score_regime": 0.0, "score_final": 0.1357, "prob_bear": 0.5339, "prob_bull": 0.4661, "signal_label": "NEUTRO", "main_driver": "greeks:bearish", "close": null, "next_close": null, "hit": 0}, {"date": "26/03/2026", "atm_iv": 28.2233, "rr25": 3.7757, "bf25": 0.3777, "term_slope": 3.8433, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": 1320192767.21, "net_dex": 1372595638.5, "score_surface": 0.0823, "score_flow": 0.0353, "score_greeks": 0.86, "score_regime": 0.0, "score_final": 0.1715, "prob_bear": 0.5428, "prob_bull": 0.4572, "signal_label": "NEUTRO", "main_driver": "greeks:bearish", "close": null, "next_close": null, "hit": 0}, {"date": "27/03/2026", "atm_iv": 29.99, "rr25": 3.7178, "bf25": 0.3563, "term_slope": 3.865, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": -5954202434.33, "net_dex": 479004831.9, "score_surface": 0.0113, "score_flow": 0.0074, "score_greeks": 0.6036, "score_regime": 0.0, "score_final": 0.1489, "prob_bear": 0.5372, "prob_bull": 0.4628, "signal_label": "NEUTRO", "main_driver": "greeks:bearish", "close": null, "next_close": null, "hit": 0}, {"date": "30/03/2026", "atm_iv": 27.129, "rr25": 2.4367, "bf25": 1.0678, "term_slope": 0.3294, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": -3987698901.77, "net_dex": 2414385612.9, "score_surface": -0.3248, "score_flow": -0.0374, "score_greeks": 0.807, "score_regime": 0.0, "score_final": 0.1008, "prob_bear": 0.5252, "prob_bull": 0.4748, "signal_label": "NEUTRO", "main_driver": "greeks:bearish", "close": null, "next_close": null, "hit": 0}, {"date": "31/03/2026", "atm_iv": 25.5924, "rr25": 4.4333, "bf25": 1.3963, "term_slope": -0.2718, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": 28322604740.5, "net_dex": 8259578234.9, "score_surface": 0.262, "score_flow": -0.2498, "score_greeks": 1.603, "score_regime": 0.0, "score_final": 0.2125, "prob_bear": 0.5529, "prob_bull": 0.4471, "signal_label": "BEAR MODERADO", "main_driver": "greeks:bearish", "close": null, "next_close": null, "hit": 0}, {"date": "01/04/2026", "atm_iv": 24.9578, "rr25": 2.6223, "bf25": 0.307, "term_slope": 1.3067, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": 17707677713.39, "net_dex": 5845728813.3, "score_surface": -0.5264, "score_flow": 0.0312, "score_greeks": 1.0884, "score_regime": 0.0, "score_final": 0.1408, "prob_bear": 0.5352, "prob_bull": 0.4648, "signal_label": "NEUTRO", "main_driver": "greeks:bearish", "close": null, "next_close": null, "hit": 0}, {"date": "02/04/2026", "atm_iv": 25.6821, "rr25": 2.6753, "bf25": 0.2003, "term_slope": 2.2379, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": 14761091626.38, "net_dex": 6102573848.36, "score_surface": -0.1078, "score_flow": -0.0137, "score_greeks": 0.9547, "score_regime": 0.0, "score_final": 0.1477, "prob_bear": 0.5368, "prob_bull": 0.4632, "signal_label": "NEUTRO", "main_driver": "greeks:bearish", "close": null, "next_close": null, "hit": 0}, {"date": "06/04/2026", "atm_iv": 27.1597, "rr25": 2.4626, "bf25": 0.2104, "term_slope": 5.1187, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": 9877651759.9, "net_dex": 5553804483.86, "score_surface": -0.0652, "score_flow": -0.0064, "score_greeks": 0.7641, "score_regime": 0.3732, "score_final": 0.1768, "prob_bear": 0.5441, "prob_bull": 0.4559, "signal_label": "NEUTRO", "main_driver": "greeks:bearish", "close": null, "next_close": null, "hit": 0}, {"date": "07/04/2026", "atm_iv": 25.4096, "rr25": 3.1199, "bf25": 2.3866, "term_slope": 4.9472, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": 8858029261.92, "net_dex": 9032459440.0, "score_surface": 0.3905, "score_flow": -0.0211, "score_greeks": 0.8913, "score_regime": -0.2179, "score_final": 0.2112, "prob_bear": 0.5526, "prob_bull": 0.4474, "signal_label": "BEAR MODERADO", "main_driver": "greeks:bearish", "close": null, "next_close": null, "hit": 0}, {"date": "08/04/2026", "atm_iv": 21.8364, "rr25": 5.5307, "bf25": 1.8298, "term_slope": 1.4486, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": 55979764220.62, "net_dex": 13776851456.6, "score_surface": 0.4345, "score_flow": -0.2617, "score_greeks": 1.5465, "score_regime": -0.6629, "score_final": 0.2199, "prob_bear": 0.5547, "prob_bull": 0.4453, "signal_label": "BEAR MODERADO", "main_driver": "greeks:bearish", "close": null, "next_close": null, "hit": 0}, {"date": "09/04/2026", "atm_iv": 20.9729, "rr25": 2.6929, "bf25": 0.1341, "term_slope": 0.1483, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": 90576224145.95, "net_dex": 16518841111.46, "score_surface": -0.9898, "score_flow": -0.1569, "score_greeks": 1.7122, "score_regime": -0.5077, "score_final": 0.0584, "prob_bear": 0.5146, "prob_bull": 0.4854, "signal_label": "NEUTRO", "main_driver": "greeks:bearish", "close": null, "next_close": 193.84, "hit": 0}, {"date": "10/04/2026", "atm_iv": 21.2811, "rr25": 2.555, "bf25": 1.1446, "term_slope": -0.2325, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": 60899565383.83, "net_dex": 11206658091.69, "score_surface": -0.3247, "score_flow": 0.0768, "score_greeks": 1.012, "score_regime": -0.394, "score_final": 0.0538, "prob_bear": 0.5134, "prob_bull": 0.4866, "signal_label": "NEUTRO", "main_driver": "greeks:bearish", "close": 193.84, "next_close": 194.3, "hit": 0}, {"date": "13/04/2026", "atm_iv": 25.1775, "rr25": 4.8074, "bf25": -2.4011, "term_slope": -0.6, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": 59522004348.63, "net_dex": 7169694909.26, "score_surface": -0.286, "score_flow": 0.204, "score_greeks": 0.7756, "score_regime": 0.2074, "score_final": 0.1129, "prob_bear": 0.5282, "prob_bull": 0.4718, "signal_label": "NEUTRO", "main_driver": "greeks:bearish", "close": 194.3, "next_close": 195.16, "hit": 0}, {"date": "14/04/2026", "atm_iv": 21.2446, "rr25": 5.0185, "bf25": 1.506, "term_slope": -0.135, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": 83511440565.93, "net_dex": 12823587594.99, "score_surface": 0.3443, "score_flow": -0.1398, "score_greeks": 1.1749, "score_regime": -0.3898, "score_final": 0.1656, "prob_bear": 0.5413, "prob_bull": 0.4587, "signal_label": "NEUTRO", "main_driver": "greeks:bearish", "close": 195.16, "next_close": 193.86, "hit": 1}, {"date": "15/04/2026", "atm_iv": 18.8716, "rr25": 2.0195, "bf25": 1.6358, "term_slope": -1.805, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": 67152225468.49, "net_dex": 11790925961.83, "score_surface": -1.1787, "score_flow": 0.0292, "score_greeks": 0.863, "score_regime": -0.3902, "score_final": -0.0423, "prob_bear": 0.4894, "prob_bull": 0.5106, "signal_label": "NEUTRO", "main_driver": "surface:bullish", "close": 193.86, "next_close": 193.05, "hit": 0}, {"date": "16/04/2026", "atm_iv": 20.7846, "rr25": -1.3965, "bf25": 0.6983, "term_slope": 2.2344, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": 6177099868.32, "net_dex": 5238735589.44, "score_surface": -1.5346, "score_flow": 0.1463, "score_greeks": -0.2063, "score_regime": -0.1392, "score_final": -0.264, "prob_bear": 0.4344, "prob_bull": 0.5656, "signal_label": "BULL MODERADO", "main_driver": "surface:bullish", "close": 193.05, "next_close": 192.1, "hit": 0}, {"date": "17/04/2026", "atm_iv": 19.1799, "rr25": 1.9184, "bf25": 0.173, "term_slope": 2.8533, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": -4820554197.95, "net_dex": 7195751637.95, "score_surface": 0.5249, "score_flow": 0.1009, "score_greeks": -0.292, "score_regime": -0.4559, "score_final": -0.1129, "prob_bear": 0.4718, "prob_bull": 0.5282, "signal_label": "NEUTRO", "main_driver": "surface:bearish", "close": 192.1, "next_close": 192.64, "hit": 1}, {"date": "20/04/2026", "atm_iv": 18.6426, "rr25": 1.7958, "bf25": 0.3013, "term_slope": 0.105, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": 2840579748.05, "net_dex": 6342768686.02, "score_surface": -0.361, "score_flow": -0.0086, "score_greeks": -0.3442, "score_regime": -0.1822, "score_final": -0.1645, "prob_bear": 0.459, "prob_bull": 0.541, "signal_label": "NEUTRO", "main_driver": "surface:bullish", "close": 192.64, "next_close": 189.33, "hit": 0}, {"date": "22/04/2026", "atm_iv": 18.682, "rr25": 2.0133, "bf25": 0.281, "term_slope": -0.1022, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": -15749349639.55, "net_dex": 2241127117.24, "score_surface": -0.2605, "score_flow": 0.2761, "score_greeks": -0.8606, "score_regime": -0.6895, "score_final": -0.2349, "prob_bear": 0.4415, "prob_bull": 0.5585, "signal_label": "BULL MODERADO", "main_driver": "greeks:bullish", "close": 189.33, "next_close": 187.87, "hit": 0}, {"date": "23/04/2026", "atm_iv": 22.9672, "rr25": -1.7602, "bf25": -4.3003, "term_slope": -4.275, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": -25710819594.68, "net_dex": 929382688.66, "score_surface": -2.1953, "score_flow": 0.019, "score_greeks": -1.041, "score_regime": 0.1239, "score_final": -0.5356, "prob_bear": 0.3692, "prob_bull": 0.6308, "signal_label": "BULL MODERADO", "main_driver": "surface:bullish", "close": 187.87, "next_close": 187.01, "hit": 0}, {"date": "24/04/2026", "atm_iv": 18.8646, "rr25": 2.356, "bf25": 0.3011, "term_slope": -0.5933, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": -33386635452.81, "net_dex": -413531895.44, "score_surface": 0.931, "score_flow": 0.1544, "score_greeks": -1.1204, "score_regime": -0.3172, "score_final": -0.2488, "prob_bear": 0.4381, "prob_bull": 0.5619, "signal_label": "BULL MODERADO", "main_driver": "greeks:bullish", "close": 187.01, "next_close": 176.0, "hit": 0}, {"date": "27/04/2026", "atm_iv": 18.4754, "rr25": 2.332, "bf25": 0.2484, "term_slope": -0.0958, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": -16288389725.13, "net_dex": -978391260.0, "score_surface": -0.1112, "score_flow": 0.0819, "score_greeks": -0.901, "score_regime": -0.85, "score_final": -0.3039, "prob_bear": 0.4246, "prob_bull": 0.5754, "signal_label": "BULL MODERADO", "main_driver": "greeks:bullish", "close": 176.0, "next_close": 177.0, "hit": 1}, {"date": "28/04/2026", "atm_iv": 18.4573, "rr25": 2.199, "bf25": 0.1539, "term_slope": -0.8817, "delta_flow": 0.0, "vega_flow": 0.0, "net_gex": -61329464415.39, "net_dex": -2344012690.35, "score_surface": -0.1941, "score_flow": 0.235, "score_greeks": -1.3757, "score_regime": -0.1496, "score_final": -0.2983, "prob_bear": 0.426, "prob_bull": 0.574, "signal_label": "BULL MODERADO", "main_driver": "greeks:bullish", "close": 177.0, "next_close": null, "hit": 1}];
+const CFG = {"min_volume_total": 50.0, "min_dte_short": 2, "min_dte_monthly": 0, "dte_penalty_short": 5, "dte_penalty_monthly": 3, "monthly_min_factor": 0.6, "atm_delta": 0.5, "rr_delta": 0.25, "atm_range_strikes": 3.0, "z_window": 20, "smooth_window": 3, "rv_short_window": 5, "rv_long_window": 20, "atr_window": 14, "weight_surface": 0.3, "weight_flow": 0.3, "weight_greeks": 0.2, "weight_regime": 0.2, "s_rr_change": 0.35, "s_rr_level": 0.25, "s_bf_change": 0.2, "s_ts_slope": 0.2, "f_delta_flow": 0.3, "f_vega_flow": 0.25, "f_put_call_oi_change": 0.25, "f_put_call_voi": 0.2, "g_dist_flip": 0.25, "r_iv_rank": 0.35, "r_rv_spread": 0.25, "r_ret_1d": 0.2, "r_gap": 0.2, "target_horizon": 1, "normalize_iv": false};
 
-    <section class="box">
-        <h2>Tabela Histórica Completa</h2>
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Data</th>
-                        <th>IV Call</th>
-                        <th>IV Put</th>
-                        <th>Skew</th>
-                        <th>ΔSkew</th>
-                        <th>Z-Score</th>
-                        <th>Conf</th>
-                        <th>Sinal</th>
-                        <th>Sinal Ajustado</th>
-                        <th>Direção</th>
-                        <th>Ret. Próx (%)</th>
-                        <th>V3 Pred</th>
-                        <th>V3 Decision</th>
-                        <th>V3 Operated</th>
-                        <th>V3 State</th>
-                        <th>V3 Reason</th>
-                        <th>Hybrid Pred</th>
-                        <th>Hybrid Decision</th>
-                        <th>Hybrid Operated</th>
-                        <th>Hybrid State</th>
-                        <th>Hybrid Reason</th>
-                        <th>Overlap</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-            </table>
-        </div>
-        <div class="controls">
-            <button id="btnExpand" class="btn" onclick="toggleExpand()"></button>
-        </div>
-    </section>
+function isDark() {
+  return document.documentElement.getAttribute('data-theme') === 'dark';
+}
+function txt2() {
+  return getComputedStyle(document.documentElement).getPropertyValue('--text2');
+}
+function gridColor() {
+  return isDark() ? 'rgba(139,148,158,.18)' : 'rgba(74,74,72,.14)';
+}
+function fmt(v, d=4) {
+  if (v === null || v === undefined || Number.isNaN(v)) return 'N/A';
+  return Number(v).toLocaleString('pt-BR', { minimumFractionDigits:d, maximumFractionDigits:d });
+}
+function fmtPct(v) {
+  if (v === null || v === undefined || Number.isNaN(v)) return 'N/A';
+  return (Number(v) * 100).toLocaleString('pt-BR', { minimumFractionDigits:1, maximumFractionDigits:1 }) + '%';
+}
+function tone(signal) {
+  if (String(signal).includes('BEAR')) return 'bear';
+  if (String(signal).includes('BULL')) return 'bull';
+  return 'neu';
+}
 
-    <section class="box">
-        <h2>Decomposição (última sessão)</h2>
-        <div class="decomp-grid" id="decompGrid"></div>
-    </section>
+let scoreChart = null;
+let blocksChart = null;
 
-    <script>
-        const IV_SKEW_ROWS = [{"date": "03/03/2026", "date_key": "03/mar", "iv_call": 33.9935, "iv_put": 25.6721, "skew": -8.321382, "delta_skew": null, "zscore": 0.0, "confidence": 1.5, "vol_oi_call": 0.0342, "vol_oi_put": 3.4337, "signal": 0.0, "signal_adjusted": 0.1, "direction": "NEUTRO", "strength": "FRACO", "volume_total": 28150502.81, "n_vencimentos": 5, "diag_vol_oi": "Put VOL/OI dominante (ratio=100.35)", "comp_1": 0.0, "comp_2": 0.0, "comp_3": 0.0, "adjustment": 0.1, "close": 179.3, "next_close": 181.6, "return_pct": 1.2828, "realized_dir": "UP", "v3_pred_dir": "NEUTRO", "v3_decision_reason": "no_trigger", "v3_backtest_state": "NEUTRO", "v3_backtest_reason": "no_trigger", "v3_operated": false, "hybrid_pred_dir": "NEUTRO", "hybrid_decision_reason": "missing_feature", "hybrid_conflict": false, "hybrid_backtest_state": "N/A", "hybrid_backtest_reason": "missing_feature", "hybrid_operated": false, "bear_fallback_would_trigger": false, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": false, "v3_only": false, "backtest_result": "NEUTRO"}, {"date": "04/03/2026", "date_key": "04/mar", "iv_call": 25.0264, "iv_put": 22.5265, "skew": -2.499866, "delta_skew": 5.821516, "zscore": 0.7071, "confidence": 0.8444, "vol_oi_call": 0.2705, "vol_oi_put": 0.1427, "signal": 0.172712, "signal_adjusted": 0.04583, "direction": "NEUTRO", "strength": "FRACO", "volume_total": 739928.2, "n_vencimentos": 5, "diag_vol_oi": "Call VOL/OI dominante (ratio=0.53)", "comp_1": 0.097938, "comp_2": 0.247487, "comp_3": 0.0, "adjustment": -0.1, "close": 181.6, "next_close": 176.75, "return_pct": -2.6707, "realized_dir": "DOWN", "v3_pred_dir": "NEUTRO", "v3_decision_reason": "no_trigger", "v3_backtest_state": "NEUTRO", "v3_backtest_reason": "no_trigger", "v3_operated": false, "hybrid_pred_dir": "BULLISH", "hybrid_decision_reason": "conflict_resolved_bull", "hybrid_conflict": true, "hybrid_backtest_state": "ERROU", "hybrid_backtest_reason": "miss_down", "hybrid_operated": true, "bear_fallback_would_trigger": false, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": true, "v3_only": false, "backtest_result": "NEUTRO"}, {"date": "05/03/2026", "date_key": "05/mar", "iv_call": 25.2002, "iv_put": 26.7146, "skew": 1.514445, "delta_skew": 4.01431, "zscore": 0.9335, "confidence": 1.5, "vol_oi_call": 3.2684, "vol_oi_put": 2.3065, "signal": 0.243169, "signal_adjusted": 0.364753, "direction": "BEARISH", "strength": "FRACO", "volume_total": 137507.0, "n_vencimentos": 4, "diag_vol_oi": "VOL/OI equilibrado (ratio=0.71)", "comp_1": 0.079899, "comp_2": 0.326731, "comp_3": -0.022548, "adjustment": 0.0, "close": 176.75, "next_close": 175.89, "return_pct": -0.4866, "realized_dir": "DOWN", "v3_pred_dir": "BEARISH", "v3_decision_reason": "bear_trigger", "v3_backtest_state": "ACERTOU", "v3_backtest_reason": "hit_down", "v3_operated": true, "hybrid_pred_dir": "BEARISH", "hybrid_decision_reason": "bear_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "ACERTOU", "hybrid_backtest_reason": "hit_down", "hybrid_operated": true, "bear_fallback_would_trigger": true, "both_operated": true, "same_signal": true, "disagreement": false, "hybrid_only": false, "v3_only": false, "backtest_result": "ACERTOU"}, {"date": "06/03/2026", "date_key": "06/mar", "iv_call": 27.0296, "iv_put": 23.8569, "skew": -3.172759, "delta_skew": -4.687203, "zscore": -0.0131, "confidence": 1.5, "vol_oi_call": 2.6549, "vol_oi_put": 9.2684, "signal": 0.22297, "signal_adjusted": 0.434454, "direction": "BEARISH", "strength": "FRACO", "volume_total": 423802.92, "n_vencimentos": 4, "diag_vol_oi": "Put VOL/OI dominante (ratio=3.49)", "comp_1": 0.028703, "comp_2": -0.004582, "comp_3": -0.084718, "adjustment": 0.1, "close": 175.89, "next_close": 177.26, "return_pct": 0.7789, "realized_dir": "UP", "v3_pred_dir": "BEARISH", "v3_decision_reason": "bear_trigger", "v3_backtest_state": "ERROU", "v3_backtest_reason": "miss_up", "v3_operated": true, "hybrid_pred_dir": "NEUTRO", "hybrid_decision_reason": "no_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "NEUTRO", "hybrid_backtest_reason": "no_trigger", "hybrid_operated": false, "bear_fallback_would_trigger": true, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": false, "v3_only": true, "backtest_result": "ERROU"}, {"date": "09/03/2026", "date_key": "09/mar", "iv_call": 25.3182, "iv_put": 26.7337, "skew": 1.415485, "delta_skew": 4.588244, "zscore": 0.8975, "confidence": 1.5, "vol_oi_call": 1.7189, "vol_oi_put": 3.0651, "signal": 0.249098, "signal_adjusted": 0.473647, "direction": "BEARISH", "strength": "FRACO", "volume_total": 74828.8, "n_vencimentos": 5, "diag_vol_oi": "Put VOL/OI dominante (ratio=1.78)", "comp_1": 0.019563, "comp_2": 0.314119, "comp_3": 0.090129, "adjustment": 0.1, "close": 177.26, "next_close": 179.75, "return_pct": 1.4047, "realized_dir": "UP", "v3_pred_dir": "BEARISH", "v3_decision_reason": "bear_trigger", "v3_backtest_state": "ERROU", "v3_backtest_reason": "miss_up", "v3_operated": true, "hybrid_pred_dir": "BEARISH", "hybrid_decision_reason": "bear_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "ERROU", "hybrid_backtest_reason": "miss_up", "hybrid_operated": true, "bear_fallback_would_trigger": true, "both_operated": true, "same_signal": true, "disagreement": false, "hybrid_only": false, "v3_only": false, "backtest_result": "ERROU"}, {"date": "10/03/2026", "date_key": "10/mar", "iv_call": 24.1335, "iv_put": 25.2481, "skew": 1.114638, "delta_skew": -0.300847, "zscore": 0.7179, "confidence": 1.5, "vol_oi_call": 1.6587, "vol_oi_put": 1.4318, "signal": 0.188221, "signal_adjusted": 0.282332, "direction": "NEUTRO", "strength": "FRACO", "volume_total": 104946.8, "n_vencimentos": 4, "diag_vol_oi": "VOL/OI equilibrado (ratio=0.86)", "comp_1": -0.002682, "comp_2": 0.251251, "comp_3": -0.04712, "adjustment": 0.0, "close": 179.75, "next_close": 180.21, "return_pct": 0.2559, "realized_dir": "UP", "v3_pred_dir": "NEUTRO", "v3_decision_reason": "no_trigger", "v3_backtest_state": "NEUTRO", "v3_backtest_reason": "no_trigger", "v3_operated": false, "hybrid_pred_dir": "NEUTRO", "hybrid_decision_reason": "no_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "NEUTRO", "hybrid_backtest_reason": "no_trigger", "hybrid_operated": false, "bear_fallback_would_trigger": false, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": false, "v3_only": false, "backtest_result": "NEUTRO"}, {"date": "11/03/2026", "date_key": "11/mar", "iv_call": 25.2843, "iv_put": 26.0162, "skew": 0.731878, "delta_skew": -0.38276, "zscore": 0.5628, "confidence": 1.5, "vol_oi_call": 2.8956, "vol_oi_put": 1.3443, "signal": 0.280485, "signal_adjusted": 0.320727, "direction": "NEUTRO", "strength": "FRACO", "volume_total": 121084.61, "n_vencimentos": 3, "diag_vol_oi": "Call VOL/OI dominante (ratio=0.46)", "comp_1": 0.019892, "comp_2": 0.196986, "comp_3": -0.000684, "adjustment": -0.1, "close": 180.21, "next_close": 175.85, "return_pct": -2.4194, "realized_dir": "DOWN", "v3_pred_dir": "NEUTRO", "v3_decision_reason": "no_trigger", "v3_backtest_state": "NEUTRO", "v3_backtest_reason": "no_trigger", "v3_operated": false, "hybrid_pred_dir": "NEUTRO", "hybrid_decision_reason": "no_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "NEUTRO", "hybrid_backtest_reason": "no_trigger", "hybrid_operated": false, "bear_fallback_would_trigger": false, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": false, "v3_only": false, "backtest_result": "NEUTRO"}, {"date": "12/03/2026", "date_key": "12/mar", "iv_call": 25.9814, "iv_put": 27.4896, "skew": 1.508118, "delta_skew": 0.77624, "zscore": 0.7032, "confidence": 1.5, "vol_oi_call": 1.6218, "vol_oi_put": 1.5199, "signal": 0.225007, "signal_adjusted": 0.337511, "direction": "NEUTRO", "strength": "FRACO", "volume_total": 196309.0, "n_vencimentos": 4, "diag_vol_oi": "VOL/OI equilibrado (ratio=0.94)", "comp_1": 0.000257, "comp_2": 0.246133, "comp_3": 0.010989, "adjustment": 0.0, "close": 175.85, "next_close": 174.55, "return_pct": -0.7393, "realized_dir": "DOWN", "v3_pred_dir": "NEUTRO", "v3_decision_reason": "no_trigger", "v3_backtest_state": "NEUTRO", "v3_backtest_reason": "no_trigger", "v3_operated": false, "hybrid_pred_dir": "BEARISH", "hybrid_decision_reason": "bear_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "ACERTOU", "hybrid_backtest_reason": "hit_down", "hybrid_operated": true, "bear_fallback_would_trigger": false, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": true, "v3_only": false, "backtest_result": "NEUTRO"}, {"date": "13/03/2026", "date_key": "13/mar", "iv_call": 30.1444, "iv_put": 23.2561, "skew": -6.888253, "delta_skew": -8.396371, "zscore": -1.3731, "confidence": 1.5, "vol_oi_call": 584.0837, "vol_oi_put": 2878.5101, "signal": -0.044309, "signal_adjusted": 0.033536, "direction": "NEUTRO", "strength": "MODERADO", "volume_total": 243105669.21, "n_vencimentos": 5, "diag_vol_oi": "Put VOL/OI dominante (ratio=4.93)", "comp_1": -0.040048, "comp_2": -0.480577, "comp_3": -0.085876, "adjustment": 0.1, "close": 174.55, "next_close": 176.55, "return_pct": 1.1458, "realized_dir": "UP", "v3_pred_dir": "NEUTRO", "v3_decision_reason": "no_trigger", "v3_backtest_state": "NEUTRO", "v3_backtest_reason": "no_trigger", "v3_operated": false, "hybrid_pred_dir": "BULLISH", "hybrid_decision_reason": "bull_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "ACERTOU", "hybrid_backtest_reason": "hit_up", "hybrid_operated": true, "bear_fallback_would_trigger": false, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": true, "v3_only": false, "backtest_result": "NEUTRO"}, {"date": "16/03/2026", "date_key": "16/mar", "iv_call": 26.023, "iv_put": 22.0441, "skew": -3.978849, "delta_skew": 2.909404, "zscore": -0.5745, "confidence": 1.5, "vol_oi_call": 4.6257, "vol_oi_put": 2.8407, "signal": -0.154414, "signal_adjusted": -0.331621, "direction": "BULLISH", "strength": "FRACO", "volume_total": 177171376.43, "n_vencimentos": 5, "diag_vol_oi": "Call VOL/OI dominante (ratio=0.61)", "comp_1": -0.021917, "comp_2": -0.201086, "comp_3": 0.108881, "adjustment": -0.1, "close": 176.55, "next_close": 176.83, "return_pct": 0.1586, "realized_dir": "UP", "v3_pred_dir": "BULLISH", "v3_decision_reason": "bull_trigger", "v3_backtest_state": "ACERTOU", "v3_backtest_reason": "hit_up", "v3_operated": true, "hybrid_pred_dir": "BULLISH", "hybrid_decision_reason": "conflict_resolved_bull", "hybrid_conflict": true, "hybrid_backtest_state": "ACERTOU", "hybrid_backtest_reason": "hit_up", "hybrid_operated": true, "bear_fallback_would_trigger": false, "both_operated": true, "same_signal": true, "disagreement": false, "hybrid_only": false, "v3_only": false, "backtest_result": "ACERTOU"}, {"date": "17/03/2026", "date_key": "17/mar", "iv_call": 25.2, "iv_put": 25.9774, "skew": 0.777438, "delta_skew": 4.756288, "zscore": 0.667, "confidence": 1.5, "vol_oi_call": 1.7512, "vol_oi_put": 1.1929, "signal": -0.157325, "signal_adjusted": -0.235988, "direction": "BULLISH", "strength": "FRACO", "volume_total": 156419.0, "n_vencimentos": 5, "diag_vol_oi": "VOL/OI equilibrado (ratio=0.68)", "comp_1": -0.001005, "comp_2": 0.233446, "comp_3": 0.016205, "adjustment": 0.0, "close": 176.83, "next_close": 175.8, "return_pct": -0.5825, "realized_dir": "DOWN", "v3_pred_dir": "BULLISH", "v3_decision_reason": "bull_trigger", "v3_backtest_state": "ERROU", "v3_backtest_reason": "miss_down", "v3_operated": true, "hybrid_pred_dir": "BULLISH", "hybrid_decision_reason": "conflict_resolved_bull", "hybrid_conflict": true, "hybrid_backtest_state": "ERROU", "hybrid_backtest_reason": "miss_down", "hybrid_operated": true, "bear_fallback_would_trigger": false, "both_operated": true, "same_signal": true, "disagreement": false, "hybrid_only": false, "v3_only": false, "backtest_result": "ERROU"}, {"date": "18/03/2026", "date_key": "18/mar", "iv_call": 26.5638, "iv_put": 27.1209, "skew": 0.557133, "delta_skew": -0.220305, "zscore": 0.5727, "confidence": 1.5, "vol_oi_call": 2.4655, "vol_oi_put": 1.5619, "signal": 0.108763, "signal_adjusted": 0.063144, "direction": "NEUTRO", "strength": "FRACO", "volume_total": 106350.53, "n_vencimentos": 5, "diag_vol_oi": "Call VOL/OI dominante (ratio=0.63)", "comp_1": 0.03983, "comp_2": 0.200455, "comp_3": -0.04852, "adjustment": -0.1, "close": 175.8, "next_close": 177.15, "return_pct": 0.7679, "realized_dir": "UP", "v3_pred_dir": "NEUTRO", "v3_decision_reason": "no_trigger", "v3_backtest_state": "NEUTRO", "v3_backtest_reason": "no_trigger", "v3_operated": false, "hybrid_pred_dir": "NEUTRO", "hybrid_decision_reason": "no_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "NEUTRO", "hybrid_backtest_reason": "no_trigger", "hybrid_operated": false, "bear_fallback_would_trigger": false, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": false, "v3_only": false, "backtest_result": "NEUTRO"}, {"date": "19/03/2026", "date_key": "19/mar", "iv_call": 27.2398, "iv_put": 28.0855, "skew": 0.84573, "delta_skew": 0.288596, "zscore": 0.621, "confidence": 1.5, "vol_oi_call": 1.4732, "vol_oi_put": 1.7353, "signal": 0.229166, "signal_adjusted": 0.34375, "direction": "NEUTRO", "strength": "FRACO", "volume_total": 146636.93, "n_vencimentos": 5, "diag_vol_oi": "VOL/OI equilibrado (ratio=1.18)", "comp_1": 0.02508, "comp_2": 0.21735, "comp_3": 0.00466, "adjustment": 0.0, "close": 177.15, "next_close": 173.01, "return_pct": -2.337, "realized_dir": "DOWN", "v3_pred_dir": "NEUTRO", "v3_decision_reason": "no_trigger", "v3_backtest_state": "NEUTRO", "v3_backtest_reason": "no_trigger", "v3_operated": false, "hybrid_pred_dir": "BEARISH", "hybrid_decision_reason": "bear_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "ACERTOU", "hybrid_backtest_reason": "hit_down", "hybrid_operated": true, "bear_fallback_would_trigger": false, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": true, "v3_only": false, "backtest_result": "NEUTRO"}, {"date": "20/03/2026", "date_key": "20/mar", "iv_call": 27.9916, "iv_put": 29.5372, "skew": 1.545649, "delta_skew": 0.699919, "zscore": 0.7792, "confidence": 1.5, "vol_oi_call": 3.1851, "vol_oi_put": 3.2281, "signal": 0.23953, "signal_adjusted": 0.359294, "direction": "BEARISH", "strength": "FRACO", "volume_total": 131034.2, "n_vencimentos": 5, "diag_vol_oi": "VOL/OI equilibrado (ratio=1.01)", "comp_1": 0.003541, "comp_2": 0.272719, "comp_3": 0.003475, "adjustment": 0.0, "close": 173.01, "next_close": 178.9, "return_pct": 3.4044, "realized_dir": "UP", "v3_pred_dir": "BEARISH", "v3_decision_reason": "bear_trigger", "v3_backtest_state": "ERROU", "v3_backtest_reason": "miss_up", "v3_operated": true, "hybrid_pred_dir": "BEARISH", "hybrid_decision_reason": "bear_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "ERROU", "hybrid_backtest_reason": "miss_up", "hybrid_operated": true, "bear_fallback_would_trigger": true, "both_operated": true, "same_signal": true, "disagreement": false, "hybrid_only": false, "v3_only": false, "backtest_result": "ERROU"}, {"date": "23/03/2026", "date_key": "23/mar", "iv_call": 25.583, "iv_put": 26.9716, "skew": 1.388609, "delta_skew": -0.15704, "zscore": 0.696, "confidence": 1.5, "vol_oi_call": 2.1364, "vol_oi_put": 1.5409, "signal": 0.255558, "signal_adjusted": 0.383336, "direction": "BEARISH", "strength": "FRACO", "volume_total": 73307.2, "n_vencimentos": 5, "diag_vol_oi": "VOL/OI equilibrado (ratio=0.72)", "comp_1": 0.003839, "comp_2": 0.243587, "comp_3": -0.007577, "adjustment": 0.0, "close": 178.9, "next_close": 179.19, "return_pct": 0.1621, "realized_dir": "UP", "v3_pred_dir": "BEARISH", "v3_decision_reason": "bear_trigger", "v3_backtest_state": "ERROU", "v3_backtest_reason": "miss_up", "v3_operated": true, "hybrid_pred_dir": "NEUTRO", "hybrid_decision_reason": "no_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "NEUTRO", "hybrid_backtest_reason": "no_trigger", "hybrid_operated": false, "bear_fallback_would_trigger": true, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": false, "v3_only": true, "backtest_result": "ERROU"}, {"date": "24/03/2026", "date_key": "24/mar", "iv_call": 25.8763, "iv_put": 27.1395, "skew": 1.263165, "delta_skew": -0.125443, "zscore": 0.6293, "confidence": 1.5, "vol_oi_call": 2.1025, "vol_oi_put": 1.7926, "signal": 0.247317, "signal_adjusted": 0.370975, "direction": "BEARISH", "strength": "FRACO", "volume_total": 72374.4, "n_vencimentos": 5, "diag_vol_oi": "VOL/OI equilibrado (ratio=0.85)", "comp_1": 0.001817, "comp_2": 0.220239, "comp_3": 0.000311, "adjustment": 0.0, "close": 179.19, "next_close": 182.2, "return_pct": 1.6798, "realized_dir": "UP", "v3_pred_dir": "BEARISH", "v3_decision_reason": "bear_trigger", "v3_backtest_state": "ERROU", "v3_backtest_reason": "miss_up", "v3_operated": true, "hybrid_pred_dir": "NEUTRO", "hybrid_decision_reason": "no_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "NEUTRO", "hybrid_backtest_reason": "no_trigger", "hybrid_operated": false, "bear_fallback_would_trigger": true, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": false, "v3_only": true, "backtest_result": "ERROU"}, {"date": "25/03/2026", "date_key": "25/mar", "iv_call": 24.9937, "iv_put": 26.0954, "skew": 1.101652, "delta_skew": -0.161514, "zscore": 0.5571, "confidence": 1.5, "vol_oi_call": 2.9176, "vol_oi_put": 1.3859, "signal": 0.218173, "signal_adjusted": 0.227259, "direction": "NEUTRO", "strength": "FRACO", "volume_total": 190389.4, "n_vencimentos": 5, "diag_vol_oi": "Call VOL/OI dominante (ratio=0.48)", "comp_1": -0.002271, "comp_2": 0.194971, "comp_3": -0.000398, "adjustment": -0.1, "close": 182.2, "next_close": 179.45, "return_pct": -1.5093, "realized_dir": "DOWN", "v3_pred_dir": "NEUTRO", "v3_decision_reason": "no_trigger", "v3_backtest_state": "NEUTRO", "v3_backtest_reason": "no_trigger", "v3_operated": false, "hybrid_pred_dir": "NEUTRO", "hybrid_decision_reason": "no_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "NEUTRO", "hybrid_backtest_reason": "no_trigger", "hybrid_operated": false, "bear_fallback_would_trigger": false, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": false, "v3_only": false, "backtest_result": "NEUTRO"}, {"date": "26/03/2026", "date_key": "26/mar", "iv_call": 27.9373, "iv_put": 29.4585, "skew": 1.521198, "delta_skew": 0.419547, "zscore": 0.6627, "confidence": 1.5, "vol_oi_call": 1.4369, "vol_oi_put": 1.479, "signal": 0.217446, "signal_adjusted": 0.326169, "direction": "NEUTRO", "strength": "FRACO", "volume_total": 51941.0, "n_vencimentos": 4, "diag_vol_oi": "VOL/OI equilibrado (ratio=1.03)", "comp_1": 0.000475, "comp_2": 0.231957, "comp_3": 0.005236, "adjustment": 0.0, "close": 179.45, "next_close": 177.74, "return_pct": -0.9529, "realized_dir": "DOWN", "v3_pred_dir": "NEUTRO", "v3_decision_reason": "no_trigger", "v3_backtest_state": "NEUTRO", "v3_backtest_reason": "no_trigger", "v3_operated": false, "hybrid_pred_dir": "BEARISH", "hybrid_decision_reason": "bear_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "ACERTOU", "hybrid_backtest_reason": "hit_down", "hybrid_operated": true, "bear_fallback_would_trigger": false, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": true, "v3_only": false, "backtest_result": "NEUTRO"}, {"date": "27/03/2026", "date_key": "27/mar", "iv_call": 29.9826, "iv_put": 31.0144, "skew": 1.031731, "delta_skew": -0.489467, "zscore": 0.4886, "confidence": 1.5, "vol_oi_call": 1.6259, "vol_oi_put": 1.7297, "signal": 0.197425, "signal_adjusted": 0.296138, "direction": "NEUTRO", "strength": "FRACO", "volume_total": 57488.0, "n_vencimentos": 4, "diag_vol_oi": "VOL/OI equilibrado (ratio=1.06)", "comp_1": -0.001034, "comp_2": 0.171005, "comp_3": -0.007667, "adjustment": 0.0, "close": 177.74, "next_close": 179.0, "return_pct": 0.7089, "realized_dir": "UP", "v3_pred_dir": "NEUTRO", "v3_decision_reason": "no_trigger", "v3_backtest_state": "NEUTRO", "v3_backtest_reason": "no_trigger", "v3_operated": false, "hybrid_pred_dir": "NEUTRO", "hybrid_decision_reason": "no_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "NEUTRO", "hybrid_backtest_reason": "no_trigger", "hybrid_operated": false, "bear_fallback_would_trigger": false, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": false, "v3_only": false, "backtest_result": "NEUTRO"}, {"date": "30/03/2026", "date_key": "30/mar", "iv_call": 27.4177, "iv_put": 28.3395, "skew": 0.921859, "delta_skew": -0.109872, "zscore": 0.4391, "confidence": 1.5, "vol_oi_call": 1.5452, "vol_oi_put": 1.0907, "signal": 0.185328, "signal_adjusted": 0.277991, "direction": "NEUTRO", "strength": "FRACO", "volume_total": 93875.8, "n_vencimentos": 4, "diag_vol_oi": "VOL/OI equilibrado (ratio=0.71)", "comp_1": -0.000716, "comp_2": 0.1537, "comp_3": 0.003027, "adjustment": 0.0, "close": 179.0, "next_close": 184.28, "return_pct": 2.9497, "realized_dir": "UP", "v3_pred_dir": "NEUTRO", "v3_decision_reason": "no_trigger", "v3_backtest_state": "NEUTRO", "v3_backtest_reason": "no_trigger", "v3_operated": false, "hybrid_pred_dir": "NEUTRO", "hybrid_decision_reason": "no_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "NEUTRO", "hybrid_backtest_reason": "no_trigger", "hybrid_operated": false, "bear_fallback_would_trigger": false, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": false, "v3_only": false, "backtest_result": "NEUTRO"}, {"date": "31/03/2026", "date_key": "31/mar", "iv_call": 22.2659, "iv_put": 29.3093, "skew": 7.043393, "delta_skew": 6.121534, "zscore": 2.3886, "confidence": 1.5, "vol_oi_call": 1.057, "vol_oi_put": 1.7142, "signal": 0.414552, "signal_adjusted": 0.721828, "direction": "BEARISH", "strength": "FORTE", "volume_total": 89688.6, "n_vencimentos": 4, "diag_vol_oi": "Put VOL/OI dominante (ratio=1.62)", "comp_1": 0.028986, "comp_2": 0.836024, "comp_3": 0.060331, "adjustment": 0.1, "close": 184.28, "next_close": 184.18, "return_pct": -0.0543, "realized_dir": "DOWN", "v3_pred_dir": "BEARISH", "v3_decision_reason": "bear_trigger", "v3_backtest_state": "ACERTOU", "v3_backtest_reason": "hit_down", "v3_operated": true, "hybrid_pred_dir": "BEARISH", "hybrid_decision_reason": "bear_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "ACERTOU", "hybrid_backtest_reason": "hit_down", "hybrid_operated": true, "bear_fallback_would_trigger": true, "both_operated": true, "same_signal": true, "disagreement": false, "hybrid_only": false, "v3_only": false, "backtest_result": "ACERTOU"}, {"date": "01/04/2026", "date_key": "01/abr", "iv_call": 24.6356, "iv_put": 25.7192, "skew": 1.08368, "delta_skew": -5.959713, "zscore": 0.1913, "confidence": 1.5, "vol_oi_call": 1.7476, "vol_oi_put": 1.8976, "signal": 0.34311, "signal_adjusted": 0.514665, "direction": "BEARISH", "strength": "FRACO", "volume_total": 77594.0, "n_vencimentos": 3, "diag_vol_oi": "VOL/OI equilibrado (ratio=1.09)", "comp_1": -0.000436, "comp_2": 0.066938, "comp_3": -0.118523, "adjustment": 0.0, "close": 184.18, "next_close": 184.37, "return_pct": 0.1032, "realized_dir": "UP", "v3_pred_dir": "BEARISH", "v3_decision_reason": "bear_trigger", "v3_backtest_state": "ERROU", "v3_backtest_reason": "miss_up", "v3_operated": true, "hybrid_pred_dir": "NEUTRO", "hybrid_decision_reason": "no_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "NEUTRO", "hybrid_backtest_reason": "no_trigger", "hybrid_operated": false, "bear_fallback_would_trigger": true, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": false, "v3_only": true, "backtest_result": "ERROU"}, {"date": "02/04/2026", "date_key": "02/abr", "iv_call": 25.3323, "iv_put": 26.2671, "skew": 0.934806, "delta_skew": -0.148874, "zscore": 0.1473, "confidence": 1.5, "vol_oi_call": 1.6793, "vol_oi_put": 31.8128, "signal": 0.327315, "signal_adjusted": 0.590973, "direction": "BEARISH", "strength": "FRACO", "volume_total": 69338.34, "n_vencimentos": 4, "diag_vol_oi": "Put VOL/OI dominante (ratio=18.94)", "comp_1": -0.00068, "comp_2": 0.051571, "comp_3": 0.057735, "adjustment": 0.1, "close": 184.37, "next_close": 184.56, "return_pct": 0.1031, "realized_dir": "UP", "v3_pred_dir": "BEARISH", "v3_decision_reason": "bear_trigger", "v3_backtest_state": "ERROU", "v3_backtest_reason": "miss_up", "v3_operated": true, "hybrid_pred_dir": "NEUTRO", "hybrid_decision_reason": "no_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "NEUTRO", "hybrid_backtest_reason": "no_trigger", "hybrid_operated": false, "bear_fallback_would_trigger": true, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": false, "v3_only": true, "backtest_result": "ERROU"}, {"date": "06/04/2026", "date_key": "06/abr", "iv_call": 27.1705, "iv_put": 27.1656, "skew": -0.004856, "delta_skew": -0.939662, "zscore": -0.2739, "confidence": 1.4125, "vol_oi_call": 1.0999, "vol_oi_put": 1.3252, "signal": -0.027802, "signal_adjusted": -0.039272, "direction": "NEUTRO", "strength": "FRACO", "volume_total": 123662187.34, "n_vencimentos": 4, "diag_vol_oi": "VOL/OI equilibrado (ratio=1.20)", "comp_1": -0.036942, "comp_2": -0.095866, "comp_3": -0.007204, "adjustment": 0.0, "close": 184.56, "next_close": 185.0, "return_pct": 0.2384, "realized_dir": "UP", "v3_pred_dir": "NEUTRO", "v3_decision_reason": "no_trigger", "v3_backtest_state": "NEUTRO", "v3_backtest_reason": "no_trigger", "v3_operated": false, "hybrid_pred_dir": "BULLISH", "hybrid_decision_reason": "bull_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "ACERTOU", "hybrid_backtest_reason": "hit_up", "hybrid_operated": true, "bear_fallback_would_trigger": false, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": true, "v3_only": false, "backtest_result": "NEUTRO"}, {"date": "07/04/2026", "date_key": "07/abr", "iv_call": 26.1767, "iv_put": 27.5975, "skew": 1.420767, "delta_skew": 1.425623, "zscore": 0.2834, "confidence": 1.5, "vol_oi_call": 1.6775, "vol_oi_put": 1.4062, "signal": 0.030461, "signal_adjusted": 0.045692, "direction": "NEUTRO", "strength": "FRACO", "volume_total": 124197.8, "n_vencimentos": 4, "diag_vol_oi": "VOL/OI equilibrado (ratio=0.84)", "comp_1": 0.001689, "comp_2": 0.099178, "comp_3": 0.021902, "adjustment": 0.0, "close": 185.0, "next_close": 189.0, "return_pct": 2.1622, "realized_dir": "UP", "v3_pred_dir": "NEUTRO", "v3_decision_reason": "no_trigger", "v3_backtest_state": "NEUTRO", "v3_backtest_reason": "no_trigger", "v3_operated": false, "hybrid_pred_dir": "BULLISH", "hybrid_decision_reason": "conflict_resolved_bull", "hybrid_conflict": true, "hybrid_backtest_state": "ACERTOU", "hybrid_backtest_reason": "hit_up", "hybrid_operated": true, "bear_fallback_would_trigger": false, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": true, "v3_only": false, "backtest_result": "NEUTRO"}, {"date": "08/04/2026", "date_key": "08/abr", "iv_call": 20.6018, "iv_put": 24.6098, "skew": 4.007983, "delta_skew": 2.587216, "zscore": 1.1896, "confidence": 1.5, "vol_oi_call": 89.2051, "vol_oi_put": 3.9137, "signal": 0.14407, "signal_adjusted": 0.116104, "direction": "NEUTRO", "strength": "MODERADO", "volume_total": 247830.67, "n_vencimentos": 4, "diag_vol_oi": "Call VOL/OI dominante (ratio=0.04)", "comp_1": 0.017718, "comp_2": 0.416377, "comp_3": 0.015357, "adjustment": -0.1, "close": 189.0, "next_close": 191.7, "return_pct": 1.4286, "realized_dir": "UP", "v3_pred_dir": "NEUTRO", "v3_decision_reason": "no_trigger", "v3_backtest_state": "NEUTRO", "v3_backtest_reason": "no_trigger", "v3_operated": false, "hybrid_pred_dir": "BEARISH", "hybrid_decision_reason": "bear_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "ERROU", "hybrid_backtest_reason": "miss_up", "hybrid_operated": true, "bear_fallback_would_trigger": false, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": true, "v3_only": false, "backtest_result": "NEUTRO"}, {"date": "09/04/2026", "date_key": "09/abr", "iv_call": 20.1215, "iv_put": 21.146, "skew": 1.024455, "delta_skew": -2.983527, "zscore": 0.0635, "confidence": 1.5, "vol_oi_call": 0.8394, "vol_oi_put": 2.3516, "signal": 0.177583, "signal_adjusted": 0.366375, "direction": "BEARISH", "strength": "FRACO", "volume_total": 172625.0, "n_vencimentos": 3, "diag_vol_oi": "Put VOL/OI dominante (ratio=2.80)", "comp_1": 0.00305, "comp_2": 0.02224, "comp_3": -0.064761, "adjustment": 0.1, "close": 191.7, "next_close": 193.84, "return_pct": 1.1163, "realized_dir": "UP", "v3_pred_dir": "BEARISH", "v3_decision_reason": "bear_trigger", "v3_backtest_state": "ERROU", "v3_backtest_reason": "miss_up", "v3_operated": true, "hybrid_pred_dir": "NEUTRO", "hybrid_decision_reason": "no_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "NEUTRO", "hybrid_backtest_reason": "no_trigger", "hybrid_operated": false, "bear_fallback_would_trigger": true, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": false, "v3_only": true, "backtest_result": "ERROU"}, {"date": "10/04/2026", "date_key": "10/abr", "iv_call": 21.2855, "iv_put": 21.6572, "skew": 0.371736, "delta_skew": -0.652719, "zscore": -0.1604, "confidence": 1.5, "vol_oi_call": 3.5196, "vol_oi_put": 56566.5494, "signal": 0.12477, "signal_adjusted": 0.287156, "direction": "NEUTRO", "strength": "FRACO", "volume_total": 143905.0, "n_vencimentos": 5, "diag_vol_oi": "Put VOL/OI dominante (ratio=16072.00)", "comp_1": -0.008073, "comp_2": -0.056146, "comp_3": 0.028549, "adjustment": 0.1, "close": 193.84, "next_close": 194.3, "return_pct": 0.2373, "realized_dir": "UP", "v3_pred_dir": "NEUTRO", "v3_decision_reason": "no_trigger", "v3_backtest_state": "NEUTRO", "v3_backtest_reason": "no_trigger", "v3_operated": false, "hybrid_pred_dir": "NEUTRO", "hybrid_decision_reason": "no_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "NEUTRO", "hybrid_backtest_reason": "no_trigger", "hybrid_operated": false, "bear_fallback_would_trigger": false, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": false, "v3_only": false, "backtest_result": "NEUTRO"}, {"date": "13/04/2026", "date_key": "13/abr", "iv_call": 21.0399, "iv_put": 26.2597, "skew": 5.219865, "delta_skew": 4.848129, "zscore": 1.7774, "confidence": 1.5, "vol_oi_call": 3.4846, "vol_oi_put": 3.9744, "signal": 0.203272, "signal_adjusted": 0.304908, "direction": "NEUTRO", "strength": "FORTE", "volume_total": 146535048.08, "n_vencimentos": 4, "diag_vol_oi": "VOL/OI equilibrado (ratio=1.14)", "comp_1": 0.004, "comp_2": 0.622107, "comp_3": 0.058849, "adjustment": 0.0, "close": 194.3, "next_close": 195.16, "return_pct": 0.4426, "realized_dir": "UP", "v3_pred_dir": "NEUTRO", "v3_decision_reason": "no_trigger", "v3_backtest_state": "NEUTRO", "v3_backtest_reason": "no_trigger", "v3_operated": false, "hybrid_pred_dir": "BEARISH", "hybrid_decision_reason": "bear_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "ERROU", "hybrid_backtest_reason": "miss_up", "hybrid_operated": true, "bear_fallback_would_trigger": false, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": true, "v3_only": false, "backtest_result": "NEUTRO"}, {"date": "14/04/2026", "date_key": "14/abr", "iv_call": 19.6299, "iv_put": 26.1342, "skew": 6.504248, "delta_skew": 1.284383, "zscore": 2.2425, "confidence": 1.5, "vol_oi_call": 0.5421, "vol_oi_put": 6.0987, "signal": 0.475908, "signal_adjusted": 0.813862, "direction": "BEARISH", "strength": "FORTE", "volume_total": 211657860.44, "n_vencimentos": 5, "diag_vol_oi": "Put VOL/OI dominante (ratio=11.25)", "comp_1": 0.030764, "comp_2": 0.784891, "comp_3": -0.037217, "adjustment": 0.1, "close": 195.16, "next_close": 193.86, "return_pct": -0.6661, "realized_dir": "DOWN", "v3_pred_dir": "BEARISH", "v3_decision_reason": "bear_trigger", "v3_backtest_state": "ACERTOU", "v3_backtest_reason": "hit_down", "v3_operated": true, "hybrid_pred_dir": "BEARISH", "hybrid_decision_reason": "bear_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "ACERTOU", "hybrid_backtest_reason": "hit_down", "hybrid_operated": true, "bear_fallback_would_trigger": true, "both_operated": true, "same_signal": true, "disagreement": false, "hybrid_only": false, "v3_only": false, "backtest_result": "ACERTOU"}, {"date": "15/04/2026", "date_key": "15/abr", "iv_call": 22.7784, "iv_put": 21.7625, "skew": -1.015921, "delta_skew": -7.520168, "zscore": -1.3392, "confidence": 0.5025, "vol_oi_call": 0.0017, "vol_oi_put": 0.0013, "signal": 0.295334, "signal_adjusted": 0.148397, "direction": "NEUTRO", "strength": "MODERADO", "volume_total": 137706564.49, "n_vencimentos": 5, "diag_vol_oi": "VOL/OI equilibrado (ratio=0.80)", "comp_1": -0.010206, "comp_2": -0.468735, "comp_3": -0.098451, "adjustment": 0.0, "close": 193.86, "next_close": 193.05, "return_pct": -0.4178, "realized_dir": "DOWN", "v3_pred_dir": "NEUTRO", "v3_decision_reason": "no_trigger", "v3_backtest_state": "NEUTRO", "v3_backtest_reason": "no_trigger", "v3_operated": false, "hybrid_pred_dir": "NEUTRO", "hybrid_decision_reason": "no_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "NEUTRO", "hybrid_backtest_reason": "no_trigger", "hybrid_operated": false, "bear_fallback_would_trigger": false, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": false, "v3_only": false, "backtest_result": "NEUTRO"}, {"date": "16/04/2026", "date_key": "16/abr", "iv_call": 18.9245, "iv_put": 20.146, "skew": 1.221437, "delta_skew": 2.237357, "zscore": -0.3073, "confidence": 1.1981, "vol_oi_call": 1.0444, "vol_oi_put": 0.9518, "signal": 0.06142, "signal_adjusted": 0.073588, "direction": "NEUTRO", "strength": "FRACO", "volume_total": 170711.73, "n_vencimentos": 5, "diag_vol_oi": "VOL/OI equilibrado (ratio=0.91)", "comp_1": -0.022269, "comp_2": -0.107567, "comp_3": 0.113051, "adjustment": 0.0, "close": 193.05, "next_close": 192.1, "return_pct": -0.4921, "realized_dir": "DOWN", "v3_pred_dir": "NEUTRO", "v3_decision_reason": "no_trigger", "v3_backtest_state": "NEUTRO", "v3_backtest_reason": "no_trigger", "v3_operated": false, "hybrid_pred_dir": "BEARISH", "hybrid_decision_reason": "bear_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "ACERTOU", "hybrid_backtest_reason": "hit_down", "hybrid_operated": true, "bear_fallback_would_trigger": false, "both_operated": false, "same_signal": false, "disagreement": false, "hybrid_only": true, "v3_only": false, "backtest_result": "NEUTRO"}, {"date": "17/04/2026", "date_key": "17/abr", "iv_call": 24.0146, "iv_put": 23.1925, "skew": -0.822179, "delta_skew": -2.043615, "zscore": -1.1922, "confidence": 0.7545, "vol_oi_call": 0.1766, "vol_oi_put": 0.1288, "signal": -0.367675, "signal_adjusted": -0.277409, "direction": "BULLISH", "strength": "MODERADO", "volume_total": 535681.91, "n_vencimentos": 4, "diag_vol_oi": "VOL/OI equilibrado (ratio=0.73)", "comp_1": -0.041297, "comp_2": -0.417273, "comp_3": -0.050278, "adjustment": 0.0, "close": 192.1, "next_close": 192.64, "return_pct": 0.2811, "realized_dir": "UP", "v3_pred_dir": "BULLISH", "v3_decision_reason": "bull_trigger", "v3_backtest_state": "ACERTOU", "v3_backtest_reason": "hit_up", "v3_operated": true, "hybrid_pred_dir": "BULLISH", "hybrid_decision_reason": "bull_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "ACERTOU", "hybrid_backtest_reason": "hit_up", "hybrid_operated": true, "bear_fallback_would_trigger": false, "both_operated": true, "same_signal": true, "disagreement": false, "hybrid_only": false, "v3_only": false, "backtest_result": "ACERTOU"}, {"date": "20/04/2026", "date_key": "20/abr", "iv_call": 17.8001, "iv_put": 19.4915, "skew": 1.691406, "delta_skew": 2.513585, "zscore": -0.0475, "confidence": 1.0, "vol_oi_call": 0.8308, "vol_oi_put": 0.566, "signal": -0.155074, "signal_adjusted": -0.155074, "direction": "BULLISH", "strength": "FRACO", "volume_total": 62036.8, "n_vencimentos": 5, "diag_vol_oi": "VOL/OI equilibrado (ratio=0.68)", "comp_1": 0.021701, "comp_2": -0.016637, "comp_3": 0.055347, "adjustment": 0.0, "close": 192.64, "next_close": 189.33, "return_pct": -1.7182, "realized_dir": "DOWN", "v3_pred_dir": "BULLISH", "v3_decision_reason": "bull_trigger", "v3_backtest_state": "ERROU", "v3_backtest_reason": "miss_down", "v3_operated": true, "hybrid_pred_dir": "BULLISH", "hybrid_decision_reason": "conflict_resolved_bull", "hybrid_conflict": true, "hybrid_backtest_state": "ERROU", "hybrid_backtest_reason": "miss_down", "hybrid_operated": true, "bear_fallback_would_trigger": false, "both_operated": true, "same_signal": true, "disagreement": false, "hybrid_only": false, "v3_only": false, "backtest_result": "ERROU"}, {"date": "22/04/2026", "date_key": "22/abr", "iv_call": 18.1743, "iv_put": 18.9563, "skew": 0.78195, "delta_skew": -0.909456, "zscore": -0.4471, "confidence": 1.3046, "vol_oi_call": 1.4587, "vol_oi_put": 0.7505, "signal": -0.21699, "signal_adjusted": -0.383081, "direction": "BULLISH", "strength": "FRACO", "volume_total": 58072.4, "n_vencimentos": 5, "diag_vol_oi": "Call VOL/OI dominante (ratio=0.51)", "comp_1": -0.000101, "comp_2": -0.156484, "comp_3": -0.045949, "adjustment": -0.1, "close": 189.33, "next_close": 187.87, "return_pct": -0.7711, "realized_dir": "DOWN", "v3_pred_dir": "BULLISH", "v3_decision_reason": "bull_trigger", "v3_backtest_state": "ERROU", "v3_backtest_reason": "miss_down", "v3_operated": true, "hybrid_pred_dir": "BULLISH", "hybrid_decision_reason": "bull_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "ERROU", "hybrid_backtest_reason": "miss_down", "hybrid_operated": true, "bear_fallback_would_trigger": false, "both_operated": true, "same_signal": true, "disagreement": false, "hybrid_only": false, "v3_only": false, "backtest_result": "ERROU"}, {"date": "23/04/2026", "date_key": "23/abr", "iv_call": 18.6288, "iv_put": 18.9, "skew": 0.271213, "delta_skew": -0.510738, "zscore": -0.65, "confidence": 1.5, "vol_oi_call": 2.092, "vol_oi_put": 0.8849, "signal": -0.11879, "signal_adjusted": -0.278185, "direction": "BULLISH", "strength": "FRACO", "volume_total": 63339.0, "n_vencimentos": 4, "diag_vol_oi": "Call VOL/OI dominante (ratio=0.42)", "comp_1": 0.007814, "comp_2": -0.227502, "comp_3": 0.005442, "adjustment": -0.1, "close": 187.87, "next_close": 187.01, "return_pct": -0.4578, "realized_dir": "DOWN", "v3_pred_dir": "BULLISH", "v3_decision_reason": "bull_trigger", "v3_backtest_state": "ERROU", "v3_backtest_reason": "miss_down", "v3_operated": true, "hybrid_pred_dir": "BULLISH", "hybrid_decision_reason": "bull_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "ERROU", "hybrid_backtest_reason": "miss_down", "hybrid_operated": true, "bear_fallback_would_trigger": false, "both_operated": true, "same_signal": true, "disagreement": false, "hybrid_only": false, "v3_only": false, "backtest_result": "ERROU"}, {"date": "24/04/2026", "date_key": "24/abr", "iv_call": 18.1379, "iv_put": 17.4222, "skew": -0.715686, "delta_skew": -0.986899, "zscore": -1.0244, "confidence": 1.5, "vol_oi_call": 1.9599, "vol_oi_put": 2.2094, "signal": -0.266646, "signal_adjusted": -0.399969, "direction": "BULLISH", "strength": "MODERADO", "volume_total": 112104.21, "n_vencimentos": 5, "diag_vol_oi": "VOL/OI equilibrado (ratio=1.13)", "comp_1": -0.017562, "comp_2": -0.358525, "comp_3": -0.007072, "adjustment": 0.0, "close": 187.01, "next_close": 186.06, "return_pct": -0.508, "realized_dir": "DOWN", "v3_pred_dir": "BULLISH", "v3_decision_reason": "bull_trigger", "v3_backtest_state": "ERROU", "v3_backtest_reason": "miss_down", "v3_operated": true, "hybrid_pred_dir": "BULLISH", "hybrid_decision_reason": "bull_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "ERROU", "hybrid_backtest_reason": "miss_down", "hybrid_operated": true, "bear_fallback_would_trigger": false, "both_operated": true, "same_signal": true, "disagreement": false, "hybrid_only": false, "v3_only": false, "backtest_result": "ERROU"}, {"date": "27/04/2026", "date_key": "27/abr", "iv_call": 18.3889, "iv_put": 16.0736, "skew": -2.315325, "delta_skew": -1.599639, "zscore": -1.5305, "confidence": 1.5, "vol_oi_call": 0.8212, "vol_oi_put": 1.8219, "signal": -0.388606, "signal_adjusted": -0.482908, "direction": "BULLISH", "strength": "FORTE", "volume_total": 95431.99, "n_vencimentos": 4, "diag_vol_oi": "Put VOL/OI dominante (ratio=2.22)", "comp_1": -0.023408, "comp_2": -0.535672, "comp_3": -0.009332, "adjustment": 0.1, "close": 186.06, "next_close": 185.16, "return_pct": -0.4837, "realized_dir": "DOWN", "v3_pred_dir": "BULLISH", "v3_decision_reason": "bull_trigger", "v3_backtest_state": "ERROU", "v3_backtest_reason": "miss_down", "v3_operated": true, "hybrid_pred_dir": "BULLISH", "hybrid_decision_reason": "bull_trigger", "hybrid_conflict": false, "hybrid_backtest_state": "ERROU", "hybrid_backtest_reason": "miss_down", "hybrid_operated": true, "bear_fallback_would_trigger": false, "both_operated": true, "same_signal": true, "disagreement": false, "hybrid_only": false, "v3_only": false, "backtest_result": "ERROU"}, {"date": "28/04/2026", "date_key": "28/abr", "iv_call": 17.9005, "iv_put": 18.9764, "skew": 1.075843, "delta_skew": 3.391168, "zscore": -0.1467, "confidence": 1.5, "vol_oi_call": 2.0959, "vol_oi_put": 1.3755, "signal": -0.30966, "signal_adjusted": -0.56449, "direction": "BULLISH", "strength": "FRACO", "volume_total": 62173.6, "n_vencimentos": 5, "diag_vol_oi": "Call VOL/OI dominante (ratio=0.66)", "comp_1": 0.004744, "comp_2": -0.051342, "comp_3": 0.069188, "adjustment": -0.1, "close": 185.16, "next_close": null, "return_pct": null, "realized_dir": "N/A", "v3_pred_dir": "BULLISH", "v3_decision_reason": "bull_trigger", "v3_backtest_state": "N/A", "v3_backtest_reason": "missing_price", "v3_operated": true, "hybrid_pred_dir": "BULLISH", "hybrid_decision_reason": "conflict_resolved_bull", "hybrid_conflict": true, "hybrid_backtest_state": "N/A", "hybrid_backtest_reason": "missing_price", "hybrid_operated": true, "bear_fallback_would_trigger": false, "both_operated": true, "same_signal": true, "disagreement": false, "hybrid_only": false, "v3_only": false, "backtest_result": "N/A"}];
-        const IV_SKEW_META = {"w1": 0.4, "w2": 0.35, "w3": 0.25, "mma": 3, "zscore_window": 20, "atm_range": 3, "min_dte": 2, "vol_minimo": 50, "dte_penalty": 5, "ticker": "BOVA11.SA", "bull_threshold": -0.04, "bear_threshold": 0.35, "zscore_strong": 1.5, "backtest_eps": 0.001, "price_backtest_enabled": true, "hybrid_enabled": true, "hybrid_bear_delta_skew": 0.15, "hybrid_bull_signal": 0.05, "hybrid_precedence": "bull-first", "hybrid_bear_fallback": false, "accuracy_pct": 26.31578947368421, "hits": 5, "eligible": 19, "overall_accuracy_pct": 26.31578947368421, "overall_hits": 5, "overall_eligible": 19, "bull_accuracy_pct": 25.0, "bull_hits": 2, "bull_total": 9, "bear_accuracy_pct": 27.27272727272727, "bear_hits": 3, "bear_total": 11, "neutral_count": 19, "flat_count": 0, "na_count": 1, "na_price_count": 1, "na_feature_count": 0, "operated_count": 20, "coverage_pct": 50.0, "coverage_price_pct": 50.0, "price_missing_count": 1, "v3": {"hits": 5, "errors": 14, "eligible": 19, "accuracy_pct": 26.31578947368421, "neutral_count": 19, "flat_count": 0, "na_count": 1, "na_price_count": 1, "na_feature_count": 0, "operated_count": 20, "bull_trades": 9, "bear_trades": 11, "bull_eligible": 8, "bear_eligible": 11, "bull_operated_count": 9, "bear_operated_count": 11, "bull_hits": 2, "bear_hits": 3, "bull_accuracy_pct": 25.0, "bear_accuracy_pct": 27.27272727272727, "bull_ratio": 0.45, "bear_ratio": 0.55, "price_missing_count": 1, "coverage_price_pct": 50.0, "price_available_rows": 38}, "hybrid": {"hits": 12, "errors": 11, "eligible": 23, "accuracy_pct": 52.17391304347826, "neutral_count": 14, "flat_count": 0, "na_count": 2, "na_price_count": 1, "na_feature_count": 1, "operated_count": 24, "bull_trades": 13, "bear_trades": 11, "bull_eligible": 12, "bear_eligible": 11, "bull_operated_count": 13, "bear_operated_count": 11, "bull_hits": 5, "bear_hits": 7, "bull_accuracy_pct": 41.66666666666667, "bear_accuracy_pct": 63.63636363636363, "bull_ratio": 0.5416666666666666, "bear_ratio": 0.4583333333333333, "price_missing_count": 1, "coverage_price_pct": 60.526315789473685, "price_available_rows": 38}, "overlap": {"both_operated": 14, "same_signal": 14, "disagreement": 0, "hybrid_only": 10, "v3_only": 6, "conflicts_raw": 6, "conflicts_resolved_to_bull": 6, "conflicts_resolved_to_bear": 0}, "fallback_metrics": {"bear_fallback_would_trigger_count": 11}, "bear_fallback_would_trigger_count": 11, "backtest_status": "OK manual+mercado (42 pregões)", "conflicts_raw": 6, "conflicts_resolved_to_bull": 6, "conflicts_resolved_to_bear": 0, "records": 39};
+function buildCharts() {
+  const labels = ROWS.map(r => r.date);
+  if (scoreChart) scoreChart.destroy();
+  if (blocksChart) blocksChart.destroy();
 
-        const DEFAULT_ROWS = 8;
-        let showAll = false;
-        let chart = null;
+  scoreChart = new Chart(document.getElementById('scoreChart'), {
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        { label:'Score Final', data:ROWS.map(r => r.score_final), borderColor:'#0969DA', backgroundColor:'rgba(9,105,218,.10)', fill:false, tension:.25, pointRadius:2 },
+        { label:'Prob Bear', data:ROWS.map(r => r.prob_bear), borderColor:'#CF222E', backgroundColor:'rgba(207,34,46,.08)', fill:false, tension:.25, pointRadius:2 },
+        { label:'Prob Bull', data:ROWS.map(r => r.prob_bull), borderColor:'#1A7F37', backgroundColor:'rgba(26,127,55,.08)', fill:false, tension:.25, pointRadius:2 },
+      ],
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color:txt2() } } },
+      interaction:{ mode:'index', intersect:false },
+      scales:{
+        x:{ ticks:{ color:txt2(), maxTicksLimit:10 }, grid:{ color:gridColor() } },
+        y:{ ticks:{ color:txt2() }, grid:{ color:gridColor() } },
+      },
+    },
+  });
 
-        function dirClass(direction) {
-            if (direction === 'BEARISH') return 'dir-bear';
-            if (direction === 'BULLISH') return 'dir-bull';
-            return 'dir-neut';
-        }
+  blocksChart = new Chart(document.getElementById('blocksChart'), {
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        { label:'Surface', data:ROWS.map(r => r.score_surface), borderColor:'#7c3aed', tension:.25, pointRadius:2 },
+        { label:'Flow', data:ROWS.map(r => r.score_flow), borderColor:'#CF222E', tension:.25, pointRadius:2 },
+        { label:'Greeks', data:ROWS.map(r => r.score_greeks), borderColor:'#B8720A', tension:.25, pointRadius:2 },
+        { label:'Regime', data:ROWS.map(r => r.score_regime), borderColor:'#1A7F37', tension:.25, pointRadius:2 },
+      ],
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color:txt2() } } },
+      interaction:{ mode:'index', intersect:false },
+      scales:{
+        x:{ ticks:{ color:txt2(), maxTicksLimit:10 }, grid:{ color:gridColor() } },
+        y:{ ticks:{ color:txt2() }, grid:{ color:gridColor() } },
+      },
+    },
+  });
+}
 
-        function backtestClass(result) {
-            if (result === 'ACERTOU') return 'bt-hit';
-            if (result === 'ERROU') return 'bt-miss';
-            return 'bt-na';
-        }
+function renderRows() {
+  document.getElementById('rowsBody').innerHTML = ROWS.map(r => `
+    <tr>
+      <td><strong>${r.date}</strong></td>
+      <td class="${tone(r.signal_label)}">${r.signal_label}</td>
+      <td>${fmtPct(r.prob_bear)}</td>
+      <td>${fmt(r.score_final)}</td>
+      <td>${fmt(r.atm_iv)}</td>
+      <td>${fmt(r.rr25)}</td>
+      <td>${fmt(r.bf25)}</td>
+      <td>${fmt(r.delta_flow,2)}</td>
+      <td>${fmt(r.vega_flow,2)}</td>
+      <td>${fmt(r.net_gex,2)}</td>
+      <td>${fmt(r.net_dex,2)}</td>
+      <td>${r.hit === null ? 'N/A' : r.hit}</td>
+    </tr>`).join('');
+}
 
-        function overlapLabel(r) {
-            if (r.disagreement) return 'DISAGREEMENT';
-            if (r.same_signal) return 'SAME_SIGNAL';
-            if (r.hybrid_only) return 'HYBRID_ONLY';
-            if (r.v3_only) return 'V3_ONLY';
-            if (r.both_operated) return 'BOTH_OPERATED';
-            return '—';
-        }
+function renderCfg() {
+  document.getElementById('cfgBody').innerHTML = Object.entries(CFG).map(([k,v]) => `
+    <tr><td style="text-align:left;font-weight:600">${k}</td><td>${typeof v === 'number' ? fmt(v,4) : String(v)}</td></tr>`).join('');
+}
 
-        function fmt(v, n=2) {
-            if (v === null || v === undefined || Number.isNaN(v)) return '—';
-            return Number(v).toFixed(n);
-        }
+function toggleTheme() {
+  const dark = isDark();
+  document.documentElement.setAttribute('data-theme', dark ? 'light' : 'dark');
+  localStorage.setItem('bova11-theme', dark ? 'light' : 'dark');
+  buildCharts();
+}
 
-        function fmtSigned(v, n=4) {
-            if (v === null || v === undefined || Number.isNaN(v)) return '—';
-            const x = Number(v);
-            return `${x >= 0 ? '+' : ''}${x.toFixed(n)}`;
-        }
-
-        function renderTable() {
-            const tbody = document.getElementById('tableBody');
-            const reversed = [...IV_SKEW_ROWS].reverse();
-            const visible = showAll ? reversed : reversed.slice(0, DEFAULT_ROWS);
-
-            tbody.innerHTML = visible.map(r => `
-                <tr>
-                    <td>${r.date}</td>
-                    <td>${fmt(r.iv_call)}%</td>
-                    <td>${fmt(r.iv_put)}%</td>
-                    <td>${fmtSigned(r.skew, 4)}</td>
-                    <td>${fmtSigned(r.delta_skew, 4)}</td>
-                    <td>${fmtSigned(r.zscore, 2)}</td>
-                    <td>${fmt(r.confidence, 2)}x</td>
-                    <td>${fmtSigned(r.signal, 4)}</td>
-                    <td>${fmtSigned(r.signal_adjusted, 4)}</td>
-                    <td><span class="${dirClass(r.direction)}">${r.direction}</span></td>
-                    <td>${fmtSigned(r.return_pct, 2)}</td>
-                    <td><span class="${dirClass(r.v3_pred_dir)}">${r.v3_pred_dir || 'NEUTRO'}</span></td>
-                    <td>${r.v3_decision_reason || 'missing_feature'}</td>
-                    <td>${r.v3_operated ? 'SIM' : 'NÃO'}</td>
-                    <td><span class="${backtestClass(r.v3_backtest_state)}">${r.v3_backtest_state || 'N/A'}</span></td>
-                    <td>${r.v3_backtest_reason || 'missing_feature'}</td>
-                    <td><span class="${dirClass(r.hybrid_pred_dir)}">${r.hybrid_pred_dir || 'NEUTRO'}</span></td>
-                    <td>${r.hybrid_decision_reason || 'missing_feature'}</td>
-                    <td>${r.hybrid_operated ? 'SIM' : 'NÃO'}</td>
-                    <td><span class="${backtestClass(r.hybrid_backtest_state)}">${r.hybrid_backtest_state || 'N/A'}</span></td>
-                    <td>${r.hybrid_backtest_reason || 'missing_feature'}</td>
-                    <td>${overlapLabel(r)}</td>
-                </tr>
-            `).join('');
-
-            const btn = document.getElementById('btnExpand');
-            if (IV_SKEW_ROWS.length <= DEFAULT_ROWS) {
-                btn.style.display = 'none';
-            } else {
-                btn.style.display = 'inline-block';
-                btn.textContent = showAll ? '▲ Mostrar menos' : `▼ Ver todas as ${IV_SKEW_ROWS.length} sessões`;
-            }
-        }
-
-        function toggleExpand() {
-            showAll = !showAll;
-            renderTable();
-        }
-
-        function renderChart() {
-            const labels = IV_SKEW_ROWS.map(r => r.date_key);
-            const skew = IV_SKEW_ROWS.map(r => r.skew);
-            const base = IV_SKEW_ROWS.map(r => r.signal);
-            const adjusted = IV_SKEW_ROWS.map(r => r.signal_adjusted);
-
-            if (chart) chart.destroy();
-
-            const ctx = document.getElementById('mainChart').getContext('2d');
-            chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels,
-                    datasets: [
-                        {
-                            label: 'Skew (Put - Call)',
-                            data: skew,
-                            borderColor: '#d29922',
-                            backgroundColor: 'rgba(210,153,34,0.12)',
-                            fill: true,
-                            yAxisID: 'y1',
-                            tension: 0.25,
-                            pointRadius: 2,
-                        },
-                        {
-                            label: 'Sinal Base',
-                            data: base,
-                            borderColor: '#58a6ff',
-                            backgroundColor: 'rgba(88,166,255,0.10)',
-                            fill: false,
-                            yAxisID: 'y2',
-                            tension: 0.25,
-                            pointRadius: 2,
-                        },
-                        {
-                            label: 'Sinal Ajustado',
-                            data: adjusted,
-                            borderColor: '#3fb950',
-                            backgroundColor: 'rgba(63,185,80,0.10)',
-                            fill: false,
-                            yAxisID: 'y2',
-                            tension: 0.25,
-                            pointRadius: 2,
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    interaction: { mode: 'index', intersect: false },
-                    plugins: {
-                        legend: { labels: { color: '#8b949e' } },
-                    },
-                    scales: {
-                        x: { ticks: { color: '#8b949e', maxTicksLimit: 16 }, grid: { color: 'rgba(88,166,255,0.05)' } },
-                        y1: {
-                            position: 'left',
-                            title: { display: true, text: 'Skew', color: '#d29922' },
-                            ticks: { color: '#d29922' },
-                            grid: { color: 'rgba(88,166,255,0.05)' }
-                        },
-                        y2: {
-                            position: 'right',
-                            title: { display: true, text: 'Sinal', color: '#58a6ff' },
-                            ticks: { color: '#58a6ff' },
-                            grid: { drawOnChartArea: false }
-                        }
-                    }
-                }
-            });
-        }
-
-        function renderDecomposition() {
-            const last = IV_SKEW_ROWS[IV_SKEW_ROWS.length - 1];
-            const grid = document.getElementById('decompGrid');
-
-            const metrics = [
-                ['Componente 1 (W1*ΔSkew_norm_MMA)', fmtSigned(last.comp_1, 4)],
-                ['Componente 2 (W2*Z-Score)', fmtSigned(last.comp_2, 4)],
-                ['Componente 3 (W3*Aceleração)', fmtSigned(last.comp_3, 4)],
-                ['Sinal Base', fmtSigned(last.signal, 4)],
-                ['Fator Confiança VOL/OI', `${fmt(last.confidence, 2)}x`],
-                ['Ajuste Direcional VOL/OI', fmtSigned(last.adjustment, 4)],
-                ['Sinal Final Ajustado', fmtSigned(last.signal_adjusted, 4)],
-                ['Diagnóstico Fluxo', last.diag_vol_oi || 'Sem dados VOL/OI']
-            ];
-
-            grid.innerHTML = metrics.map(([k, v]) => `
-                <div class="metric">
-                    <div class="k">${k}</div>
-                    <div class="v">${v}</div>
-                </div>
-            `).join('');
-        }
-
-        (function() {
-            const saved = localStorage.getItem('bova11-theme');
-            const btn = document.getElementById('theme-toggle');
-            if (saved === 'dark') {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                if (btn) btn.textContent = '◐';
-            }
-        })();
-
-        function toggleTheme() {
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            const btn = document.getElementById('theme-toggle');
-            if (isDark) {
-                document.documentElement.removeAttribute('data-theme');
-                localStorage.setItem('bova11-theme', 'light');
-                if (btn) btn.textContent = '◐';
-            } else {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                localStorage.setItem('bova11-theme', 'dark');
-                if (btn) btn.textContent = '◐';
-            }
-        }
-
-        renderChart();
-        renderTable();
-        renderDecomposition();
-    </script>
+(function() {
+  const saved = localStorage.getItem('bova11-theme') || 'light';
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  document.getElementById('theme-toggle').onclick = toggleTheme;
+  renderRows();
+  renderCfg();
+  buildCharts();
+})();
+</script>
 </body>
 </html>
