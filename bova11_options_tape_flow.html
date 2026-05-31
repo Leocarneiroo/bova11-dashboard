@@ -425,25 +425,6 @@ document.querySelectorAll('.date-tab').forEach(btn => {
   });
 });
 
-(function() {
-  const btn = document.getElementById('theme-toggle');
-  const saved = localStorage.getItem('bova11-theme') || 'light';
-  if (saved === 'dark') document.documentElement.setAttribute('data-theme','dark');
-  btn.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
-  btn.onclick = function() {
-    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-    document.documentElement.setAttribute('data-theme', dark ? 'light' : 'dark');
-    localStorage.setItem('bova11-theme', dark ? 'light' : 'dark');
-    btn.textContent = dark ? '🌙' : '☀️';
-    render();
-  };
-  renderTop();
-  renderSources();
-  renderExpiryTabs();
-    render();
-  });
-});
-
 // Override toggleTheme to re-render on theme change
 var _baseToggle = toggleTheme;
 toggleTheme = function() {

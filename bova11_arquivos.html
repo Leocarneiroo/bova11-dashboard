@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BOVA11 - Arquivos</title>
+  <script src="shared.js"></script>
   <style>
     :root {
       --bg: #f5f7fa;
@@ -342,7 +343,7 @@
         <div class="title-block">
           <div class="title-line">
             <h2 id="current-title">Carregando</h2>
-            <span class="date-pill" id="current-date">2026-05-31T03:05:41</span>
+            <span class="date-pill" id="current-date">2026-05-31T03:33:46</span>
           </div>
           <p class="scope" id="scope-text">Run atual, com preview leve e arquivos completos disponíveis para cópia e download.</p>
         </div>
@@ -608,23 +609,7 @@
       a.remove();
     }
 
-    function applySavedTheme() {
-      try {
-        const saved = localStorage.getItem('bova11-theme');
-        if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
-        if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
-      } catch (err) {}
-    }
-
-    function toggleTheme() {
-      const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-      const next = current === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      try { localStorage.setItem('bova11-theme', next); } catch (err) {}
-    }
-
     async function init() {
-      applySavedTheme();
       document.getElementById('theme-btn').addEventListener('click', toggleTheme);
       document.getElementById('copy-md').addEventListener('click', copyMarkdown);
       document.getElementById('download-md').addEventListener('click', () => download(state.currentEntry?.markdown_path));

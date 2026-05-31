@@ -4,28 +4,32 @@
    All generated pages should include: <script src="shared.js"></script>
    ───────────────────────────────────────────────────────────── */
 
-/* ── Theme Toggle ──────────────────────────────────────────── */
-(function applySavedTheme() {
+/* ── Theme Init ────────────────────────────────────────────── */
+/* Runs BEFORE body renders. Always sync <html> to localStorage.
+   Critical: must REMOVE data-theme="dark" when theme is light,
+   otherwise pages with hardcoded data-theme="dark" stay dark. */
+(function() {
   try {
     var saved = localStorage.getItem('bova11-theme');
     if (saved === 'dark') {
       document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
     }
   } catch (e) {}
 })();
 
+/* ── Theme Toggle ──────────────────────────────────────────── */
 function toggleTheme() {
   var root = document.documentElement;
   var isDark = root.getAttribute('data-theme') === 'dark';
   if (isDark) {
     root.removeAttribute('data-theme');
+    try { localStorage.setItem('bova11-theme', 'light'); } catch (e) {}
   } else {
     root.setAttribute('data-theme', 'dark');
+    try { localStorage.setItem('bova11-theme', 'dark'); } catch (e) {}
   }
-  try {
-    localStorage.setItem('bova11-theme', isDark ? 'light' : 'dark');
-  } catch (e) {}
-  /* Dispatch event so pages can re-render charts if needed */
   window.dispatchEvent(new CustomEvent('bova11:themechange', { detail: { dark: !isDark } }));
 }
 
@@ -50,7 +54,6 @@ function fmtPct(v, d) {
   return fmt(v, d) + '%';
 }
 
-/* Returns sentiment CSS class based on threshold */
 function tone(v, posThresh, negThresh) {
   if (posThresh === undefined) posThresh = 0.25;
   if (negThresh === undefined) negThresh = -0.25;
@@ -65,7 +68,6 @@ function bova11ChartDefaults() {
   var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   var t2 = isDark ? '#8b949e' : '#6B6960';
   var t3 = isDark ? '#636c76' : '#9C9A91';
-  var gridColor = isDark ? '#21262d' : 'rgba(0,0,0,0.06)';
   var borderColor = isDark ? '#30363d' : 'rgba(0,0,0,0.14)';
 
   Chart.defaults.color = t2;
@@ -86,24 +88,35 @@ function bova11ChartDefaults() {
   Chart.defaults.animation = false;
 }
 
-/* Apply defaults on load */
 if (typeof Chart !== 'undefined') {
   bova11ChartDefaults();
-  /* Re-apply on theme change */
   window.addEventListener('bova11:themechange', function() {
     bova11ChartDefaults();
   });
 }
 
-/* ── Iframe Theme Sync ─────────────────────────────────────── */
-/* When loaded inside an iframe (index.html dashboard), hide the
-   standalone theme button since the parent handles theme toggling. */
+/* ── Iframe Sync ───────────────────────────────────────────── */
+/* Inside iframe: hide standalone theme button (parent handles it).
+   Also listen for postMessage from parent for instant theme sync
+   without full iframe reload. */
 (function() {
   try {
     if (window.self !== window.top) {
       var btn = document.getElementById('theme-toggle')
             || document.getElementById('theme-btn');
       if (btn) btn.style.display = 'none';
+
+      window.addEventListener('message', function(e) {
+        if (e.data && e.data.type === 'bova11-theme') {
+          if (e.data.dark) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+          } else {
+            document.documentElement.removeAttribute('data-theme');
+          }
+          try { localStorage.setItem('bova11-theme', e.data.dark ? 'dark' : 'light'); } catch (err) {}
+          window.dispatchEvent(new CustomEvent('bova11:themechange', { detail: { dark: e.data.dark } }));
+        }
+      });
     }
   } catch (e) {}
 })();
