@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BOVA11 Diagnóstico 4D — 2026-05-28</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="shared.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
@@ -222,8 +223,9 @@
     margin-bottom: 18px;
     padding: 12px 14px;
     background: var(--bg2);
+    border: 1px solid var(--border);
     border-left: 3px solid var(--blue);
-    border-radius: 0 8px 8px 0;
+    border-radius: 8px;
   }
 
   .force-row {
@@ -699,21 +701,10 @@
 </div><!-- /container -->
 
 <script>
-  // ── Theme ──
-  (function() {
-    try {
-      var t = localStorage.getItem('bova11-theme') || 'dark';
-      document.documentElement.setAttribute('data-theme', t);
-      document.getElementById('theme-btn').textContent = '◐';
-    } catch(e) {}
-  })();
-
-  function toggleTheme() {
-    var html = document.documentElement;
-    var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    html.setAttribute('data-theme', next);
-    document.getElementById('theme-btn').textContent = '◐';
-    try { localStorage.setItem('bova11-theme', next); } catch(e) {}
+  // Override toggleTheme to re-render charts on theme change
+  var _baseToggle = toggleTheme;
+  toggleTheme = function() {
+    _baseToggle();
     initCharts();
   }
 

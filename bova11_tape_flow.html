@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BOVA11 — Tape Flow</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="shared.js"></script>
 <style>
   :root {
     --bg:#FAFAF8;--bg2:#F0EFEC;--card:#FFFFFF;--border:#D8D7D4;--border2:#C7C5BF;
@@ -924,7 +925,7 @@
     </div>
   </section>
 
-  <div class="footer">BOVA11 Tape Flow · Módulo 21 · Gerado em 28/05/2026 21:58:28</div>
+  <div class="footer">BOVA11 Tape Flow · Módulo 21 · Gerado em 31/05/2026 03:04:50</div>
 </main>
 
 <script>
@@ -1023,20 +1024,13 @@ function buildCharts() {
     })
   }));
 }
-function toggleTheme() {
-  const dark = isDark();
-  if (dark) {
-    document.documentElement.removeAttribute('data-theme');
-    localStorage.setItem('bova11-theme','light');
-  } else {
-    document.documentElement.setAttribute('data-theme','dark');
-    localStorage.setItem('bova11-theme','dark');
-  }
+// Override toggleTheme to re-render charts on theme change
+var _baseToggle = toggleTheme;
+toggleTheme = function() {
+  _baseToggle();
   buildCharts();
 }
-(function(){
-  const saved = localStorage.getItem('bova11-theme') || 'light';
-  if (saved === 'dark') document.documentElement.setAttribute('data-theme','dark');
+(function() {
   buildCharts();
 })();
 </script>
