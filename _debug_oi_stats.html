@@ -1,0 +1,1799 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BOVA11 — Distribuição Estatística do OI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="shared.js"></script>
+<style>
+:root {
+  --bg:#FAFAF8; --bg2:#F2F1EE; --bg3:#E8E7E3; --card:#FFFFFF;
+  --border:rgba(0,0,0,0.08); --border2:rgba(0,0,0,0.14);
+  --t1:#1A1A18; --t2:#6B6960; --t3:#9C9A91;
+  --green:#148A63; --lime:#5A8518; --amber:#B8720A; --red:#B33530; --blue:#2E6BBF;
+  --font:'Instrument Sans',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+[data-theme="dark"] {
+  --bg:#0d1117; --bg2:#161b22; --bg3:#21262d; --card:#21262d;
+  --border:rgba(255,255,255,0.1); --border2:rgba(255,255,255,0.16);
+  --t1:#c9d1d9; --t2:#8b949e; --t3:#636c76;
+  --green:#3fb950; --lime:#7ee787; --amber:#d29922; --red:#f85149; --blue:#58a6ff;
+}
+#theme-toggle { position:fixed; top:16px; right:16px; z-index:999; background:var(--card);
+  border:1px solid var(--border2); border-radius:8px; padding:6px 10px; cursor:pointer;
+  font-size:16px; line-height:1; box-shadow:0 2px 8px rgba(0,0,0,0.12); transition:all 0.2s; }
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-font-smoothing:antialiased; }
+
+.shell { max-width:1200px; margin:0 auto; padding:48px 28px 80px; }
+
+/* Header */
+.hdr { display:flex; justify-content:space-between; align-items:flex-end;
+        margin-bottom:36px; border-bottom:1px solid var(--border); padding-bottom:24px;
+        flex-wrap:wrap; gap:16px; }
+.hdr h1 { font-size:26px; font-weight:700; letter-spacing:-0.03em; }
+.hdr h1 span { color:var(--t3); font-weight:400; font-size:20px; }
+.hdr .meta { font-size:11px; color:var(--t3); font-family:var(--mono); text-align:right; line-height:1.7; }
+
+/* Nav strip */
+.nav-strip {
+  display:flex; gap:6px; overflow-x:auto; margin-bottom:36px;
+  padding-bottom:4px; scrollbar-width:thin;
+}
+.nav-strip::-webkit-scrollbar { height:3px; }
+.nav-strip::-webkit-scrollbar-thumb { background:var(--t3); border-radius:2px; }
+.nav-chip {
+  flex:0 0 auto; padding:10px 14px; border-radius:10px;
+  background:var(--card); border:1px solid var(--border);
+  cursor:pointer; transition:all 0.2s; text-decoration:none; display:block;
+  min-width:170px;
+}
+.nav-chip:hover { border-color:var(--border2); background:var(--bg3); }
+.nc-label { font-size:12px; font-weight:600; color:var(--t1); margin-bottom:3px; }
+.nc-row { display:flex; align-items:baseline; gap:8px; }
+.nc-mp { font-size:13px; font-family:var(--mono); color:var(--t2); }
+.nc-grade { font-size:11px; font-weight:600; }
+.nc-sub { font-size:10px; color:var(--t3); font-family:var(--mono); margin-top:3px; }
+
+/* Expiration blocks */
+.exp-block {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:16px; padding:28px; margin-bottom:28px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+  animation: fadeUp 0.5s ease both;
+}
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.exp-top {
+  display:flex; justify-content:space-between; align-items:flex-start;
+  margin-bottom:20px; flex-wrap:wrap; gap:12px;
+}
+.exp-top h2 { font-size:20px; font-weight:600; letter-spacing:-0.02em; margin-bottom:6px; }
+.tag {
+  display:inline-block; font-size:10px; font-weight:600; font-family:var(--mono);
+  padding:3px 8px; border-radius:5px; text-transform:uppercase; letter-spacing:0.04em;
+}
+.tw { background:rgba(59,125,216,0.12); color:var(--blue); }
+.tm { background:rgba(29,158,117,0.12); color:var(--green); }
+.tg { background:rgba(0,0,0,0.04); color:var(--t2); margin-left:4px; }
+.grade-pill {
+  display:flex; align-items:center; gap:6px; font-size:12px; font-weight:600;
+  color:var(--gc); padding:6px 14px; border-radius:20px;
+  background:color-mix(in srgb, var(--gc) 8%, transparent);
+  border:1px solid color-mix(in srgb, var(--gc) 20%, transparent);
+}
+.gp-dot { width:6px; height:6px; border-radius:50%; background:var(--gc); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* Section titles */
+.stat-section-title {
+  font-size:10px; font-weight:600; color:var(--t3);
+  text-transform:uppercase; letter-spacing:0.07em;
+  margin:20px 0 8px; padding-left:2px;
+}
+
+/* Stat cards */
+.stats-grid {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(155px,1fr));
+  gap:8px; margin-bottom:4px;
+}
+.st-card {
+  background:var(--bg2); border-radius:8px; padding:10px 12px;
+}
+.st-label {
+  font-size:10px; color:var(--t3); text-transform:uppercase;
+  letter-spacing:0.05em; font-weight:600; margin-bottom:4px;
+}
+.st-value {
+  font-size:15px; font-weight:600; font-family:var(--mono);
+  letter-spacing:-0.02em; line-height:1.3;
+}
+.st-sub {
+  font-size:10px; color:var(--t3); margin-top:3px; line-height:1.4;
+}
+
+/* Charts */
+.charts-2col {
+  display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px;
+}
+@media(max-width:750px) { .charts-2col { grid-template-columns:1fr; } }
+.ch-card {
+  background:var(--bg2); border-radius:10px; padding:14px;
+}
+.ch-card h4 {
+  font-size:10px; color:var(--t3); text-transform:uppercase;
+  letter-spacing:0.05em; font-weight:600; margin-bottom:8px;
+}
+.ch-wrap { position:relative; height:300px; }
+.ch-wrap canvas { position:absolute; inset:0; }
+
+/* Glossary */
+.glossary {
+  margin:32px 0 24px; border:1px solid var(--border); border-radius:12px;
+  background:var(--bg2); overflow:hidden;
+}
+.glossary summary {
+  padding:14px 20px; cursor:pointer; font-size:13px; font-weight:600;
+  color:var(--t2); list-style:none; user-select:none;
+}
+.glossary summary::-webkit-details-marker { display:none }
+.glossary[open] summary { border-bottom:1px solid var(--border); color:var(--t1); }
+.gl-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:1px; background:var(--border);
+}
+.gl-item { background:var(--bg2); padding:14px 18px; }
+.gl-title { font-size:11px; font-weight:700; color:var(--t1); margin-bottom:5px; letter-spacing:0.02em; }
+.gl-body { font-size:11px; color:var(--t2); line-height:1.6; }
+
+/* Guide box */
+.guide-box {
+  margin: 0 0 28px; border: 1px solid var(--border); border-radius: 12px;
+  background: var(--card); overflow: hidden;
+}
+.guide-box summary {
+  padding: 14px 20px; cursor: pointer; font-size: 13px; font-weight: 600;
+  color: var(--t2); list-style: none; user-select: none;
+}
+.guide-box summary::-webkit-details-marker { display: none }
+.guide-box[open] summary { border-bottom: 1px solid var(--border); color: var(--t1); }
+.guide-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1px; background: var(--border);
+}
+.gi { background: var(--bg2); padding: 13px 17px; font-size: 12px; color: var(--t2); line-height: 1.6; }
+.gi b { color: var(--t1); display: block; margin-bottom: 3px; }
+
+/* Footer */
+.footer {
+  text-align:center; padding:32px 0 0; margin-top:16px;
+  border-top:1px solid var(--border);
+  font-size:11px; color:var(--t3); line-height:1.8;
+}
+</style>
+</head>
+<body>
+<button id="theme-toggle" onclick="toggleTheme()">◐</button>
+<div class="shell">
+  <div class="hdr">
+    <div><h1>BOVA11 <span>Distribuição estatística do OI</span></h1></div>
+    <div class="meta">Referência: 24/Mar/2026<br>Spot ≈ R$ 166.00<br>Gerado: 07/06/2026 12:20</div>
+  </div>
+
+  <div class="nav-strip">
+        <a class="nav-chip" href="#" onclick="event.preventDefault();
+           document.getElementById('exp0').scrollIntoView({behavior:'smooth'})">
+          <div class="nc-label">12 Jun — W2</div>
+          <div class="nc-row">
+            <span class="nc-mp">MP R$172</span>
+            <span class="nc-grade" style="color:#5A8518">Concentração</span>
+          </div>
+          <div class="nc-sub">R²=0.57 · Gini=0.58 · 7DTE</div>
+        </a>
+        <a class="nav-chip" href="#" onclick="event.preventDefault();
+           document.getElementById('exp1').scrollIntoView({behavior:'smooth'})">
+          <div class="nc-label">19 Jun — Mensal</div>
+          <div class="nc-row">
+            <span class="nc-mp">MP R$180</span>
+            <span class="nc-grade" style="color:#148A63">Alta</span>
+          </div>
+          <div class="nc-sub">R²=0.27 · Gini=0.75 · 14DTE</div>
+        </a>
+        <a class="nav-chip" href="#" onclick="event.preventDefault();
+           document.getElementById('exp2').scrollIntoView({behavior:'smooth'})">
+          <div class="nc-label">26 Jun — W4</div>
+          <div class="nc-row">
+            <span class="nc-mp">MP R$163</span>
+            <span class="nc-grade" style="color:#148A63">Alta</span>
+          </div>
+          <div class="nc-sub">R²=0.55 · Gini=0.82 · 21DTE</div>
+        </a>
+        <a class="nav-chip" href="#" onclick="event.preventDefault();
+           document.getElementById('exp3').scrollIntoView({behavior:'smooth'})">
+          <div class="nc-label">3 Jul — W1</div>
+          <div class="nc-row">
+            <span class="nc-mp">MP R$144</span>
+            <span class="nc-grade" style="color:#148A63">Alta</span>
+          </div>
+          <div class="nc-sub">R²=0.00 · Gini=0.82 · 28DTE</div>
+        </a>
+        <a class="nav-chip" href="#" onclick="event.preventDefault();
+           document.getElementById('exp4').scrollIntoView({behavior:'smooth'})">
+          <div class="nc-label">17 Jul — Mensal</div>
+          <div class="nc-row">
+            <span class="nc-mp">MP R$168</span>
+            <span class="nc-grade" style="color:#148A63">Alta</span>
+          </div>
+          <div class="nc-sub">R²=0.17 · Gini=0.64 · 42DTE</div>
+        </a></div>
+
+  <details class="guide-box" open>
+    <summary>📖 Como interpretar — Distribuição estatística do OI</summary>
+    <div class="guide-grid">
+      <div class="gi"><b>μ — Centro de massa do OI</b>
+        Strike onde o OI está "equilibrado". Quando μ ≈ Max Pain, a gravidade de pinning é forte. Quando diverge, há assimetria de posicionamento que pode puxar o preço para um lado.</div>
+      <div class="gi"><b>σ — Dispersão ponderada</b>
+        Baixo: OI concentrado em poucos strikes (efeito de pinning forte). Alto: OI espalhado por toda a cadeia, sem ponto de gravidade claro.</div>
+      <div class="gi"><b>Skewness — Assimetria</b>
+        Negativo: cauda pesada em puts OTM (hedge de queda, viés bearish). Positivo: cauda em calls OTM (financiamento ou viés de alta). Zero: distribuição simétrica.</div>
+      <div class="gi"><b>Kurtosis — Concentração de pico</b>
+        Acima de 3 (leptocúrtica): pico concentrado, OI agrupado em poucos strikes, pinning mais preciso. Abaixo de 3 (platicúrtica): distribuição achatada, sem concentração clara.</div>
+      <div class="gi"><b>HHI e Gini — Concentração</b>
+        HHI &gt; 0.25 ou Gini &gt; 0.5: poucos strikes dominam o OI. Alta concentração reforça o campo gravitacional do max pain.</div>
+      <div class="gi"><b>Entropia de Shannon — Desordem</b>
+        Alta: OI distribuído uniformemente (mais incerteza). Baixa: concentrado. O ratio mostra o percentual de uniformidade — 100% = máxima dispersão, 0% = completamente concentrado.</div>
+      <div class="gi"><b>R² gaussiano — Previsibilidade</b>
+        Quão bem a distribuição real se ajusta a uma curva normal. R² alto: comportamento previsível com pico central. R² baixo: forma irregular, bimodal ou concentrações atípicas.</div>
+      <div class="gi"><b>Teste KS — Normalidade formal</b>
+        p &gt; 0.05: não se rejeita que o OI segue uma distribuição normal. Complementa o R² com teste estatístico formal de hipótese.</div>
+    </div>
+  </details>
+
+  
+    <div class="exp-block" id="exp0" style="animation-delay:0.0s">
+      <div class="exp-top">
+        <div>
+          <h2>12 Jun — W2</h2>
+          <span class="tag tw">Semanal</span>
+          <span class="tag tg">7 DTE</span>
+        </div>
+        <div class="grade-pill" style="--gc:#5A8518">
+          <span class="gp-dot"></span>Concentração moderada
+        </div>
+      </div>
+
+      <!-- Stat cards row 1: Posição -->
+      <div class="stat-section-title">Posição</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Max Pain</div>
+      <div class="st-value" >R$ 172</div></div>
+        <div class="st-card">
+      <div class="st-label">Spot</div>
+      <div class="st-value" >R$ 166</div></div>
+        <div class="st-card">
+      <div class="st-label">Distância MP→Spot</div>
+      <div class="st-value" style="color:#B8720A">-3.61%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI Total</div>
+      <div class="st-value" >11.6M</div></div>
+      </div>
+
+      <!-- Stat cards row 2: Centro de massa -->
+      <div class="stat-section-title">Centro de massa do OI</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Média ponderada (μ)</div>
+      <div class="st-value" >R$ 171.49</div><div class="st-sub">Centro de massa total</div></div>
+        <div class="st-card">
+      <div class="st-label">σ ponderado</div>
+      <div class="st-value" >R$ 9.90</div><div class="st-sub">Dispersão em torno de μ</div></div>
+        <div class="st-card">
+      <div class="st-label">μ Calls</div>
+      <div class="st-value" >R$ 175.42</div><div class="st-sub">Centro de massa das calls</div></div>
+        <div class="st-card">
+      <div class="st-label">μ Puts</div>
+      <div class="st-value" >R$ 167.76</div><div class="st-sub">Centro de massa das puts</div></div>
+        <div class="st-card">
+      <div class="st-label">MP vs μ OI</div>
+      <div class="st-value" >+0.51</div><div class="st-sub">Max pain acima</div></div>
+      </div>
+
+      <!-- Stat cards row 3: Forma -->
+      <div class="stat-section-title">Forma da distribuição</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Assimetria (Skew)</div>
+      <div class="st-value" style="color:#148A63">-0.225</div><div class="st-sub">Simétrica</div></div>
+        <div class="st-card">
+      <div class="st-label">Curtose</div>
+      <div class="st-value" style="color:#148A63">4.286</div><div class="st-sub">Excesso: +1.286</div></div>
+        <div class="st-card">
+      <div class="st-label">KS Estatística</div>
+      <div class="st-value" >0.0416</div><div class="st-sub">p-valor: 0.0000</div></div>
+        <div class="st-card">
+      <div class="st-label">Normalidade?</div>
+      <div class="st-value" style="color:#B33530">Não ✗</div><div class="st-sub">Rejeita H₀ de normalidade</div></div>
+      </div>
+
+      <!-- Stat cards row 4: Concentração -->
+      <div class="stat-section-title">Métricas de concentração</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">HHI</div>
+      <div class="st-value" >0.0388</div><div class="st-sub">Normalizado: 0.0216</div></div>
+        <div class="st-card">
+      <div class="st-label">Gini</div>
+      <div class="st-value" style="color:#5A8518">0.578</div><div class="st-sub">0 = uniforme, 1 = concentrado</div></div>
+        <div class="st-card">
+      <div class="st-label">Entropia</div>
+      <div class="st-value" >4.99 bits</div><div class="st-sub">Máx: 5.83 · Ratio: 85.49%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±1σ do MP</div>
+      <div class="st-value" style="color:#148A63">69.6%</div><div class="st-sub">Normal teórico: 68.3%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±2σ do MP</div>
+      <div class="st-value" >97.1%</div><div class="st-sub">Normal teórico: 95.4%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±R$2 do MP</div>
+      <div class="st-value" >18.7%</div><div class="st-sub">Contratos perto do max pain</div></div>
+      </div>
+
+      <!-- Ajuste normal -->
+      <div class="stat-section-title">Ajuste Gaussiano</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">μ (fit)</div>
+      <div class="st-value" >R$ 170.88</div></div>
+        <div class="st-card">
+      <div class="st-label">σ (fit)</div>
+      <div class="st-value" >R$ 10.13</div></div>
+        <div class="st-card">
+      <div class="st-label">R²</div>
+      <div class="st-value" style="color:#B8720A">0.5738</div><div class="st-sub">Ajuste moderado</div></div>
+        <div class="st-card">
+      <div class="st-label">Forma</div>
+      <div class="st-value" >simétrica, pico acentuado (leptocúrtica)</div></div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-2col">
+        <div class="ch-card">
+          <h4>Distribuição do OI vs Ajuste Normal</h4>
+          <div class="ch-wrap"><canvas id="oi_0"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <h4>Curva de max pain (perda total)</h4>
+          <div class="ch-wrap"><canvas id="mp_0"></canvas></div>
+        </div>
+      </div>
+      <div class="charts-2col">
+        <div class="ch-card">
+          <h4>Calls vs Puts — distribuição separada</h4>
+          <div class="ch-wrap"><canvas id="cp_0"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <h4>Resíduos do ajuste (OI real − Normal)</h4>
+          <div class="ch-wrap"><canvas id="res_0"></canvas></div>
+        </div>
+      </div>
+
+      <script>
+      (function() {
+        const D = {"strikes": [129.0, 130.0, 135.0, 136.0, 137.0, 154.0, 155.0, 156.0, 157.0, 158.0, 159.0, 160.0, 161.0, 162.0, 163.0, 164.0, 165.0, 166.0, 167.0, 168.0, 169.0, 170.0, 171.0, 172.0, 173.0, 174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0, 188.0, 189.0, 190.0, 191.0, 192.0, 193.0, 195.0, 197.0, 199.0, 200.0, 205.0, 210.0, 215.0, 225.0, 235.0, 245.0, 255.0, 265.0], "call_oi": [31400.0, 1000.0, 26240.0, 1000.0, 791.0, 0.0, 9290.0, 10500.0, 21510.0, 3300.0, 35100.0, 5230.0, 44300.0, 23430.0, 31220.0, 22040.0, 66960.0, 37730.0, 226480.0, 253450.0, 218130.0, 260880.0, 129430.0, 581930.0, 142820.0, 278290.0, 507060.0, 175770.0, 172670.0, 420100.0, 315820.0, 206650.0, 512320.00000000006, 82060.0, 111620.0, 95290.0, 89470.0, 53880.0, 21300.0, 127890.0, 96800.0, 109200.0, 2830.0, 0.0, 6000.0, 66510.0, 14020.0, 1000.0, 6000.0, 6100.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "put_oi": [0.0, 0.0, 8000.0, 0.0, 60710.0, 74900.0, 133500.0, 36000.0, 282410.0, 36850.0, 430050.0, 64160.0, 617260.0, 71750.0, 374680.0, 56180.0, 857210.0, 88640.0, 149150.0, 375080.0, 199120.0, 255390.0, 220680.0, 112980.0, 135470.0, 61720.0, 190300.0, 120380.0, 29910.0, 31690.0, 58290.0, 144070.0, 80790.0, 77400.0, 37320.0, 56040.0, 74470.0, 45900.0, 18940.0, 49700.0, 27160.0, 84810.0, 36980.0, 0.0, 29670.0, 36610.0, 18700.0, 25700.0, 535.0, 0.0, 650.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "total_oi": [31400.0, 1000.0, 34240.0, 1000.0, 61501.0, 74900.0, 142790.0, 46500.0, 303920.0, 40150.0, 465150.0, 69390.0, 661560.0, 95180.0, 405900.0, 78220.0, 924170.0, 126370.0, 375630.0, 628530.0, 417250.0, 516270.0, 350110.0, 694910.0, 278290.0, 340010.0, 697360.0, 296150.0, 202580.0, 451790.0, 374110.0, 350720.0, 593110.0, 159460.0, 148940.0, 151330.0, 163940.0, 99780.0, 40240.0, 177590.0, 123960.0, 194010.0, 39810.0, 0.0, 35670.0, 103120.0, 32720.0, 26700.0, 6535.0, 6100.0, 650.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "normal_fit": [92.84119696223456, 138.92582358891943, 900.6137436171164, 1271.1551375827084, 1776.7575394290486, 118763.73599856546, 139304.99031253444, 161815.12791016666, 186140.63464612426, 212047.36628856327, 239218.18893341912, 267254.5676543856, 295682.5519507063, 323963.3506948368, 351508.38512711937, 377698.377942371, 401905.70682873944, 423518.951899985, 441968.3280123192, 456750.5411522799, 467451.56243216037, 473765.8839973793, 475511.00770237896, 472636.20776086615, 465224.98023296846, 453491.0142872034, 437767.9565053938, 418493.65242035646, 396189.90378684003, 371439.04670024326, 344858.8145304105, 317076.9914964529, 288707.2897014618, 260327.70729615891, 232462.36955811369, 205567.5454019723, 180022.1992400932, 156123.11171993523, 134084.30875750983, 114040.2968528644, 96052.42721170963, 80117.60744480103, 66178.5461508799, 54134.745038599256, 43853.53348758037, 27949.26904976757, 17132.265985386384, 10100.378628095763, 7642.817893191987, 1638.2385581358621, 275.25888703704317, 36.25318189784572, 0.30288475477809035, 0.0009553686725764651, 1.1376976886753663e-06, 5.114993108561768e-10, 8.682114872890747e-14], "residuals": [31307.158803037764, 861.0741764110805, 33339.38625638288, -271.15513758270845, 59724.24246057095, -43863.73599856546, 3485.0096874655574, -115315.12791016666, 117779.36535387574, -171897.36628856327, 225931.81106658088, -197864.56765438558, 365877.4480492937, -228783.35069483682, 54391.61487288063, -299478.377942371, 522264.29317126056, -297148.951899985, -66338.32801231922, 171779.45884772012, -50201.56243216037, 42504.11600262072, -125401.00770237896, 222273.79223913385, -186934.98023296846, -113481.01428720338, 259592.04349460622, -122343.65242035646, -193609.90378684003, 80350.95329975674, 29251.185469589487, 33643.00850354711, 304402.7102985382, -100867.70729615891, -83522.36955811369, -54237.54540197231, -16082.199240093207, -56343.11171993523, -93844.30875750983, 63549.7031471356, 27907.572788290374, 113892.39255519897, -26368.546150879905, -54134.745038599256, -8183.533487580367, 75170.73095023244, 15587.734014613616, 16599.621371904235, -1107.8178931919874, 4461.761441864138, 374.74111296295683, -36.25318189784572, -0.30288475477809035, -0.0009553686725764651, -1.1376976886753663e-06, -5.114993108561768e-10, -8.682114872890747e-14], "mp": 172.0, "spot": 166.0, "mu": 171.48784550709766, "sigma": 9.903736673552638, "call_mean": 175.41855219960547, "put_mean": 167.7643254618466};
+        const MPC = [{"strike": 129.0, "call_loss": 0.0, "put_loss": 231729455.0, "total_loss": 231729455.0}, {"strike": 130.0, "call_loss": 31400.0, "put_loss": 225751550.0, "total_loss": 225782950.0}, {"strike": 135.0, "call_loss": 193400.0, "put_loss": 195862025.0, "total_loss": 196055425.0}, {"strike": 136.0, "call_loss": 252040.0, "put_loss": 189892120.0, "total_loss": 190144160.0}, {"strike": 137.0, "call_loss": 311680.0, "put_loss": 183922215.0, "total_loss": 184233895.0}, {"strike": 154.0, "call_loss": 1339007.0, "put_loss": 83465900.0, "total_loss": 84804907.0}, {"strike": 155.0, "call_loss": 1399438.0, "put_loss": 77631605.0, "total_loss": 79031043.0}, {"strike": 156.0, "call_loss": 1469159.0, "put_loss": 71930810.0, "total_loss": 73399969.0}, {"strike": 157.0, "call_loss": 1549380.0, "put_loss": 66266015.0, "total_loss": 67815395.0}, {"strike": 158.0, "call_loss": 1651111.0, "put_loss": 60883630.0, "total_loss": 62534741.0}, {"strike": 159.0, "call_loss": 1756142.0, "put_loss": 55538095.0, "total_loss": 57294237.0}, {"strike": 160.0, "call_loss": 1896273.0, "put_loss": 50622610.0, "total_loss": 52518883.0}, {"strike": 161.0, "call_loss": 2041634.0, "put_loss": 45771285.0, "total_loss": 47812919.0}, {"strike": 162.0, "call_loss": 2231295.0, "put_loss": 41537220.0, "total_loss": 43768515.0}, {"strike": 163.0, "call_loss": 2444386.0, "put_loss": 37374905.0, "total_loss": 39819291.0}, {"strike": 164.0, "call_loss": 2688697.0, "put_loss": 33587270.0, "total_loss": 36275967.0}, {"strike": 165.0, "call_loss": 2955048.0, "put_loss": 29855815.0, "total_loss": 32810863.0}, {"strike": 166.0, "call_loss": 3288359.0, "put_loss": 26981570.0, "total_loss": 30269929.0}, {"strike": 167.0, "call_loss": 3659400.0, "put_loss": 24195965.0, "total_loss": 27855365.0}, {"strike": 168.0, "call_loss": 4256921.0, "put_loss": 21559510.0, "total_loss": 25816431.0}, {"strike": 169.0, "call_loss": 5107892.0, "put_loss": 19298135.0, "total_loss": 24406027.0}, {"strike": 170.0, "call_loss": 6176993.0, "put_loss": 17235880.0, "total_loss": 23412873.0}, {"strike": 171.0, "call_loss": 7506974.0, "put_loss": 15429015.0, "total_loss": 22935989.0}, {"strike": 172.0, "call_loss": 8966385.0, "put_loss": 13842830.0, "total_loss": 22809215.0}, {"strike": 173.0, "call_loss": 11007726.0, "put_loss": 12369625.0, "total_loss": 23377351.0}, {"strike": 174.0, "call_loss": 13191887.0, "put_loss": 11031890.0, "total_loss": 24223777.0}, {"strike": 175.0, "call_loss": 15654338.0, "put_loss": 9755875.0, "total_loss": 25410213.0}, {"strike": 176.0, "call_loss": 18623849.0, "put_loss": 8670160.0, "total_loss": 27294009.0}, {"strike": 177.0, "call_loss": 21769130.0, "put_loss": 7704825.0, "total_loss": 29473955.0}, {"strike": 178.0, "call_loss": 25087081.0, "put_loss": 6769400.0, "total_loss": 31856481.0}, {"strike": 179.0, "call_loss": 28825132.0, "put_loss": 5865665.0, "total_loss": 34690797.0}, {"strike": 180.0, "call_loss": 32879003.0, "put_loss": 5020220.0, "total_loss": 37899223.0}, {"strike": 181.0, "call_loss": 37139524.0, "put_loss": 4318845.0, "total_loss": 41458369.0}, {"strike": 182.0, "call_loss": 41912365.0, "put_loss": 3698260.0, "total_loss": 45610625.0}, {"strike": 183.0, "call_loss": 46767266.0, "put_loss": 3155075.0, "total_loss": 49922341.0}, {"strike": 184.0, "call_loss": 51733787.0, "put_loss": 2649210.0, "total_loss": 54382997.0}, {"strike": 185.0, "call_loss": 56795598.0, "put_loss": 2199385.0, "total_loss": 58994983.0}, {"strike": 186.0, "call_loss": 61946879.0, "put_loss": 1824030.0, "total_loss": 63770909.0}, {"strike": 187.0, "call_loss": 67152040.0, "put_loss": 1494575.0, "total_loss": 68646615.0}, {"strike": 188.0, "call_loss": 72378501.0, "put_loss": 1184060.0, "total_loss": 73562561.0}, {"strike": 189.0, "call_loss": 77732852.0, "put_loss": 923245.0, "total_loss": 78656097.0}, {"strike": 190.0, "call_loss": 83184003.0, "put_loss": 689590.0, "total_loss": 83873593.0}, {"strike": 191.0, "call_loss": 88744354.0, "put_loss": 540745.0, "total_loss": 89285099.0}, {"strike": 192.0, "call_loss": 94307535.0, "put_loss": 428880.0, "total_loss": 94736415.0}, {"strike": 193.0, "call_loss": 99870716.0, "put_loss": 317015.0, "total_loss": 100187731.0}, {"strike": 195.0, "call_loss": 111009078.0, "put_loss": 152625.0, "total_loss": 111161703.0}, {"strike": 197.0, "call_loss": 122280460.0, "put_loss": 61455.0, "total_loss": 122341915.0}, {"strike": 199.0, "call_loss": 133579882.0, "put_loss": 7685.0, "total_loss": 133587567.0}, {"strike": 200.0, "call_loss": 139230593.0, "put_loss": 6500.0, "total_loss": 139237093.0}, {"strike": 205.0, "call_loss": 167514148.0, "put_loss": 3250.0, "total_loss": 167517398.0}, {"strike": 210.0, "call_loss": 195828203.0, "put_loss": 0.0, "total_loss": 195828203.0}, {"strike": 215.0, "call_loss": 224142258.0, "put_loss": 0.0, "total_loss": 224142258.0}, {"strike": 225.0, "call_loss": 280770368.0, "put_loss": 0.0, "total_loss": 280770368.0}, {"strike": 235.0, "call_loss": 337398478.0, "put_loss": 0.0, "total_loss": 337398478.0}, {"strike": 245.0, "call_loss": 394026588.0, "put_loss": 0.0, "total_loss": 394026588.0}, {"strike": 255.0, "call_loss": 450654698.0, "put_loss": 0.0, "total_loss": 450654698.0}, {"strike": 265.0, "call_loss": 507282808.0, "put_loss": 0.0, "total_loss": 507282808.0}];
+
+        // ── OI Distribution + Normal Fit ──
+        new Chart(document.getElementById('oi_0'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [
+              { label: 'OI Total', data: D.total_oi, backgroundColor: 'rgba(90,133,24,0.55)',
+                 borderColor: 'rgba(90,133,24,0.9)', borderWidth: 1, borderRadius: 2,
+                 barPercentage: 0.8, order: 2 },
+              { label: 'Ajuste Normal', data: D.normal_fit, type: 'line',
+                 borderColor: '#B8720A', borderWidth: 2, pointRadius: 0,
+                 tension: 0.4, fill: false, order: 1 },
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { position: 'top', labels: { boxWidth: 8, padding: 10, font: { size: 9 } } },
+            },
+            scales: {
+              x: { ticks: { font: { size: 9, family: 'var(--mono)' } }, grid: { display: false } },
+              y: { ticks: { callback: v => {
+                     if (Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if (Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font: { size: 9, family: 'var(--mono)' } },
+                   grid: { color: 'rgba(0,0,0,0.05)' } },
+            }
+          },
+          plugins: [{
+            afterDraw(chart) {
+              const xs = chart.scales.x, ys = chart.scales.y, ctx = chart.ctx;
+              // Max pain line
+              const mpI = D.strikes.indexOf(D.mp);
+              if (mpI >= 0) {
+                const x = xs.getPixelForValue(mpI);
+                ctx.save(); ctx.strokeStyle='#B8720A'; ctx.lineWidth=1;
+                ctx.setLineDash([3,2]); ctx.beginPath();
+                ctx.moveTo(x,ys.top); ctx.lineTo(x,ys.bottom); ctx.stroke();
+                ctx.fillStyle='#B8720A'; ctx.font="600 8px var(--mono)";
+                ctx.textAlign='center'; ctx.fillText('MP',x,ys.top-4); ctx.restore();
+              }
+              // μ line
+              const muI = D.strikes.reduce((a,v,i) => Math.abs(v-D.mu)<Math.abs(D.strikes[a]-D.mu)?i:a, 0);
+              const mx = xs.getPixelForValue(muI);
+              ctx.save(); ctx.strokeStyle='#2E6BBF'; ctx.lineWidth=1;
+              ctx.setLineDash([3,2]); ctx.beginPath();
+              ctx.moveTo(mx,ys.top); ctx.lineTo(mx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#2E6BBF'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ',mx,ys.top-4); ctx.restore();
+              // Spot line
+              const spI = D.strikes.reduce((a,v,i) => Math.abs(v-D.spot)<Math.abs(D.strikes[a]-D.spot)?i:a, 0);
+              const sx = xs.getPixelForValue(spI);
+              ctx.save(); ctx.strokeStyle='#6B6960'; ctx.lineWidth=1;
+              ctx.setLineDash([2,3]); ctx.beginPath();
+              ctx.moveTo(sx,ys.top); ctx.lineTo(sx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#6B6960'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('SPOT',sx,ys.top-4); ctx.restore();
+            }
+          }]
+        });
+
+        // ── Max Pain Curve ──
+        new Chart(document.getElementById('mp_0'), {
+          type: 'line',
+          data: {
+            labels: MPC.map(d=>d.strike),
+            datasets: [
+              { label:'Perda total', data: MPC.map(d=>d.total_loss), borderColor:'#B8720A',
+                 backgroundColor:'rgba(184,114,10,0.12)', borderWidth:1.8, fill:true,
+                 tension:0.3, pointRadius:0 },
+              { label:'Call loss', data: MPC.map(d=>d.call_loss), borderColor:'#148A63',
+                 borderWidth:1, borderDash:[3,2], fill:false, tension:0.3, pointRadius:0 },
+              { label:'Put loss', data: MPC.map(d=>d.put_loss), borderColor:'#B33530',
+                 borderWidth:1, borderDash:[3,2], fill:false, tension:0.3, pointRadius:0 },
+            ]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            interaction: { mode:'index', intersect:false },
+            plugins: { legend: { position:'top', labels:{ boxWidth:8, padding:10, font:{size:9} } } },
+            scales: {
+              x: { ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=>(v/1e6).toFixed(1)+'M', font:{size:9,family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          }
+        });
+
+        // ── Calls vs Puts ──
+        new Chart(document.getElementById('cp_0'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [
+              { label:'Call OI', data:D.call_oi, backgroundColor:'rgba(20,138,99,0.6)',
+                 borderRadius:2, barPercentage:0.9 },
+              { label:'Put OI', data:D.put_oi, backgroundColor:'rgba(179,53,48,0.55)',
+                 borderRadius:2, barPercentage:0.9 },
+            ]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins: { legend:{ position:'top', labels:{ boxWidth:8, padding:10, font:{size:9} } } },
+            scales: {
+              x: { stacked:false, ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=> {
+                     if(Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if(Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font:{size:9, family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          },
+          plugins: [{
+            afterDraw(chart) {
+              const xs=chart.scales.x, ys=chart.scales.y, ctx=chart.ctx;
+              // Call mean
+              const ci = D.strikes.reduce((a,v,i)=>Math.abs(v-D.call_mean)<Math.abs(D.strikes[a]-D.call_mean)?i:a,0);
+              const cx = xs.getPixelForValue(ci);
+              ctx.save(); ctx.strokeStyle='#148A63'; ctx.lineWidth=1; ctx.setLineDash([3,2]);
+              ctx.beginPath(); ctx.moveTo(cx,ys.top); ctx.lineTo(cx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#148A63'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ Call',cx,ys.top-4); ctx.restore();
+              // Put mean
+              const pi = D.strikes.reduce((a,v,i)=>Math.abs(v-D.put_mean)<Math.abs(D.strikes[a]-D.put_mean)?i:a,0);
+              const px = xs.getPixelForValue(pi);
+              ctx.save(); ctx.strokeStyle='#B33530'; ctx.lineWidth=1; ctx.setLineDash([3,2]);
+              ctx.beginPath(); ctx.moveTo(px,ys.top); ctx.lineTo(px,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#B33530'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ Put',px,ys.top-4); ctx.restore();
+            }
+          }]
+        });
+
+        // ── Residuals ──
+        const resColors = D.residuals.map(v => v >= 0 ? 'rgba(90,133,24,0.65)' : 'rgba(179,53,48,0.6)');
+        new Chart(document.getElementById('res_0'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [{ label:'Resíduo', data:D.residuals, backgroundColor:resColors,
+                          borderRadius:2, barPercentage:0.8 }]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins: { legend:{ display:false } },
+            scales: {
+              x: { ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=> {
+                     if(Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if(Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font:{size:9, family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          }
+        });
+      })();
+      </script>
+    </div>
+
+    <div class="exp-block" id="exp1" style="animation-delay:0.06s">
+      <div class="exp-top">
+        <div>
+          <h2>19 Jun — Mensal</h2>
+          <span class="tag tm">Mensal</span>
+          <span class="tag tg">14 DTE</span>
+        </div>
+        <div class="grade-pill" style="--gc:#148A63">
+          <span class="gp-dot"></span>Alta concentração
+        </div>
+      </div>
+
+      <!-- Stat cards row 1: Posição -->
+      <div class="stat-section-title">Posição</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Max Pain</div>
+      <div class="st-value" >R$ 180</div></div>
+        <div class="st-card">
+      <div class="st-label">Spot</div>
+      <div class="st-value" >R$ 167</div></div>
+        <div class="st-card">
+      <div class="st-label">Distância MP→Spot</div>
+      <div class="st-value" style="color:#B8720A">-7.78%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI Total</div>
+      <div class="st-value" >265.1M</div></div>
+      </div>
+
+      <!-- Stat cards row 2: Centro de massa -->
+      <div class="stat-section-title">Centro de massa do OI</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Média ponderada (μ)</div>
+      <div class="st-value" >R$ 166.32</div><div class="st-sub">Centro de massa total</div></div>
+        <div class="st-card">
+      <div class="st-label">σ ponderado</div>
+      <div class="st-value" >R$ 36.64</div><div class="st-sub">Dispersão em torno de μ</div></div>
+        <div class="st-card">
+      <div class="st-label">μ Calls</div>
+      <div class="st-value" >R$ 180.63</div><div class="st-sub">Centro de massa das calls</div></div>
+        <div class="st-card">
+      <div class="st-label">μ Puts</div>
+      <div class="st-value" >R$ 155.57</div><div class="st-sub">Centro de massa das puts</div></div>
+        <div class="st-card">
+      <div class="st-label">MP vs μ OI</div>
+      <div class="st-value" >+13.68</div><div class="st-sub">Max pain acima</div></div>
+      </div>
+
+      <!-- Stat cards row 3: Forma -->
+      <div class="stat-section-title">Forma da distribuição</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Assimetria (Skew)</div>
+      <div class="st-value" style="color:#B8720A">-1.069</div><div class="st-sub">Cauda à esquerda</div></div>
+        <div class="st-card">
+      <div class="st-label">Curtose</div>
+      <div class="st-value" style="color:#148A63">5.995</div><div class="st-sub">Excesso: +2.995</div></div>
+        <div class="st-card">
+      <div class="st-label">KS Estatística</div>
+      <div class="st-value" >0.0985</div><div class="st-sub">p-valor: 0.0000</div></div>
+        <div class="st-card">
+      <div class="st-label">Normalidade?</div>
+      <div class="st-value" style="color:#B33530">Não ✗</div><div class="st-sub">Rejeita H₀ de normalidade</div></div>
+      </div>
+
+      <!-- Stat cards row 4: Concentração -->
+      <div class="stat-section-title">Métricas de concentração</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">HHI</div>
+      <div class="st-value" >0.0249</div><div class="st-sub">Normalizado: 0.0201</div></div>
+        <div class="st-card">
+      <div class="st-label">Gini</div>
+      <div class="st-value" style="color:#148A63">0.745</div><div class="st-sub">0 = uniforme, 1 = concentrado</div></div>
+        <div class="st-card">
+      <div class="st-label">Entropia</div>
+      <div class="st-value" >6.05 bits</div><div class="st-sub">Máx: 7.67 · Ratio: 78.87%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±1σ do MP</div>
+      <div class="st-value" style="color:#148A63">66.1%</div><div class="st-sub">Normal teórico: 68.3%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±2σ do MP</div>
+      <div class="st-value" >95.2%</div><div class="st-sub">Normal teórico: 95.4%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±R$2 do MP</div>
+      <div class="st-value" >11.1%</div><div class="st-sub">Contratos perto do max pain</div></div>
+      </div>
+
+      <!-- Ajuste normal -->
+      <div class="stat-section-title">Ajuste Gaussiano</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">μ (fit)</div>
+      <div class="st-value" >R$ 191.75</div></div>
+        <div class="st-card">
+      <div class="st-label">σ (fit)</div>
+      <div class="st-value" >R$ 40.89</div></div>
+        <div class="st-card">
+      <div class="st-label">R²</div>
+      <div class="st-value" style="color:#B33530">0.2682</div><div class="st-sub">Ajuste ruim</div></div>
+        <div class="st-card">
+      <div class="st-label">Forma</div>
+      <div class="st-value" >assimétrica à esquerda (skew -1.07), pico acentuado (leptocúrtica)</div></div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-2col">
+        <div class="ch-card">
+          <h4>Distribuição do OI vs Ajuste Normal</h4>
+          <div class="ch-wrap"><canvas id="oi_1"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <h4>Curva de max pain (perda total)</h4>
+          <div class="ch-wrap"><canvas id="mp_1"></canvas></div>
+        </div>
+      </div>
+      <div class="charts-2col">
+        <div class="ch-card">
+          <h4>Calls vs Puts — distribuição separada</h4>
+          <div class="ch-wrap"><canvas id="cp_1"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <h4>Resíduos do ajuste (OI real − Normal)</h4>
+          <div class="ch-wrap"><canvas id="res_1"></canvas></div>
+        </div>
+      </div>
+
+      <script>
+      (function() {
+        const D = {"strikes": [10.0, 20.0, 30.0, 40.0, 60.0, 69.0, 69.5, 70.0, 70.5, 71.0, 71.5, 72.0, 72.5, 73.0, 73.5, 74.0, 74.5, 75.0, 75.5, 76.0, 76.5, 77.0, 77.5, 78.0, 78.5, 79.0, 79.5, 80.0, 80.5, 81.0, 81.5, 82.0, 82.5, 83.0, 83.5, 84.0, 84.5, 85.0, 85.5, 86.0, 86.5, 87.0, 87.5, 88.0, 88.5, 89.0, 89.5, 90.0, 90.5, 91.0, 91.5, 92.0, 92.5, 93.0, 93.5, 94.0, 94.5, 95.0, 95.5, 96.0, 96.5, 97.0, 97.5, 98.0, 98.5, 99.0, 99.5, 100.0, 101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0, 108.0, 109.0, 110.0, 111.0, 112.0, 113.0, 114.0, 115.0, 116.0, 117.0, 118.0, 119.0, 120.0, 121.0, 122.0, 123.0, 124.0, 125.0, 126.0, 127.0, 128.0, 129.0, 130.0, 131.0, 132.0, 133.0, 134.0, 135.0, 136.0, 137.0, 138.0, 139.0, 140.0, 141.0, 142.0, 143.0, 144.0, 145.0, 146.0, 147.0, 148.0, 149.0, 150.0, 151.0, 152.0, 153.0, 154.0, 155.0, 156.0, 157.0, 158.0, 159.0, 160.0, 161.0, 162.0, 163.0, 164.0, 165.0, 166.0, 167.0, 168.0, 169.0, 170.0, 171.0, 172.0, 173.0, 174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0, 188.0, 189.0, 190.0, 191.0, 192.0, 193.0, 194.0, 195.0, 196.0, 197.0, 198.0, 199.0, 200.0, 205.0, 210.0, 215.0, 220.0, 225.0, 230.0, 235.0, 240.0, 245.0, 250.0, 255.0, 260.0, 265.0, 270.0, 275.0, 280.0, 285.0, 290.0, 295.0, 305.0, 315.0, 320.0, 325.0, 330.0, 335.0, 340.0, 345.0, 350.0, 355.0, 360.0, 365.0, 370.0, 375.0, 380.0, 385.0, 390.0], "call_oi": [58450.0, 107320.0, 4290.0, 2900.0, 59360.0, 0.0, 0.0, 3370.0, 1640.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1640.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1640.0, 0.0, 1340.0, 0.0, 999.0, 20330.0, 495.0, 647.0, 0.0, 927.0, 198.0, 0.0, 496.0, 0.0, 200.0, 0.0, 197.0, 0.0, 297.0, 0.0, 0.0, 685.0, 3940.0, 0.0, 0.0, 29370.0, 0.0, 0.0, 565.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2590.0, 459.0, 0.0, 0.0, 5770.0, 336.0, 0.0, 0.0, 0.0, 0.0, 11.0, 160620.0, 2540.0, 15530.0, 139.0, 4610.0, 10740.0, 8800.0, 115600.0, 350.0, 400.0, 26940.0, 100.0, 9520.0, 8370.0, 57680.0, 618050.0, 31950.0, 34900.0, 16309.999999999998, 8790.0, 917580.0, 18080.0, 67720.0, 27220.0, 23850.0, 133770.0, 50860.0, 35440.0, 42370.0, 216990.0, 6890000.0, 72380.0, 72210.0, 159300.0, 66130.0, 226360.0, 99490.0, 196490.0, 55010.0, 182200.0, 592790.0, 186590.0, 51860.0, 122990.0, 193600.0, 360640.0, 109610.0, 135350.0, 116750.0, 110240.0, 1050000.0, 247400.0, 261640.0, 119690.0, 2480000.0, 348520.0, 208010.0, 199810.0, 193470.0, 252280.0, 5500000.0, 260459.99999999997, 162360.0, 990320.0, 161320.0, 737480.0, 242490.0, 365090.0, 545880.0, 710560.0, 1760000.0, 707010.0, 857340.0, 991270.0, 1600000.0, 2880000.0, 3170000.0, 2340000.0, 2140000.0, 1350000.0, 7360000.0, 2240000.0, 3740000.0, 1190000.0, 1640000.0, 3190000.0, 2260000.0, 1670000.0, 2770000.0, 847930.0, 3480000.0, 2840000.0, 2630000.0, 518610.0, 3950000.0, 1020000.0, 1930000.0, 632620.0, 828370.0, 398760.0, 5570000.0, 1460000.0, 1210000.0, 1400000.0, 10310000.0, 555790.0, 626880.0, 309740.0, 338220.0, 326910.0, 233570.0, 146420.0, 105210.0, 62300.0, 2000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 109000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "put_oi": [3260000.0, 2350.0, 1000.0, 56000.0, 1.0, 1.0, 1.0, 154310.0, 1.0, 2.0, 1.0, 2.0, 1.0, 2.0, 1.0, 2.0, 1.0, 36000.0, 1.0, 2.0, 1.0, 2.0, 1.0, 2.0, 1.0, 2.0, 40000.0, 2530000.0, 95950.0, 1000.0, 1.0, 2.0, 1.0, 2.0, 1.0, 2.0, 1.0, 29000.0, 1.0, 2.0, 1.0, 2.0, 1.0, 2.0, 1.0, 1500.0, 24850.0, 371700.0, 25500.0, 25000.0, 1.0, 2.0, 1.0, 2.0, 1.0, 2.0, 1.0, 169000.0, 1.0, 2.0, 1.0, 502.0, 1.0, 140000.0, 194000.0, 230000.0, 156000.0, 1130000.0, 305000.0, 317500.0, 5000.0, 370000.0, 1570000.0, 407360.0, 205000.0, 108000.0, 447800.0, 1130000.0, 14510.0, 68060.0, 264810.0, 585100.0, 1340000.0, 131130.0, 358000.0, 685110.0, 1040000.0, 2750000.0, 686400.0, 1230000.0, 1390000.0, 1030000.0, 2260000.0, 709760.0, 1590000.0, 1520000.0, 1810000.0, 10730000.0, 1130000.0, 1380000.0, 1070000.0, 1260000.0, 1160000.0, 567490.0, 436620.0, 559640.0, 265750.0, 1070000.0, 418890.0, 800060.0, 646570.0, 571980.0, 877740.0, 369320.0, 152920.0, 275480.0, 377130.0, 4330000.0, 609040.0, 572610.0, 551340.0, 2590000.0, 2750000.0, 699890.0, 408640.0, 772870.0, 607270.0, 8260000.0, 715170.0, 1620000.0, 1360000.0, 955800.0, 2230000.0, 919620.0, 1530000.0, 1290000.0, 763670.0, 1840000.0, 1200000.0, 1550000.0, 932130.0, 1160000.0, 2520000.0, 1140000.0, 1960000.0, 1590000.0, 815090.0, 5780000.0, 1620000.0, 2710000.0, 856970.0, 972470.0, 3060000.0, 804720.0, 782260.0, 2640000.0, 556710.0, 2480000.0, 2930000.0, 2340000.0, 353330.0, 1300000.0, 1060000.0, 1690000.0, 171150.0, 601110.0, 227710.0, 1320000.0, 428100.0, 380250.0, 566250.0, 10230000.0, 59130.0, 77440.0, 5290.0, 21.0, 12500.0, 10000.0, 606.0, 2.0, 0.0, 2000.0, 2.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 66.0, 0.0, 10000.0, 10000.0, 0.0, 0.0, 0.0, 400.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 15.0], "total_oi": [3318450.0, 109670.0, 5290.0, 58900.0, 59361.0, 1.0, 1.0, 157680.0, 1641.0, 2.0, 1.0, 2.0, 1.0, 2.0, 1.0, 2.0, 1641.0, 36000.0, 1.0, 2.0, 1.0, 2.0, 1641.0, 2.0, 1341.0, 2.0, 40999.0, 2550330.0, 96445.0, 1647.0, 1.0, 929.0, 199.0, 2.0, 497.0, 2.0, 201.0, 29000.0, 198.0, 2.0, 298.0, 2.0, 1.0, 687.0, 3941.0, 1500.0, 24850.0, 401070.0, 25500.0, 25000.0, 566.0, 2.0, 1.0, 2.0, 1.0, 2.0, 2591.0, 169459.0, 1.0, 2.0, 5771.0, 838.0, 1.0, 140000.0, 194000.0, 230000.0, 156011.0, 1290620.0, 307540.0, 333030.0, 5139.0, 374610.0, 1580740.0, 416160.0, 320600.0, 108350.0, 448200.0, 1156940.0, 14610.0, 77580.0, 273180.0, 642780.0, 1958050.0, 163080.0, 392900.0, 701420.0, 1048790.0, 3667580.0, 704480.0, 1297720.0, 1417220.0, 1053850.0, 2393770.0, 760620.0, 1625440.0, 1562370.0, 2026990.0, 17620000.0, 1202380.0, 1452210.0, 1229300.0, 1326130.0, 1386360.0, 666980.0, 633110.0, 614650.0, 447950.0, 1662790.0, 605480.0, 851920.0, 769560.0, 765580.0, 1238380.0, 478930.0, 288270.0, 392230.0, 487370.0, 5380000.0, 856440.0, 834250.0, 671030.0, 5070000.0, 3098520.0, 907900.0, 608450.0, 966340.0, 859550.0, 13760000.0, 975630.0, 1782360.0, 2350320.0, 1117120.0, 2967480.0, 1162110.0, 1895090.0, 1835880.0, 1474230.0, 3600000.0, 1907010.0, 2407340.0, 1923400.0, 2760000.0, 5400000.0, 4310000.0, 4300000.0, 3730000.0, 2165090.0, 13140000.0, 3860000.0, 6450000.0, 2046970.0, 2612470.0, 6250000.0, 3064720.0, 2452260.0, 5410000.0, 1404640.0, 5960000.0, 5770000.0, 4970000.0, 871940.0, 5250000.0, 2080000.0, 3620000.0, 803770.0, 1429480.0, 626470.0, 6890000.0, 1888100.0, 1590250.0, 1966250.0, 20540000.0, 614920.0, 704320.0, 315030.0, 338241.0, 339410.0, 243570.0, 147026.0, 105212.0, 62300.0, 4000.0, 2.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 109066.0, 0.0, 10000.0, 10000.0, 0.0, 0.0, 0.0, 400.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 15.0], "normal_fit": [194.6347841390369, 560.1591368629787, 1518.5488372498287, 3877.6845463659424, 21131.922981947922, 41918.75546554974, 43482.80804241868, 45098.474344432616, 46767.18007816295, 48490.37958478159, 50269.55601384257, 52106.22148155072, 54001.917212802146, 55958.21366627053, 57976.710641806996, 60059.03736940987, 62206.85257901786, 64421.844550369424, 66705.73114216822, 69060.25979978686, 71487.20754073908, 73988.38091714383, 76565.61595440564, 79220.77806532929, 81955.76193888935, 84772.49140287231, 87672.91925961083, 90659.02709403227, 93732.82505324279, 96896.35159687695, 100151.67321744194, 103500.88412989819, 106946.10592971656, 110489.48721866915, 114133.2031976127, 117879.45522554054, 121730.47034418405, 125688.50076746407, 129755.82333510157, 133934.7389297174, 138227.57185676263, 142636.66918664397, 147164.40005842526, 151813.154944508, 156585.3448757179, 161483.40062624437, 166509.77185790965, 171666.92622326588, 176957.3484270541, 182383.5392455787, 187948.0145035906, 193653.30400829975, 199501.9504401759, 205496.5082002247, 211639.54221347263, 217933.6266884227, 224381.3438322935, 230985.28252188262, 237748.0369299494, 244672.2051070489, 251760.38751879986, 259015.18553860768, 266439.19989592204, 274035.02908015007, 281805.2677003999, 289752.5048012823, 297879.322135048, 306188.2923903947, 323362.92617556226, 341296.7363999522, 360009.7878125485, 379521.81564999704, 399852.1591007975, 421019.69235893484, 443042.7533902171, 465939.0705510698, 489725.68721618096, 514418.8845881708, 540034.1028792685, 566585.8610717044, 594087.6754801174, 622551.9773555892, 651990.0297868839, 682411.8441699578, 713826.0965317271, 746240.044008308, 779659.4417913804, 814088.4608688615, 849529.6068975733, 885983.6405559804, 923449.4997342147, 961924.2239264104, 1001402.881196728, 1041878.4980952775, 1083341.992903325, 1125782.1125886533, 1169185.373851601, 1213536.0086401259, 1258815.9145080969, 1305004.6101849137, 1352079.196716405, 1400014.324526753, 1448782.166738911, 1498352.3990765854, 1548692.1866543938, 1599766.177944262, 1651536.5061855162, 1703962.798483548, 1757002.1928173658, 1810609.3631499254, 1864736.552806908, 1919333.6162596866, 1974348.0694167123, 2029725.148494568, 2085407.8775056202, 2141337.1443637144, 2197451.7855728315, 2253688.679426242, 2309982.8476056764, 2366267.5650314507, 2422474.477775721, 2478533.7288120836, 2534374.09133601, 2589923.1093521244, 2645107.245186487, 2699852.0335449264, 2754082.241702353, 2807722.035373116, 2860695.1497789826, 2912925.065399513, 2964335.1878596297, 3014849.031381266, 3064390.405200282, 3112883.6023265915, 3160253.5900047547, 3206426.2012143806, 3251328.326534626, 3294888.1056850837, 3337035.1180464406, 3377700.5714586414, 3416817.488591911, 3454320.8901870036, 3490147.9744654307, 3524238.2920182226, 3556533.9154930296, 3586979.603413955, 3615522.9574865047, 3642114.572761285, 3666708.1800545286, 3689260.780051102, 3709732.768546162, 3728088.0523150153, 3744294.1551367454, 3758322.3135357457, 3770147.561846095, 3779748.8062466835, 3787108.887459777, 3792214.631852169, 3795056.8907259176, 3795630.567634625, 3793934.6336111086, 3789972.1302427785, 3783750.1605818425, 3775279.867928378, 3764576.402574972, 3751658.8766518366, 3736550.3072607946, 3719277.548134947, 3601648.4320050706, 3435980.1028159335, 3229286.343506203, 2989985.381130068, 2727332.998576879, 2450833.80792604, 2169682.32562186, 1892278.4047022683, 1625850.1229755513, 1376203.2417553621, 1147601.845789438, 942771.6032406408, 763006.6813140318, 608354.5802169631, 477850.2489666884, 369771.50791201886, 281891.29531794484, 211707.6148975129, 156638.27321040683, 81986.14782231356, 40421.222913216654, 27752.60932637141, 18771.75117625655, 12508.704955886797, 8211.57572340994, 5310.644723409127, 3383.5655009115867, 2123.775082671744, 1313.254952369119, 800.0113833079034, 480.1200903607899, 283.86391289939655, 165.33967666971535, 94.87473509151768, 53.63282359460786, 29.868770125026575], "residuals": [3318255.365215861, 109109.84086313703, 3771.4511627501715, 55022.31545363406, 38229.07701805208, -41917.75546554974, -43481.80804241868, 112581.52565556738, -45126.18007816295, -48488.37958478159, -50268.55601384257, -52104.22148155072, -54000.917212802146, -55956.21366627053, -57975.710641806996, -60057.03736940987, -60565.85257901786, -28421.844550369424, -66704.73114216822, -69058.25979978686, -71486.20754073908, -73986.38091714383, -74924.61595440564, -79218.77806532929, -80614.76193888935, -84770.49140287231, -46673.91925961083, 2459670.972905968, 2712.174946757208, -95249.35159687695, -100150.67321744194, -102571.88412989819, -106747.10592971656, -110487.48721866915, -113636.2031976127, -117877.45522554054, -121529.47034418405, -96688.50076746407, -129557.82333510157, -133932.7389297174, -137929.57185676263, -142634.66918664397, -147163.40005842526, -151126.154944508, -152644.3448757179, -159983.40062624437, -141659.77185790965, 229403.07377673412, -151457.3484270541, -157383.5392455787, -187382.0145035906, -193651.30400829975, -199500.9504401759, -205494.5082002247, -211638.54221347263, -217931.6266884227, -221790.3438322935, -61526.28252188262, -237747.0369299494, -244670.2051070489, -245989.38751879986, -258177.18553860768, -266438.19989592204, -134035.02908015007, -87805.26770039991, -59752.50480128231, -141868.322135048, 984431.7076096053, -15822.926175562257, -8266.736399952206, -354870.7878125485, -4911.8156499970355, 1180887.8408992025, -4859.692358934844, -122442.75339021708, -357589.0705510698, -41525.68721618096, 642521.1154118292, -525424.1028792685, -489005.8610717044, -320907.67548011744, 20228.02264441084, 1306059.9702131161, -519331.8441699578, -320926.0965317271, -44820.044008307974, 269130.5582086196, 2853491.5391311385, -145049.60689757334, 411736.3594440196, 493770.50026578526, 91925.77607358957, 1392367.118803272, -281258.49809527746, 542098.007096675, 436587.88741134666, 857804.626148399, 16406463.991359875, -56435.914508096874, 147205.38981508627, -122779.19671640499, -73884.32452675304, -62422.166738911066, -831372.3990765854, -915582.1866543938, -985116.177944262, -1203586.5061855162, -41172.79848354799, -1151522.1928173658, -958689.3631499254, -1095176.552806908, -1153753.6162596866, -735968.0694167123, -1550795.148494568, -1797137.8775056202, -1749107.1443637144, -1710081.7855728315, 3126311.320573758, -1453542.8476056764, -1532017.5650314507, -1751444.4777757209, 2591466.2711879164, 564145.90866399, -1682023.1093521244, -2036657.2451864872, -1733512.0335449264, -1894532.241702353, 10952277.964626884, -1885065.1497789826, -1130565.065399513, -614015.1878596297, -1897729.0313812662, -96910.40520028211, -1950773.6023265915, -1265163.5900047547, -1370546.2012143806, -1777098.326534626, 305111.89431491634, -1430025.1180464406, -970360.5714586414, -1493417.4885919108, -694320.8901870036, 1909852.0255345693, 785761.7079817774, 743466.0845069704, 143020.39658604516, -1450432.9574865047, 9497885.427238714, 193291.81994547136, 2760739.219948898, -1662762.7685461622, -1115618.0523150153, 2505705.8448632546, -693602.3135357457, -1317887.5618460951, 1630251.1937533165, -2382468.887459777, 2167785.368147831, 1974943.1092740824, 1174369.432365375, -2921994.6336111086, 1460027.8697572215, -1703750.1605818425, -155279.86792837782, -2960806.402574972, -2322178.8766518366, -3110080.3072607946, 3170722.451865053, -1713548.4320050706, -1845730.1028159335, -1263036.343506203, 17550014.61886993, -2112412.998576879, -1746513.8079260401, -1854652.32562186, -1554037.4047022683, -1286440.1229755513, -1132633.2417553621, -1000575.8457894381, -837559.6032406408, -700706.6813140318, -604354.5802169631, -477848.2489666884, -369771.50791201886, -281891.29531794484, -211707.6148975129, -156637.27321040683, -81986.14782231356, -40421.222913216654, 81313.39067362859, -18771.75117625655, -2508.7049558867966, 1788.42427659006, -5310.644723409127, -3383.5655009115867, -2123.775082671744, -913.2549523691191, -800.0113833079034, -480.1200903607899, -283.86391289939655, -165.33967666971535, -94.87473509151768, -53.63282359460786, -14.868770125026575], "mp": 180.0, "spot": 167.0, "mu": 166.32067581766557, "sigma": 36.640834563169946, "call_mean": 180.63163545627393, "put_mean": 155.57319578932123};
+        const MPC = [{"strike": 10.0, "call_loss": 0.0, "put_loss": 22041746789.5, "total_loss": 22041746789.5}, {"strike": 20.0, "call_loss": 584500.0, "put_loss": 20560211809.5, "total_loss": 20560796309.5}, {"strike": 30.0, "call_loss": 2242200.0, "put_loss": 19078700329.5, "total_loss": 19080942529.5}, {"strike": 40.0, "call_loss": 3942800.0, "put_loss": 17597198849.5, "total_loss": 17601141649.5}, {"strike": 60.0, "call_loss": 7402000.0, "put_loss": 14635315889.5, "total_loss": 14642717889.5}, {"strike": 69.0, "call_loss": 9492880.0, "put_loss": 13302468566.5, "total_loss": 13311961446.5}, {"strike": 69.5, "call_loss": 9609040.0, "put_loss": 13228421493.5, "total_loss": 13238030533.5}, {"strike": 70.0, "call_loss": 9725200.0, "put_loss": 13154374421.0, "total_loss": 13164099621.0}, {"strike": 70.5, "call_loss": 9843045.0, "put_loss": 13080404503.5, "total_loss": 13090247548.5}, {"strike": 71.0, "call_loss": 9961710.0, "put_loss": 13006434586.5, "total_loss": 13016396296.5}, {"strike": 71.5, "call_loss": 10080375.0, "put_loss": 12932464670.5, "total_loss": 12942545045.5}, {"strike": 72.0, "call_loss": 10199040.0, "put_loss": 12858494755.0, "total_loss": 12868693795.0}, {"strike": 72.5, "call_loss": 10317705.0, "put_loss": 12784524840.5, "total_loss": 12794842545.5}, {"strike": 73.0, "call_loss": 10436370.0, "put_loss": 12710554926.5, "total_loss": 12720991296.5}, {"strike": 73.5, "call_loss": 10555035.0, "put_loss": 12636585013.5, "total_loss": 12647140048.5}, {"strike": 74.0, "call_loss": 10673700.0, "put_loss": 12562615101.0, "total_loss": 12573288801.0}, {"strike": 74.5, "call_loss": 10792365.0, "put_loss": 12488645189.5, "total_loss": 12499437554.5}, {"strike": 75.0, "call_loss": 10911850.0, "put_loss": 12414675278.5, "total_loss": 12425587128.5}, {"strike": 75.5, "call_loss": 11031335.0, "put_loss": 12340723367.5, "total_loss": 12351754702.5}, {"strike": 76.0, "call_loss": 11150820.0, "put_loss": 12266771457.0, "total_loss": 12277922277.0}, {"strike": 76.5, "call_loss": 11270305.0, "put_loss": 12192819547.5, "total_loss": 12204089852.5}, {"strike": 77.0, "call_loss": 11389790.0, "put_loss": 12118867638.5, "total_loss": 12130257428.5}, {"strike": 77.5, "call_loss": 11509275.0, "put_loss": 12044915730.5, "total_loss": 12056425005.5}, {"strike": 78.0, "call_loss": 11629580.0, "put_loss": 11970963823.0, "total_loss": 11982593403.0}, {"strike": 78.5, "call_loss": 11749885.0, "put_loss": 11897011916.5, "total_loss": 11908761801.5}, {"strike": 79.0, "call_loss": 11870860.0, "put_loss": 11823060010.5, "total_loss": 11834930870.5}, {"strike": 79.5, "call_loss": 11991835.0, "put_loss": 11749108105.5, "total_loss": 11761099940.5}, {"strike": 80.0, "call_loss": 12113309.5, "put_loss": 11675176200.5, "total_loss": 11687289510.0}, {"strike": 80.5, "call_loss": 12244949.0, "put_loss": 11602509295.5, "total_loss": 11614754244.5}, {"strike": 81.0, "call_loss": 12376836.0, "put_loss": 11529890365.5, "total_loss": 11542267201.5}, {"strike": 81.5, "call_loss": 12509046.5, "put_loss": 11457271935.5, "total_loss": 11469780982.0}, {"strike": 82.0, "call_loss": 12641257.0, "put_loss": 11384653506.0, "total_loss": 11397294763.0}, {"strike": 82.5, "call_loss": 12773931.0, "put_loss": 11312035077.5, "total_loss": 11324809008.5}, {"strike": 83.0, "call_loss": 12906704.0, "put_loss": 11239416649.5, "total_loss": 11252323353.5}, {"strike": 83.5, "call_loss": 13039477.0, "put_loss": 11166798222.5, "total_loss": 11179837699.5}, {"strike": 84.0, "call_loss": 13172498.0, "put_loss": 11094179796.0, "total_loss": 11107352294.0}, {"strike": 84.5, "call_loss": 13305519.0, "put_loss": 11021561370.5, "total_loss": 11034866889.5}, {"strike": 85.0, "call_loss": 13438640.0, "put_loss": 10948942945.5, "total_loss": 10962381585.5}, {"strike": 85.5, "call_loss": 13571761.0, "put_loss": 10876339020.5, "total_loss": 10889910781.5}, {"strike": 86.0, "call_loss": 13704980.5, "put_loss": 10803735096.0, "total_loss": 10817440076.5}, {"strike": 86.5, "call_loss": 13838200.0, "put_loss": 10731131172.5, "total_loss": 10744969372.5}, {"strike": 87.0, "call_loss": 13971568.0, "put_loss": 10658527249.5, "total_loss": 10672498817.5}, {"strike": 87.5, "call_loss": 14104936.0, "put_loss": 10585923327.5, "total_loss": 10600028263.5}, {"strike": 88.0, "call_loss": 14238304.0, "put_loss": 10513319406.0, "total_loss": 10527557710.0}, {"strike": 88.5, "call_loss": 14372014.5, "put_loss": 10440715485.5, "total_loss": 10455087500.0}, {"strike": 89.0, "call_loss": 14507695.0, "put_loss": 10368111565.5, "total_loss": 10382619260.5}, {"strike": 89.5, "call_loss": 14643375.5, "put_loss": 10295508395.5, "total_loss": 10310151771.0}, {"strike": 90.0, "call_loss": 14779056.0, "put_loss": 10222917650.5, "total_loss": 10237696706.5}, {"strike": 90.5, "call_loss": 14929421.5, "put_loss": 10150512755.5, "total_loss": 10165442177.0}, {"strike": 91.0, "call_loss": 15079787.0, "put_loss": 10078120610.5, "total_loss": 10093200397.5}, {"strike": 91.5, "call_loss": 15230152.5, "put_loss": 10005740965.5, "total_loss": 10020971118.0}, {"strike": 92.0, "call_loss": 15380800.5, "put_loss": 9933361321.0, "total_loss": 9948742121.5}, {"strike": 92.5, "call_loss": 15531448.5, "put_loss": 9860981677.5, "total_loss": 9876513126.0}, {"strike": 93.0, "call_loss": 15682096.5, "put_loss": 9788602034.5, "total_loss": 9804284131.0}, {"strike": 93.5, "call_loss": 15832744.5, "put_loss": 9716222392.5, "total_loss": 9732055137.0}, {"strike": 94.0, "call_loss": 15983392.5, "put_loss": 9643842751.0, "total_loss": 9659826143.5}, {"strike": 94.5, "call_loss": 16134040.5, "put_loss": 9571463110.5, "total_loss": 9587597151.0}, {"strike": 95.0, "call_loss": 16285983.5, "put_loss": 9499083470.5, "total_loss": 9515369454.0}, {"strike": 95.5, "call_loss": 16438156.0, "put_loss": 9426788330.5, "total_loss": 9443226486.5}, {"strike": 96.0, "call_loss": 16590328.5, "put_loss": 9354493191.0, "total_loss": 9371083519.5}, {"strike": 96.5, "call_loss": 16742501.0, "put_loss": 9282198052.5, "total_loss": 9298940553.5}, {"strike": 97.0, "call_loss": 16897558.5, "put_loss": 9209902914.5, "total_loss": 9226800473.0}, {"strike": 97.5, "call_loss": 17052784.0, "put_loss": 9137608027.5, "total_loss": 9154660811.5}, {"strike": 98.0, "call_loss": 17208009.5, "put_loss": 9065313141.0, "total_loss": 9082521150.5}, {"strike": 98.5, "call_loss": 17363235.0, "put_loss": 8993088254.5, "total_loss": 9010451489.5}, {"strike": 99.0, "call_loss": 17518460.5, "put_loss": 8920960368.0, "total_loss": 8938478828.5}, {"strike": 99.5, "call_loss": 17673686.0, "put_loss": 8848947481.5, "total_loss": 8866621167.5}, {"strike": 100.0, "call_loss": 17828917.0, "put_loss": 8777012595.0, "total_loss": 8794841512.0}, {"strike": 101.0, "call_loss": 18299999.0, "put_loss": 8634272822.0, "total_loss": 8652572821.0}, {"strike": 102.0, "call_loss": 18773621.0, "put_loss": 8491838049.0, "total_loss": 8510611670.0}, {"strike": 103.0, "call_loss": 19262773.0, "put_loss": 8349720776.0, "total_loss": 8368983549.0}, {"strike": 104.0, "call_loss": 19752064.0, "put_loss": 8207608503.0, "total_loss": 8227360567.0}, {"strike": 105.0, "call_loss": 20245965.0, "put_loss": 8065866230.0, "total_loss": 8086112195.0}, {"strike": 106.0, "call_loss": 20750606.0, "put_loss": 7925693957.0, "total_loss": 7946444563.0}, {"strike": 107.0, "call_loss": 21264047.0, "put_loss": 7785929044.0, "total_loss": 7807193091.0}, {"strike": 108.0, "call_loss": 21893088.0, "put_loss": 7646369131.0, "total_loss": 7668262219.0}, {"strike": 109.0, "call_loss": 22522479.0, "put_loss": 7506917218.0, "total_loss": 7529439697.0}, {"strike": 110.0, "call_loss": 23152270.0, "put_loss": 7367913105.0, "total_loss": 7391065375.0}, {"strike": 111.0, "call_loss": 23809001.0, "put_loss": 7230038992.0, "total_loss": 7253847993.0}, {"strike": 112.0, "call_loss": 24465832.0, "put_loss": 7092179389.0, "total_loss": 7116645221.0}, {"strike": 113.0, "call_loss": 25132183.0, "put_loss": 6954387846.0, "total_loss": 6979520029.0}, {"strike": 114.0, "call_loss": 25806904.0, "put_loss": 6816861113.0, "total_loss": 6842668017.0}, {"strike": 115.0, "call_loss": 26539305.0, "put_loss": 6679919480.0, "total_loss": 6706458785.0}, {"strike": 116.0, "call_loss": 27889756.0, "put_loss": 6544317847.0, "total_loss": 6572207603.0}, {"strike": 117.0, "call_loss": 29272157.0, "put_loss": 6408847344.0, "total_loss": 6438119501.0}, {"strike": 118.0, "call_loss": 30689458.0, "put_loss": 6273734841.0, "total_loss": 6304424299.0}, {"strike": 119.0, "call_loss": 32123069.0, "put_loss": 6139307448.0, "total_loss": 6171430517.0}, {"strike": 120.0, "call_loss": 33565470.0, "put_loss": 6005920055.0, "total_loss": 6039485525.0}, {"strike": 121.0, "call_loss": 35925451.0, "put_loss": 5875282662.0, "total_loss": 5911208113.0}, {"strike": 122.0, "call_loss": 38303512.0, "put_loss": 5745331669.0, "total_loss": 5783635181.0}, {"strike": 123.0, "call_loss": 40749293.0, "put_loss": 5616610676.0, "total_loss": 5657359969.0}, {"strike": 124.0, "call_loss": 43222294.0, "put_loss": 5489279683.0, "total_loss": 5532501977.0}, {"strike": 125.0, "call_loss": 45719145.0, "put_loss": 5362978690.0, "total_loss": 5408697835.0}, {"strike": 126.0, "call_loss": 48349766.0, "put_loss": 5238937697.0, "total_loss": 5287287463.0}, {"strike": 127.0, "call_loss": 51031247.0, "put_loss": 5115606464.0, "total_loss": 5166637711.0}, {"strike": 128.0, "call_loss": 53748168.0, "put_loss": 4993865231.0, "total_loss": 5047613399.0}, {"strike": 129.0, "call_loss": 56507459.0, "put_loss": 4873643998.0, "total_loss": 4930151457.0}, {"strike": 130.0, "call_loss": 59483740.0, "put_loss": 4755232765.0, "total_loss": 4814716505.0}, {"strike": 131.0, "call_loss": 69350021.0, "put_loss": 4647551532.0, "total_loss": 4716901553.0}, {"strike": 132.0, "call_loss": 79288682.0, "put_loss": 4541000299.0, "total_loss": 4620288981.0}, {"strike": 133.0, "call_loss": 89299553.0, "put_loss": 4435829066.0, "total_loss": 4525128619.0}, {"strike": 134.0, "call_loss": 99469724.0, "put_loss": 4331727833.0, "total_loss": 4431197557.0}, {"strike": 135.0, "call_loss": 109706025.0, "put_loss": 4228886600.0, "total_loss": 4338592625.0}, {"strike": 136.0, "call_loss": 120168686.0, "put_loss": 4127205367.0, "total_loss": 4247374053.0}, {"strike": 137.0, "call_loss": 130730837.0, "put_loss": 4026091624.0, "total_loss": 4156822461.0}, {"strike": 138.0, "call_loss": 141489478.0, "put_loss": 3925414501.0, "total_loss": 4066903979.0}, {"strike": 139.0, "call_loss": 152303129.0, "put_loss": 3825297018.0, "total_loss": 3977600147.0}, {"strike": 140.0, "call_loss": 163298980.0, "put_loss": 3725445285.0, "total_loss": 3888744265.0}, {"strike": 141.0, "call_loss": 174887621.0, "put_loss": 3626663552.0, "total_loss": 3801551173.0}, {"strike": 142.0, "call_loss": 186662852.0, "put_loss": 3528300709.0, "total_loss": 3714963561.0}, {"strike": 143.0, "call_loss": 198489943.0, "put_loss": 3430737926.0, "total_loss": 3629227869.0}, {"strike": 144.0, "call_loss": 210440024.0, "put_loss": 3333821713.0, "total_loss": 3544261737.0}, {"strike": 145.0, "call_loss": 222583705.0, "put_loss": 3237477480.0, "total_loss": 3460061185.0}, {"strike": 146.0, "call_loss": 235088026.0, "put_loss": 3142010987.0, "total_loss": 3377099013.0}, {"strike": 147.0, "call_loss": 247701957.0, "put_loss": 3046913814.0, "total_loss": 3294615771.0}, {"strike": 148.0, "call_loss": 260451238.0, "put_loss": 2951969561.0, "total_loss": 3212420799.0}, {"strike": 149.0, "call_loss": 273317269.0, "put_loss": 2857300788.0, "total_loss": 3130618057.0}, {"strike": 150.0, "call_loss": 286293540.0, "put_loss": 2763009145.0, "total_loss": 3049302685.0}, {"strike": 151.0, "call_loss": 300319811.0, "put_loss": 2673047502.0, "total_loss": 2973367313.0}, {"strike": 152.0, "call_loss": 314593482.0, "put_loss": 2583694899.0, "total_loss": 2898288381.0}, {"strike": 153.0, "call_loss": 329128793.0, "put_loss": 2494914906.0, "total_loss": 2824043699.0}, {"strike": 154.0, "call_loss": 343783794.0, "put_loss": 2406686253.0, "total_loss": 2750470047.0}, {"strike": 155.0, "call_loss": 360918795.0, "put_loss": 2321047600.0, "total_loss": 2681966395.0}, {"strike": 156.0, "call_loss": 378402316.0, "put_loss": 2238158947.0, "total_loss": 2616561263.0}, {"strike": 157.0, "call_loss": 396093847.0, "put_loss": 2155970184.0, "total_loss": 2552064031.0}, {"strike": 158.0, "call_loss": 413985188.0, "put_loss": 2074190061.0, "total_loss": 2488175249.0}, {"strike": 159.0, "call_loss": 432069999.0, "put_loss": 1993182808.0, "total_loss": 2425252807.0}, {"strike": 160.0, "call_loss": 450407090.0, "put_loss": 1912782825.0, "total_loss": 2363189915.0}, {"strike": 161.0, "call_loss": 474244181.0, "put_loss": 1840642842.0, "total_loss": 2314887023.0}, {"strike": 162.0, "call_loss": 498341732.0, "put_loss": 1769218029.0, "total_loss": 2267559761.0}, {"strike": 163.0, "call_loss": 522601643.0, "put_loss": 1699413216.0, "total_loss": 2222014859.0}, {"strike": 164.0, "call_loss": 547851874.0, "put_loss": 1630968403.0, "total_loss": 2178820277.0}, {"strike": 165.0, "call_loss": 573263425.0, "put_loss": 1563479390.0, "total_loss": 2136742815.0}, {"strike": 166.0, "call_loss": 599412456.0, "put_loss": 1498220377.0, "total_loss": 2097632833.0}, {"strike": 167.0, "call_loss": 625803977.0, "put_loss": 1433880984.0, "total_loss": 2059684961.0}, {"strike": 168.0, "call_loss": 652560588.0, "put_loss": 1371071591.0, "total_loss": 2023632179.0}, {"strike": 169.0, "call_loss": 679863079.0, "put_loss": 1309552198.0, "total_loss": 1989415277.0}, {"strike": 170.0, "call_loss": 707876130.0, "put_loss": 1248796475.0, "total_loss": 1956672605.0}, {"strike": 171.0, "call_loss": 737649181.0, "put_loss": 1189880752.0, "total_loss": 1927529933.0}, {"strike": 172.0, "call_loss": 768129242.0, "put_loss": 1132165029.0, "total_loss": 1900294271.0}, {"strike": 173.0, "call_loss": 799466643.0, "put_loss": 1075999306.0, "total_loss": 1875465949.0}, {"strike": 174.0, "call_loss": 831795314.0, "put_loss": 1020765713.0, "total_loss": 1852561027.0}, {"strike": 175.0, "call_loss": 865723985.0, "put_loss": 966692120.0, "total_loss": 1832416105.0}, {"strike": 176.0, "call_loss": 902532656.0, "put_loss": 915138527.0, "total_loss": 1817671183.0}, {"strike": 177.0, "call_loss": 942511327.0, "put_loss": 864724934.0, "total_loss": 1807236261.0}, {"strike": 178.0, "call_loss": 984829998.0, "put_loss": 816271341.0, "total_loss": 1801101339.0}, {"strike": 179.0, "call_loss": 1029288669.0, "put_loss": 769407748.0, "total_loss": 1798696417.0}, {"strike": 180.0, "call_loss": 1075097340.0, "put_loss": 723359245.0, "total_loss": 1798456585.0}, {"strike": 181.0, "call_loss": 1128266011.0, "put_loss": 683090742.0, "total_loss": 1811356753.0}, {"strike": 182.0, "call_loss": 1183674682.0, "put_loss": 644442239.0, "total_loss": 1828116921.0}, {"strike": 183.0, "call_loss": 1242823353.0, "put_loss": 608503736.0, "total_loss": 1851327089.0}, {"strike": 184.0, "call_loss": 1303162024.0, "put_loss": 573422203.0, "total_loss": 1876584227.0}, {"strike": 185.0, "call_loss": 1365140695.0, "put_loss": 539313140.0, "total_loss": 1904453835.0}, {"strike": 186.0, "call_loss": 1430309366.0, "put_loss": 508264077.0, "total_loss": 1938573443.0}, {"strike": 187.0, "call_loss": 1497738037.0, "put_loss": 478019734.0, "total_loss": 1975757771.0}, {"strike": 188.0, "call_loss": 1566836708.0, "put_loss": 448557651.0, "total_loss": 2015394359.0}, {"strike": 189.0, "call_loss": 1638705379.0, "put_loss": 421735568.0, "total_loss": 2060440947.0}, {"strike": 190.0, "call_loss": 1711421980.0, "put_loss": 395470195.0, "total_loss": 2106892175.0}, {"strike": 191.0, "call_loss": 1787618581.0, "put_loss": 371684822.0, "total_loss": 2159303403.0}, {"strike": 192.0, "call_loss": 1866655182.0, "put_loss": 350829449.0, "total_loss": 2217484631.0}, {"strike": 193.0, "call_loss": 1948321783.0, "put_loss": 332314076.0, "total_loss": 2280635859.0}, {"strike": 194.0, "call_loss": 2030506994.0, "put_loss": 314152033.0, "total_loss": 2344659027.0}, {"strike": 195.0, "call_loss": 2116642205.0, "put_loss": 297289990.0, "total_loss": 2413932195.0}, {"strike": 196.0, "call_loss": 2203797416.0, "put_loss": 281487947.0, "total_loss": 2485285363.0}, {"strike": 197.0, "call_loss": 2292882627.0, "put_loss": 267375904.0, "total_loss": 2560258531.0}, {"strike": 198.0, "call_loss": 2382600458.0, "put_loss": 253435011.0, "total_loss": 2636035469.0}, {"strike": 199.0, "call_loss": 2473146659.0, "put_loss": 240095228.0, "total_loss": 2713241887.0}, {"strike": 200.0, "call_loss": 2564091620.0, "put_loss": 226983155.0, "total_loss": 2791074775.0}, {"strike": 205.0, "call_loss": 3046666425.0, "put_loss": 168022790.0, "total_loss": 3214689215.0}, {"strike": 210.0, "call_loss": 3536541230.0, "put_loss": 111202925.0, "total_loss": 3647744155.0}, {"strike": 215.0, "call_loss": 4032466035.0, "put_loss": 56284310.0, "total_loss": 4088750345.0}, {"strike": 220.0, "call_loss": 4535390840.0, "put_loss": 4196945.0, "total_loss": 4539587785.0}, {"strike": 225.0, "call_loss": 5089865645.0, "put_loss": 3259580.0, "total_loss": 5093125225.0}, {"strike": 230.0, "call_loss": 5647119400.0, "put_loss": 2617865.0, "total_loss": 5649737265.0}, {"strike": 235.0, "call_loss": 6207507555.0, "put_loss": 2363350.0, "total_loss": 6209870905.0}, {"strike": 240.0, "call_loss": 6769444410.0, "put_loss": 2135285.0, "total_loss": 6771579695.0}, {"strike": 245.0, "call_loss": 7333072365.0, "put_loss": 1907325.0, "total_loss": 7334979690.0}, {"strike": 250.0, "call_loss": 7898334870.0, "put_loss": 1741865.0, "total_loss": 7900076735.0}, {"strike": 255.0, "call_loss": 8464765225.0, "put_loss": 1626405.0, "total_loss": 8466391630.0}, {"strike": 260.0, "call_loss": 9031927680.0, "put_loss": 1513975.0, "total_loss": 9033441655.0}, {"strike": 265.0, "call_loss": 9599616185.0, "put_loss": 1401555.0, "total_loss": 9601017740.0}, {"strike": 270.0, "call_loss": 10167616190.0, "put_loss": 1289135.0, "total_loss": 10168905325.0}, {"strike": 275.0, "call_loss": 10735626195.0, "put_loss": 1186715.0, "total_loss": 10736812910.0}, {"strike": 280.0, "call_loss": 11303636200.0, "put_loss": 1084305.0, "total_loss": 11304720505.0}, {"strike": 285.0, "call_loss": 11871646205.0, "put_loss": 981895.0, "total_loss": 11872628100.0}, {"strike": 290.0, "call_loss": 12439656210.0, "put_loss": 879485.0, "total_loss": 12440535695.0}, {"strike": 295.0, "call_loss": 13007666215.0, "put_loss": 777075.0, "total_loss": 13008443290.0}, {"strike": 305.0, "call_loss": 14143686225.0, "put_loss": 572265.0, "total_loss": 14144258490.0}, {"strike": 315.0, "call_loss": 15279706235.0, "put_loss": 367455.0, "total_loss": 15280073690.0}, {"strike": 320.0, "call_loss": 15847716240.0, "put_loss": 265050.0, "total_loss": 15847981290.0}, {"strike": 325.0, "call_loss": 16416271245.0, "put_loss": 162975.0, "total_loss": 16416434220.0}, {"strike": 330.0, "call_loss": 16984826250.0, "put_loss": 60900.0, "total_loss": 16984887150.0}, {"strike": 335.0, "call_loss": 17553381255.0, "put_loss": 8825.0, "total_loss": 17553390080.0}, {"strike": 340.0, "call_loss": 18121936260.0, "put_loss": 6750.0, "total_loss": 18121943010.0}, {"strike": 345.0, "call_loss": 18690491265.0, "put_loss": 4675.0, "total_loss": 18690495940.0}, {"strike": 350.0, "call_loss": 19259046270.0, "put_loss": 2600.0, "total_loss": 19259048870.0}, {"strike": 355.0, "call_loss": 19827601275.0, "put_loss": 525.0, "total_loss": 19827601800.0}, {"strike": 360.0, "call_loss": 20396156280.0, "put_loss": 450.0, "total_loss": 20396156730.0}, {"strike": 365.0, "call_loss": 20964711285.0, "put_loss": 375.0, "total_loss": 20964711660.0}, {"strike": 370.0, "call_loss": 21533266290.0, "put_loss": 300.0, "total_loss": 21533266590.0}, {"strike": 375.0, "call_loss": 22101821295.0, "put_loss": 225.0, "total_loss": 22101821520.0}, {"strike": 380.0, "call_loss": 22670376300.0, "put_loss": 150.0, "total_loss": 22670376450.0}, {"strike": 385.0, "call_loss": 23238931305.0, "put_loss": 75.0, "total_loss": 23238931380.0}, {"strike": 390.0, "call_loss": 23807486310.0, "put_loss": 0.0, "total_loss": 23807486310.0}];
+
+        // ── OI Distribution + Normal Fit ──
+        new Chart(document.getElementById('oi_1'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [
+              { label: 'OI Total', data: D.total_oi, backgroundColor: 'rgba(90,133,24,0.55)',
+                 borderColor: 'rgba(90,133,24,0.9)', borderWidth: 1, borderRadius: 2,
+                 barPercentage: 0.8, order: 2 },
+              { label: 'Ajuste Normal', data: D.normal_fit, type: 'line',
+                 borderColor: '#B8720A', borderWidth: 2, pointRadius: 0,
+                 tension: 0.4, fill: false, order: 1 },
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { position: 'top', labels: { boxWidth: 8, padding: 10, font: { size: 9 } } },
+            },
+            scales: {
+              x: { ticks: { font: { size: 9, family: 'var(--mono)' } }, grid: { display: false } },
+              y: { ticks: { callback: v => {
+                     if (Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if (Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font: { size: 9, family: 'var(--mono)' } },
+                   grid: { color: 'rgba(0,0,0,0.05)' } },
+            }
+          },
+          plugins: [{
+            afterDraw(chart) {
+              const xs = chart.scales.x, ys = chart.scales.y, ctx = chart.ctx;
+              // Max pain line
+              const mpI = D.strikes.indexOf(D.mp);
+              if (mpI >= 0) {
+                const x = xs.getPixelForValue(mpI);
+                ctx.save(); ctx.strokeStyle='#B8720A'; ctx.lineWidth=1;
+                ctx.setLineDash([3,2]); ctx.beginPath();
+                ctx.moveTo(x,ys.top); ctx.lineTo(x,ys.bottom); ctx.stroke();
+                ctx.fillStyle='#B8720A'; ctx.font="600 8px var(--mono)";
+                ctx.textAlign='center'; ctx.fillText('MP',x,ys.top-4); ctx.restore();
+              }
+              // μ line
+              const muI = D.strikes.reduce((a,v,i) => Math.abs(v-D.mu)<Math.abs(D.strikes[a]-D.mu)?i:a, 0);
+              const mx = xs.getPixelForValue(muI);
+              ctx.save(); ctx.strokeStyle='#2E6BBF'; ctx.lineWidth=1;
+              ctx.setLineDash([3,2]); ctx.beginPath();
+              ctx.moveTo(mx,ys.top); ctx.lineTo(mx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#2E6BBF'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ',mx,ys.top-4); ctx.restore();
+              // Spot line
+              const spI = D.strikes.reduce((a,v,i) => Math.abs(v-D.spot)<Math.abs(D.strikes[a]-D.spot)?i:a, 0);
+              const sx = xs.getPixelForValue(spI);
+              ctx.save(); ctx.strokeStyle='#6B6960'; ctx.lineWidth=1;
+              ctx.setLineDash([2,3]); ctx.beginPath();
+              ctx.moveTo(sx,ys.top); ctx.lineTo(sx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#6B6960'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('SPOT',sx,ys.top-4); ctx.restore();
+            }
+          }]
+        });
+
+        // ── Max Pain Curve ──
+        new Chart(document.getElementById('mp_1'), {
+          type: 'line',
+          data: {
+            labels: MPC.map(d=>d.strike),
+            datasets: [
+              { label:'Perda total', data: MPC.map(d=>d.total_loss), borderColor:'#B8720A',
+                 backgroundColor:'rgba(184,114,10,0.12)', borderWidth:1.8, fill:true,
+                 tension:0.3, pointRadius:0 },
+              { label:'Call loss', data: MPC.map(d=>d.call_loss), borderColor:'#148A63',
+                 borderWidth:1, borderDash:[3,2], fill:false, tension:0.3, pointRadius:0 },
+              { label:'Put loss', data: MPC.map(d=>d.put_loss), borderColor:'#B33530',
+                 borderWidth:1, borderDash:[3,2], fill:false, tension:0.3, pointRadius:0 },
+            ]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            interaction: { mode:'index', intersect:false },
+            plugins: { legend: { position:'top', labels:{ boxWidth:8, padding:10, font:{size:9} } } },
+            scales: {
+              x: { ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=>(v/1e6).toFixed(1)+'M', font:{size:9,family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          }
+        });
+
+        // ── Calls vs Puts ──
+        new Chart(document.getElementById('cp_1'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [
+              { label:'Call OI', data:D.call_oi, backgroundColor:'rgba(20,138,99,0.6)',
+                 borderRadius:2, barPercentage:0.9 },
+              { label:'Put OI', data:D.put_oi, backgroundColor:'rgba(179,53,48,0.55)',
+                 borderRadius:2, barPercentage:0.9 },
+            ]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins: { legend:{ position:'top', labels:{ boxWidth:8, padding:10, font:{size:9} } } },
+            scales: {
+              x: { stacked:false, ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=> {
+                     if(Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if(Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font:{size:9, family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          },
+          plugins: [{
+            afterDraw(chart) {
+              const xs=chart.scales.x, ys=chart.scales.y, ctx=chart.ctx;
+              // Call mean
+              const ci = D.strikes.reduce((a,v,i)=>Math.abs(v-D.call_mean)<Math.abs(D.strikes[a]-D.call_mean)?i:a,0);
+              const cx = xs.getPixelForValue(ci);
+              ctx.save(); ctx.strokeStyle='#148A63'; ctx.lineWidth=1; ctx.setLineDash([3,2]);
+              ctx.beginPath(); ctx.moveTo(cx,ys.top); ctx.lineTo(cx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#148A63'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ Call',cx,ys.top-4); ctx.restore();
+              // Put mean
+              const pi = D.strikes.reduce((a,v,i)=>Math.abs(v-D.put_mean)<Math.abs(D.strikes[a]-D.put_mean)?i:a,0);
+              const px = xs.getPixelForValue(pi);
+              ctx.save(); ctx.strokeStyle='#B33530'; ctx.lineWidth=1; ctx.setLineDash([3,2]);
+              ctx.beginPath(); ctx.moveTo(px,ys.top); ctx.lineTo(px,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#B33530'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ Put',px,ys.top-4); ctx.restore();
+            }
+          }]
+        });
+
+        // ── Residuals ──
+        const resColors = D.residuals.map(v => v >= 0 ? 'rgba(90,133,24,0.65)' : 'rgba(179,53,48,0.6)');
+        new Chart(document.getElementById('res_1'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [{ label:'Resíduo', data:D.residuals, backgroundColor:resColors,
+                          borderRadius:2, barPercentage:0.8 }]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins: { legend:{ display:false } },
+            scales: {
+              x: { ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=> {
+                     if(Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if(Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font:{size:9, family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          }
+        });
+      })();
+      </script>
+    </div>
+
+    <div class="exp-block" id="exp2" style="animation-delay:0.12s">
+      <div class="exp-top">
+        <div>
+          <h2>26 Jun — W4</h2>
+          <span class="tag tw">Semanal</span>
+          <span class="tag tg">21 DTE</span>
+        </div>
+        <div class="grade-pill" style="--gc:#148A63">
+          <span class="gp-dot"></span>Alta concentração
+        </div>
+      </div>
+
+      <!-- Stat cards row 1: Posição -->
+      <div class="stat-section-title">Posição</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Max Pain</div>
+      <div class="st-value" >R$ 163</div></div>
+        <div class="st-card">
+      <div class="st-label">Spot</div>
+      <div class="st-value" >R$ 167</div></div>
+        <div class="st-card">
+      <div class="st-label">Distância MP→Spot</div>
+      <div class="st-value" style="color:#B8720A">+2.40%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI Total</div>
+      <div class="st-value" >255k</div></div>
+      </div>
+
+      <!-- Stat cards row 2: Centro de massa -->
+      <div class="stat-section-title">Centro de massa do OI</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Média ponderada (μ)</div>
+      <div class="st-value" >R$ 171.84</div><div class="st-sub">Centro de massa total</div></div>
+        <div class="st-card">
+      <div class="st-label">σ ponderado</div>
+      <div class="st-value" >R$ 10.12</div><div class="st-sub">Dispersão em torno de μ</div></div>
+        <div class="st-card">
+      <div class="st-label">μ Calls</div>
+      <div class="st-value" >R$ 172.73</div><div class="st-sub">Centro de massa das calls</div></div>
+        <div class="st-card">
+      <div class="st-label">μ Puts</div>
+      <div class="st-value" >R$ 166.14</div><div class="st-sub">Centro de massa das puts</div></div>
+        <div class="st-card">
+      <div class="st-label">MP vs μ OI</div>
+      <div class="st-value" >-8.84</div><div class="st-sub">Max pain abaixo</div></div>
+      </div>
+
+      <!-- Stat cards row 3: Forma -->
+      <div class="stat-section-title">Forma da distribuição</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Assimetria (Skew)</div>
+      <div class="st-value" style="color:#B8720A">-0.361</div><div class="st-sub">Cauda à esquerda</div></div>
+        <div class="st-card">
+      <div class="st-label">Curtose</div>
+      <div class="st-value" style="color:#148A63">3.633</div><div class="st-sub">Excesso: +0.633</div></div>
+        <div class="st-card">
+      <div class="st-label">KS Estatística</div>
+      <div class="st-value" >0.2115</div><div class="st-sub">p-valor: 0.0000</div></div>
+        <div class="st-card">
+      <div class="st-label">Normalidade?</div>
+      <div class="st-value" style="color:#B33530">Não ✗</div><div class="st-sub">Rejeita H₀ de normalidade</div></div>
+      </div>
+
+      <!-- Stat cards row 4: Concentração -->
+      <div class="stat-section-title">Métricas de concentração</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">HHI</div>
+      <div class="st-value" >0.1023</div><div class="st-sub">Normalizado: 0.0871</div></div>
+        <div class="st-card">
+      <div class="st-label">Gini</div>
+      <div class="st-value" style="color:#148A63">0.821</div><div class="st-sub">0 = uniforme, 1 = concentrado</div></div>
+        <div class="st-card">
+      <div class="st-label">Entropia</div>
+      <div class="st-value" >3.82 bits</div><div class="st-sub">Máx: 5.91 · Ratio: 64.62%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±1σ do MP</div>
+      <div class="st-value" style="color:#B8720A">58.2%</div><div class="st-sub">Normal teórico: 68.3%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±2σ do MP</div>
+      <div class="st-value" >86.4%</div><div class="st-sub">Normal teórico: 95.4%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±R$2 do MP</div>
+      <div class="st-value" >15.6%</div><div class="st-sub">Contratos perto do max pain</div></div>
+      </div>
+
+      <!-- Ajuste normal -->
+      <div class="stat-section-title">Ajuste Gaussiano</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">μ (fit)</div>
+      <div class="st-value" >R$ 172.87</div></div>
+        <div class="st-card">
+      <div class="st-label">σ (fit)</div>
+      <div class="st-value" >R$ 1.08</div></div>
+        <div class="st-card">
+      <div class="st-label">R²</div>
+      <div class="st-value" style="color:#B8720A">0.5522</div><div class="st-sub">Ajuste moderado</div></div>
+        <div class="st-card">
+      <div class="st-label">Forma</div>
+      <div class="st-value" >assimétrica à esquerda (skew -0.36), perfil mesocúrtico</div></div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-2col">
+        <div class="ch-card">
+          <h4>Distribuição do OI vs Ajuste Normal</h4>
+          <div class="ch-wrap"><canvas id="oi_2"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <h4>Curva de max pain (perda total)</h4>
+          <div class="ch-wrap"><canvas id="mp_2"></canvas></div>
+        </div>
+      </div>
+      <div class="charts-2col">
+        <div class="ch-card">
+          <h4>Calls vs Puts — distribuição separada</h4>
+          <div class="ch-wrap"><canvas id="cp_2"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <h4>Resíduos do ajuste (OI real − Normal)</h4>
+          <div class="ch-wrap"><canvas id="res_2"></canvas></div>
+        </div>
+      </div>
+
+      <script>
+      (function() {
+        const D = {"strikes": [135.0, 136.0, 137.0, 147.0, 150.0, 151.0, 152.0, 153.0, 154.0, 155.0, 156.0, 157.0, 158.0, 159.0, 160.0, 161.0, 162.0, 163.0, 164.0, 165.0, 166.0, 167.0, 168.0, 169.0, 170.0, 171.0, 172.0, 173.0, 174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0, 188.0, 189.0, 190.0, 191.0, 192.0, 193.0, 194.0, 195.0, 196.0, 197.0, 198.0, 199.0, 200.0, 205.0, 210.0, 220.0, 230.0, 240.0], "call_oi": [1200.0, 1.0, 0.0, 6700.0, 390.0, 0.0, 0.0, 0.0, 0.0, 0.0, 5000.0, 0.0, 400.0, 0.0, 0.0, 0.0, 0.0, 35000.0, 0.0, 0.0, 1.0, 105.0, 40.0, 0.0, 271.0, 200.0, 44000.0, 37000.0, 34550.0, 1.0, 5340.0, 0.0, 1500.0, 2200.0, 6300.0, 100.0, 13050.0, 0.0, 1100.0, 3810.0, 15.0, 1500.0, 10000.0, 7.0, 10500.0, 3.0, 104.0, 1.0, 0.0, 151.0, 2.0, 5.0, 200.0, 2.0, 151.0, 0.0, 0.0, 0.0, 0.0, 0.0], "put_oi": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 10050.0, 0.0, 0.0, 0.0, 1900.0, 0.0, 2100.0, 0.0, 300.0, 1600.0, 1660.0, 1360.0, 5740.0, 0.0, 706.0, 0.0, 540.0, 0.0, 500.0, 0.0, 500.0, 0.0, 786.0, 0.0, 0.0, 0.0, 347.0, 250.0, 111.0, 0.0, 0.0, 3000.0, 0.0, 950.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 1.0, 2000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "total_oi": [1200.0, 1.0, 0.0, 6700.0, 390.0, 0.0, 0.0, 0.0, 10050.0, 0.0, 5000.0, 0.0, 2300.0, 0.0, 2100.0, 0.0, 300.0, 36600.0, 1660.0, 1360.0, 5741.0, 105.0, 746.0, 0.0, 811.0, 200.0, 44500.0, 37000.0, 35050.0, 1.0, 6126.0, 0.0, 1500.0, 2200.0, 6647.0, 350.0, 13161.0, 0.0, 1100.0, 6810.0, 15.0, 2450.0, 10000.0, 7.0, 10502.0, 3.0, 104.0, 1.0, 1.0, 2151.0, 2.0, 5.0, 200.0, 2.0, 151.0, 0.0, 0.0, 0.0, 0.0, 0.0], "normal_fit": [4.6300647750187325e-263, 3.818097002115985e-249, 1.3356037790581923e-235, 1.2033111097405956e-120, 2.0156653298917355e-93, 4.307647658359716e-85, 3.905104958084346e-77, 1.5017444623013277e-69, 2.4497973344940363e-62, 1.6952551282295224e-55, 4.97634826324842e-49, 6.196654126507929e-43, 3.273215028352158e-37, 7.334366487687072e-32, 6.971423537668785e-27, 2.8109370510540013e-22, 4.8078572219137986e-18, 3.4883720206546206e-14, 1.0736551641305704e-10, 1.4017728063193235e-07, 7.763565731127403e-05, 0.018239613381646837, 1.8177778748388382, 76.84874651478974, 1378.1724166765398, 10484.340313551284, 33833.69700062282, 46315.73840622598, 26895.431694984447, 6625.203719862549, 692.2942826994858, 30.686901789986777, 0.5770137100270061, 0.0046024598810156525, 1.557272739414649e-05, 2.235167846153197e-08, 1.3609005570320495e-11, 3.514903715505555e-15, 3.8509800093824527e-19, 1.7897809695922555e-23, 3.5285745565577067e-28, 2.9510019800409456e-33, 1.0469127621136861e-38, 1.575514039329089e-44, 1.0057842984199323e-50, 2.72369338348263e-57, 3.128832907094888e-64, 1.5246751283676862e-71, 3.151686790370339e-79, 2.763627957994267e-87, 1.0279852755193884e-95, 1.6220528522012093e-104, 1.0857101508837503e-113, 3.082716493712418e-123, 3.712992434059854e-133, 2.4391488923073012e-188, 7.834699065388334e-253, 0.0, 0.0, 0.0], "residuals": [1200.0, 1.0, -1.3356037790581923e-235, 6700.0, 390.0, -4.307647658359716e-85, -3.905104958084346e-77, -1.5017444623013277e-69, 10050.0, -1.6952551282295224e-55, 5000.0, -6.196654126507929e-43, 2300.0, -7.334366487687072e-32, 2100.0, -2.8109370510540013e-22, 300.0, 36600.0, 1659.9999999998927, 1359.9999998598228, 5740.999922364343, 104.98176038661835, 744.1822221251612, -76.84874651478974, -567.1724166765398, -10284.340313551284, 10666.302999377178, -9315.73840622598, 8154.568305015553, -6624.203719862549, 5433.705717300514, -30.686901789986777, 1499.422986289973, 2199.995397540119, 6646.9999844272725, 349.9999999776483, 13160.999999999987, -3.514903715505555e-15, 1100.0, 6810.0, 15.0, 2450.0, 10000.0, 7.0, 10502.0, 3.0, 104.0, 1.0, 1.0, 2151.0, 2.0, 5.0, 200.0, 2.0, 151.0, -2.4391488923073012e-188, -7.834699065388334e-253, 0.0, 0.0, 0.0], "mp": 163.0, "spot": 167.0, "mu": 171.84059333419506, "sigma": 10.124752992988302, "call_mean": 172.72865097329108, "put_mean": 166.13841816120686};
+        const MPC = [{"strike": 135.0, "call_loss": 0.0, "put_loss": 1071255.0, "total_loss": 1071255.0}, {"strike": 136.0, "call_loss": 1200.0, "put_loss": 1036852.0, "total_loss": 1038052.0}, {"strike": 137.0, "call_loss": 2401.0, "put_loss": 1002449.0, "total_loss": 1004850.0}, {"strike": 147.0, "call_loss": 14411.0, "put_loss": 658419.0, "total_loss": 672830.0}, {"strike": 150.0, "call_loss": 38114.0, "put_loss": 555210.0, "total_loss": 593324.0}, {"strike": 151.0, "call_loss": 46405.0, "put_loss": 520807.0, "total_loss": 567212.0}, {"strike": 152.0, "call_loss": 54696.0, "put_loss": 486404.0, "total_loss": 541100.0}, {"strike": 153.0, "call_loss": 62987.0, "put_loss": 452001.0, "total_loss": 514988.0}, {"strike": 154.0, "call_loss": 71278.0, "put_loss": 417598.0, "total_loss": 488876.0}, {"strike": 155.0, "call_loss": 79569.0, "put_loss": 393245.0, "total_loss": 472814.0}, {"strike": 156.0, "call_loss": 87860.0, "put_loss": 368892.0, "total_loss": 456752.0}, {"strike": 157.0, "call_loss": 101151.0, "put_loss": 344539.0, "total_loss": 445690.0}, {"strike": 158.0, "call_loss": 114442.0, "put_loss": 320186.0, "total_loss": 434628.0}, {"strike": 159.0, "call_loss": 128133.0, "put_loss": 297733.0, "total_loss": 425866.0}, {"strike": 160.0, "call_loss": 141824.0, "put_loss": 275280.0, "total_loss": 417104.0}, {"strike": 161.0, "call_loss": 155515.0, "put_loss": 254927.0, "total_loss": 410442.0}, {"strike": 162.0, "call_loss": 169206.0, "put_loss": 234574.0, "total_loss": 403780.0}, {"strike": 163.0, "call_loss": 182897.0, "put_loss": 214521.0, "total_loss": 397418.0}, {"strike": 164.0, "call_loss": 231588.0, "put_loss": 196068.0, "total_loss": 427656.0}, {"strike": 165.0, "call_loss": 280279.0, "put_loss": 179275.0, "total_loss": 459554.0}, {"strike": 166.0, "call_loss": 328970.0, "put_loss": 163842.0, "total_loss": 492812.0}, {"strike": 167.0, "call_loss": 377662.0, "put_loss": 154149.0, "total_loss": 531811.0}, {"strike": 168.0, "call_loss": 426459.0, "put_loss": 144456.0, "total_loss": 570915.0}, {"strike": 169.0, "call_loss": 475296.0, "put_loss": 135469.0, "total_loss": 610765.0}, {"strike": 170.0, "call_loss": 524133.0, "put_loss": 126482.0, "total_loss": 650615.0}, {"strike": 171.0, "call_loss": 573241.0, "put_loss": 118035.0, "total_loss": 691276.0}, {"strike": 172.0, "call_loss": 622549.0, "put_loss": 109588.0, "total_loss": 732137.0}, {"strike": 173.0, "call_loss": 715857.0, "put_loss": 101641.0, "total_loss": 817498.0}, {"strike": 174.0, "call_loss": 846165.0, "put_loss": 93694.0, "total_loss": 939859.0}, {"strike": 175.0, "call_loss": 1011023.0, "put_loss": 86247.0, "total_loss": 1097270.0}, {"strike": 176.0, "call_loss": 1175882.0, "put_loss": 78800.0, "total_loss": 1254682.0}, {"strike": 177.0, "call_loss": 1346081.0, "put_loss": 72139.0, "total_loss": 1418220.0}, {"strike": 178.0, "call_loss": 1516280.0, "put_loss": 65478.0, "total_loss": 1581758.0}, {"strike": 179.0, "call_loss": 1687979.0, "put_loss": 58817.0, "total_loss": 1746796.0}, {"strike": 180.0, "call_loss": 1861878.0, "put_loss": 52156.0, "total_loss": 1914034.0}, {"strike": 181.0, "call_loss": 2042077.0, "put_loss": 45842.0, "total_loss": 2087919.0}, {"strike": 182.0, "call_loss": 2222376.0, "put_loss": 39778.0, "total_loss": 2262154.0}, {"strike": 183.0, "call_loss": 2415725.0, "put_loss": 33825.0, "total_loss": 2449550.0}, {"strike": 184.0, "call_loss": 2609074.0, "put_loss": 27872.0, "total_loss": 2636946.0}, {"strike": 185.0, "call_loss": 2803523.0, "put_loss": 21919.0, "total_loss": 2825442.0}, {"strike": 186.0, "call_loss": 3001782.0, "put_loss": 18966.0, "total_loss": 3020748.0}, {"strike": 187.0, "call_loss": 3200056.0, "put_loss": 16013.0, "total_loss": 3216069.0}, {"strike": 188.0, "call_loss": 3399830.0, "put_loss": 14010.0, "total_loss": 3413840.0}, {"strike": 189.0, "call_loss": 3609604.0, "put_loss": 12007.0, "total_loss": 3621611.0}, {"strike": 190.0, "call_loss": 3819385.0, "put_loss": 10004.0, "total_loss": 3829389.0}, {"strike": 191.0, "call_loss": 4039666.0, "put_loss": 8003.0, "total_loss": 4047669.0}, {"strike": 192.0, "call_loss": 4259950.0, "put_loss": 6002.0, "total_loss": 4265952.0}, {"strike": 193.0, "call_loss": 4480338.0, "put_loss": 4001.0, "total_loss": 4484339.0}, {"strike": 194.0, "call_loss": 4700727.0, "put_loss": 2000.0, "total_loss": 4702727.0}, {"strike": 195.0, "call_loss": 4921116.0, "put_loss": 0.0, "total_loss": 4921116.0}, {"strike": 196.0, "call_loss": 5141656.0, "put_loss": 0.0, "total_loss": 5141656.0}, {"strike": 197.0, "call_loss": 5362198.0, "put_loss": 0.0, "total_loss": 5362198.0}, {"strike": 198.0, "call_loss": 5582745.0, "put_loss": 0.0, "total_loss": 5582745.0}, {"strike": 199.0, "call_loss": 5803492.0, "put_loss": 0.0, "total_loss": 5803492.0}, {"strike": 200.0, "call_loss": 6024241.0, "put_loss": 0.0, "total_loss": 6024241.0}, {"strike": 205.0, "call_loss": 7128741.0, "put_loss": 0.0, "total_loss": 7128741.0}, {"strike": 210.0, "call_loss": 8233241.0, "put_loss": 0.0, "total_loss": 8233241.0}, {"strike": 220.0, "call_loss": 10442241.0, "put_loss": 0.0, "total_loss": 10442241.0}, {"strike": 230.0, "call_loss": 12651241.0, "put_loss": 0.0, "total_loss": 12651241.0}, {"strike": 240.0, "call_loss": 14860241.0, "put_loss": 0.0, "total_loss": 14860241.0}];
+
+        // ── OI Distribution + Normal Fit ──
+        new Chart(document.getElementById('oi_2'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [
+              { label: 'OI Total', data: D.total_oi, backgroundColor: 'rgba(90,133,24,0.55)',
+                 borderColor: 'rgba(90,133,24,0.9)', borderWidth: 1, borderRadius: 2,
+                 barPercentage: 0.8, order: 2 },
+              { label: 'Ajuste Normal', data: D.normal_fit, type: 'line',
+                 borderColor: '#B8720A', borderWidth: 2, pointRadius: 0,
+                 tension: 0.4, fill: false, order: 1 },
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { position: 'top', labels: { boxWidth: 8, padding: 10, font: { size: 9 } } },
+            },
+            scales: {
+              x: { ticks: { font: { size: 9, family: 'var(--mono)' } }, grid: { display: false } },
+              y: { ticks: { callback: v => {
+                     if (Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if (Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font: { size: 9, family: 'var(--mono)' } },
+                   grid: { color: 'rgba(0,0,0,0.05)' } },
+            }
+          },
+          plugins: [{
+            afterDraw(chart) {
+              const xs = chart.scales.x, ys = chart.scales.y, ctx = chart.ctx;
+              // Max pain line
+              const mpI = D.strikes.indexOf(D.mp);
+              if (mpI >= 0) {
+                const x = xs.getPixelForValue(mpI);
+                ctx.save(); ctx.strokeStyle='#B8720A'; ctx.lineWidth=1;
+                ctx.setLineDash([3,2]); ctx.beginPath();
+                ctx.moveTo(x,ys.top); ctx.lineTo(x,ys.bottom); ctx.stroke();
+                ctx.fillStyle='#B8720A'; ctx.font="600 8px var(--mono)";
+                ctx.textAlign='center'; ctx.fillText('MP',x,ys.top-4); ctx.restore();
+              }
+              // μ line
+              const muI = D.strikes.reduce((a,v,i) => Math.abs(v-D.mu)<Math.abs(D.strikes[a]-D.mu)?i:a, 0);
+              const mx = xs.getPixelForValue(muI);
+              ctx.save(); ctx.strokeStyle='#2E6BBF'; ctx.lineWidth=1;
+              ctx.setLineDash([3,2]); ctx.beginPath();
+              ctx.moveTo(mx,ys.top); ctx.lineTo(mx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#2E6BBF'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ',mx,ys.top-4); ctx.restore();
+              // Spot line
+              const spI = D.strikes.reduce((a,v,i) => Math.abs(v-D.spot)<Math.abs(D.strikes[a]-D.spot)?i:a, 0);
+              const sx = xs.getPixelForValue(spI);
+              ctx.save(); ctx.strokeStyle='#6B6960'; ctx.lineWidth=1;
+              ctx.setLineDash([2,3]); ctx.beginPath();
+              ctx.moveTo(sx,ys.top); ctx.lineTo(sx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#6B6960'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('SPOT',sx,ys.top-4); ctx.restore();
+            }
+          }]
+        });
+
+        // ── Max Pain Curve ──
+        new Chart(document.getElementById('mp_2'), {
+          type: 'line',
+          data: {
+            labels: MPC.map(d=>d.strike),
+            datasets: [
+              { label:'Perda total', data: MPC.map(d=>d.total_loss), borderColor:'#B8720A',
+                 backgroundColor:'rgba(184,114,10,0.12)', borderWidth:1.8, fill:true,
+                 tension:0.3, pointRadius:0 },
+              { label:'Call loss', data: MPC.map(d=>d.call_loss), borderColor:'#148A63',
+                 borderWidth:1, borderDash:[3,2], fill:false, tension:0.3, pointRadius:0 },
+              { label:'Put loss', data: MPC.map(d=>d.put_loss), borderColor:'#B33530',
+                 borderWidth:1, borderDash:[3,2], fill:false, tension:0.3, pointRadius:0 },
+            ]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            interaction: { mode:'index', intersect:false },
+            plugins: { legend: { position:'top', labels:{ boxWidth:8, padding:10, font:{size:9} } } },
+            scales: {
+              x: { ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=>(v/1e6).toFixed(1)+'M', font:{size:9,family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          }
+        });
+
+        // ── Calls vs Puts ──
+        new Chart(document.getElementById('cp_2'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [
+              { label:'Call OI', data:D.call_oi, backgroundColor:'rgba(20,138,99,0.6)',
+                 borderRadius:2, barPercentage:0.9 },
+              { label:'Put OI', data:D.put_oi, backgroundColor:'rgba(179,53,48,0.55)',
+                 borderRadius:2, barPercentage:0.9 },
+            ]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins: { legend:{ position:'top', labels:{ boxWidth:8, padding:10, font:{size:9} } } },
+            scales: {
+              x: { stacked:false, ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=> {
+                     if(Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if(Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font:{size:9, family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          },
+          plugins: [{
+            afterDraw(chart) {
+              const xs=chart.scales.x, ys=chart.scales.y, ctx=chart.ctx;
+              // Call mean
+              const ci = D.strikes.reduce((a,v,i)=>Math.abs(v-D.call_mean)<Math.abs(D.strikes[a]-D.call_mean)?i:a,0);
+              const cx = xs.getPixelForValue(ci);
+              ctx.save(); ctx.strokeStyle='#148A63'; ctx.lineWidth=1; ctx.setLineDash([3,2]);
+              ctx.beginPath(); ctx.moveTo(cx,ys.top); ctx.lineTo(cx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#148A63'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ Call',cx,ys.top-4); ctx.restore();
+              // Put mean
+              const pi = D.strikes.reduce((a,v,i)=>Math.abs(v-D.put_mean)<Math.abs(D.strikes[a]-D.put_mean)?i:a,0);
+              const px = xs.getPixelForValue(pi);
+              ctx.save(); ctx.strokeStyle='#B33530'; ctx.lineWidth=1; ctx.setLineDash([3,2]);
+              ctx.beginPath(); ctx.moveTo(px,ys.top); ctx.lineTo(px,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#B33530'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ Put',px,ys.top-4); ctx.restore();
+            }
+          }]
+        });
+
+        // ── Residuals ──
+        const resColors = D.residuals.map(v => v >= 0 ? 'rgba(90,133,24,0.65)' : 'rgba(179,53,48,0.6)');
+        new Chart(document.getElementById('res_2'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [{ label:'Resíduo', data:D.residuals, backgroundColor:resColors,
+                          borderRadius:2, barPercentage:0.8 }]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins: { legend:{ display:false } },
+            scales: {
+              x: { ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=> {
+                     if(Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if(Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font:{size:9, family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          }
+        });
+      })();
+      </script>
+    </div>
+
+    <div class="exp-block" id="exp3" style="animation-delay:0.18s">
+      <div class="exp-top">
+        <div>
+          <h2>3 Jul — W1</h2>
+          <span class="tag tw">Semanal</span>
+          <span class="tag tg">28 DTE</span>
+        </div>
+        <div class="grade-pill" style="--gc:#148A63">
+          <span class="gp-dot"></span>Alta concentração
+        </div>
+      </div>
+
+      <!-- Stat cards row 1: Posição -->
+      <div class="stat-section-title">Posição</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Max Pain</div>
+      <div class="st-value" >R$ 144</div></div>
+        <div class="st-card">
+      <div class="st-label">Spot</div>
+      <div class="st-value" >R$ 168</div></div>
+        <div class="st-card">
+      <div class="st-label">Distância MP→Spot</div>
+      <div class="st-value" style="color:#B8720A">+14.29%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI Total</div>
+      <div class="st-value" >11k</div></div>
+      </div>
+
+      <!-- Stat cards row 2: Centro de massa -->
+      <div class="stat-section-title">Centro de massa do OI</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Média ponderada (μ)</div>
+      <div class="st-value" >R$ 159.96</div><div class="st-sub">Centro de massa total</div></div>
+        <div class="st-card">
+      <div class="st-label">σ ponderado</div>
+      <div class="st-value" >R$ 11.72</div><div class="st-sub">Dispersão em torno de μ</div></div>
+        <div class="st-card">
+      <div class="st-label">μ Calls</div>
+      <div class="st-value" >R$ 159.35</div><div class="st-sub">Centro de massa das calls</div></div>
+        <div class="st-card">
+      <div class="st-label">μ Puts</div>
+      <div class="st-value" >R$ 164.43</div><div class="st-sub">Centro de massa das puts</div></div>
+        <div class="st-card">
+      <div class="st-label">MP vs μ OI</div>
+      <div class="st-value" >-15.96</div><div class="st-sub">Max pain abaixo</div></div>
+      </div>
+
+      <!-- Stat cards row 3: Forma -->
+      <div class="stat-section-title">Forma da distribuição</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Assimetria (Skew)</div>
+      <div class="st-value" style="color:#148A63">+0.091</div><div class="st-sub">Simétrica</div></div>
+        <div class="st-card">
+      <div class="st-label">Curtose</div>
+      <div class="st-value" style="color:#B8720A">2.115</div><div class="st-sub">Excesso: -0.885</div></div>
+        <div class="st-card">
+      <div class="st-label">KS Estatística</div>
+      <div class="st-value" >0.1702</div><div class="st-sub">p-valor: 0.0000</div></div>
+        <div class="st-card">
+      <div class="st-label">Normalidade?</div>
+      <div class="st-value" style="color:#B33530">Não ✗</div><div class="st-sub">Rejeita H₀ de normalidade</div></div>
+      </div>
+
+      <!-- Stat cards row 4: Concentração -->
+      <div class="stat-section-title">Métricas de concentração</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">HHI</div>
+      <div class="st-value" >0.1622</div><div class="st-sub">Normalizado: 0.1343</div></div>
+        <div class="st-card">
+      <div class="st-label">Gini</div>
+      <div class="st-value" style="color:#148A63">0.818</div><div class="st-sub">0 = uniforme, 1 = concentrado</div></div>
+        <div class="st-card">
+      <div class="st-label">Entropia</div>
+      <div class="st-value" >2.83 bits</div><div class="st-sub">Máx: 4.95 · Ratio: 57.16%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±1σ do MP</div>
+      <div class="st-value" style="color:#B8720A">25.8%</div><div class="st-sub">Normal teórico: 68.3%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±2σ do MP</div>
+      <div class="st-value" >67.6%</div><div class="st-sub">Normal teórico: 95.4%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±R$2 do MP</div>
+      <div class="st-value" >25.8%</div><div class="st-sub">Contratos perto do max pain</div></div>
+      </div>
+
+      <!-- Ajuste normal -->
+      <div class="stat-section-title">Ajuste Gaussiano</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">μ (fit)</div>
+      <div class="st-value" >R$ 159.96</div></div>
+        <div class="st-card">
+      <div class="st-label">σ (fit)</div>
+      <div class="st-value" >R$ 11.72</div></div>
+        <div class="st-card">
+      <div class="st-label">R²</div>
+      <div class="st-value" style="color:#B33530">0.0000</div><div class="st-sub">Ajuste ruim</div></div>
+        <div class="st-card">
+      <div class="st-label">Forma</div>
+      <div class="st-value" >simétrica, perfil mesocúrtico</div></div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-2col">
+        <div class="ch-card">
+          <h4>Distribuição do OI vs Ajuste Normal</h4>
+          <div class="ch-wrap"><canvas id="oi_3"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <h4>Curva de max pain (perda total)</h4>
+          <div class="ch-wrap"><canvas id="mp_3"></canvas></div>
+        </div>
+      </div>
+      <div class="charts-2col">
+        <div class="ch-card">
+          <h4>Calls vs Puts — distribuição separada</h4>
+          <div class="ch-wrap"><canvas id="cp_3"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <h4>Resíduos do ajuste (OI real − Normal)</h4>
+          <div class="ch-wrap"><canvas id="res_3"></canvas></div>
+        </div>
+      </div>
+
+      <script>
+      (function() {
+        const D = {"strikes": [144.0, 146.0, 148.0, 150.0, 152.0, 154.0, 156.0, 158.0, 160.0, 162.0, 164.0, 166.0, 168.0, 170.0, 172.0, 174.0, 175.0, 176.0, 178.0, 180.0, 182.0, 184.0, 186.0, 188.0, 190.0, 192.0, 194.0, 196.0, 198.0, 200.0, 210.0], "call_oi": [2850.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1730.0, 0.0, 230.0, 2050.0, 0.0, 0.0, 854.0, 0.0, 10.0, 0.0, 555.0, 555.0, 0.0, 756.0, 0.0, 0.0, 0.0, 100.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "put_oi": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 600.0, 0.0, 0.0, 3.0, 742.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "total_oi": [2850.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1730.0, 0.0, 830.0, 2050.0, 0.0, 3.0, 1596.0, 0.0, 10.0, 0.0, 555.0, 555.0, 0.0, 756.0, 0.0, 0.0, 0.0, 100.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "normal_fit": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "residuals": [2850.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1730.0, 0.0, 830.0, 2050.0, 0.0, 3.0, 1596.0, 0.0, 10.0, 0.0, 555.0, 555.0, 0.0, 756.0, 0.0, 0.0, 0.0, 100.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "mp": 144.0, "spot": 168.0, "mu": 159.96474852741278, "sigma": 11.724496707054241, "call_mean": 159.3454076367389, "put_mean": 164.42676579925651};
+        const MPC = [{"strike": 144.0, "call_loss": 0.0, "put_loss": 27474.0, "total_loss": 27474.0}, {"strike": 146.0, "call_loss": 5700.0, "put_loss": 24784.0, "total_loss": 30484.0}, {"strike": 148.0, "call_loss": 11400.0, "put_loss": 22094.0, "total_loss": 33494.0}, {"strike": 150.0, "call_loss": 17100.0, "put_loss": 19404.0, "total_loss": 36504.0}, {"strike": 152.0, "call_loss": 22800.0, "put_loss": 16714.0, "total_loss": 39514.0}, {"strike": 154.0, "call_loss": 28500.0, "put_loss": 14024.0, "total_loss": 42524.0}, {"strike": 156.0, "call_loss": 34200.0, "put_loss": 11334.0, "total_loss": 45534.0}, {"strike": 158.0, "call_loss": 43360.0, "put_loss": 8644.0, "total_loss": 52004.0}, {"strike": 160.0, "call_loss": 52520.0, "put_loss": 5954.0, "total_loss": 58474.0}, {"strike": 162.0, "call_loss": 62140.0, "put_loss": 4464.0, "total_loss": 66604.0}, {"strike": 164.0, "call_loss": 75860.0, "put_loss": 2974.0, "total_loss": 78834.0}, {"strike": 166.0, "call_loss": 89580.0, "put_loss": 1484.0, "total_loss": 91064.0}, {"strike": 168.0, "call_loss": 103300.0, "put_loss": 0.0, "total_loss": 103300.0}, {"strike": 170.0, "call_loss": 118728.0, "put_loss": 0.0, "total_loss": 118728.0}, {"strike": 172.0, "call_loss": 134156.0, "put_loss": 0.0, "total_loss": 134156.0}, {"strike": 174.0, "call_loss": 149604.0, "put_loss": 0.0, "total_loss": 149604.0}, {"strike": 175.0, "call_loss": 157328.0, "put_loss": 0.0, "total_loss": 157328.0}, {"strike": 176.0, "call_loss": 165607.0, "put_loss": 0.0, "total_loss": 165607.0}, {"strike": 178.0, "call_loss": 183275.0, "put_loss": 0.0, "total_loss": 183275.0}, {"strike": 180.0, "call_loss": 200943.0, "put_loss": 0.0, "total_loss": 200943.0}, {"strike": 182.0, "call_loss": 220123.0, "put_loss": 0.0, "total_loss": 220123.0}, {"strike": 184.0, "call_loss": 239303.0, "put_loss": 0.0, "total_loss": 239303.0}, {"strike": 186.0, "call_loss": 258483.0, "put_loss": 0.0, "total_loss": 258483.0}, {"strike": 188.0, "call_loss": 277663.0, "put_loss": 0.0, "total_loss": 277663.0}, {"strike": 190.0, "call_loss": 297043.0, "put_loss": 0.0, "total_loss": 297043.0}, {"strike": 192.0, "call_loss": 316423.0, "put_loss": 0.0, "total_loss": 316423.0}, {"strike": 194.0, "call_loss": 335803.0, "put_loss": 0.0, "total_loss": 335803.0}, {"strike": 196.0, "call_loss": 355183.0, "put_loss": 0.0, "total_loss": 355183.0}, {"strike": 198.0, "call_loss": 374563.0, "put_loss": 0.0, "total_loss": 374563.0}, {"strike": 200.0, "call_loss": 393943.0, "put_loss": 0.0, "total_loss": 393943.0}, {"strike": 210.0, "call_loss": 490843.0, "put_loss": 0.0, "total_loss": 490843.0}];
+
+        // ── OI Distribution + Normal Fit ──
+        new Chart(document.getElementById('oi_3'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [
+              { label: 'OI Total', data: D.total_oi, backgroundColor: 'rgba(90,133,24,0.55)',
+                 borderColor: 'rgba(90,133,24,0.9)', borderWidth: 1, borderRadius: 2,
+                 barPercentage: 0.8, order: 2 },
+              { label: 'Ajuste Normal', data: D.normal_fit, type: 'line',
+                 borderColor: '#B8720A', borderWidth: 2, pointRadius: 0,
+                 tension: 0.4, fill: false, order: 1 },
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { position: 'top', labels: { boxWidth: 8, padding: 10, font: { size: 9 } } },
+            },
+            scales: {
+              x: { ticks: { font: { size: 9, family: 'var(--mono)' } }, grid: { display: false } },
+              y: { ticks: { callback: v => {
+                     if (Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if (Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font: { size: 9, family: 'var(--mono)' } },
+                   grid: { color: 'rgba(0,0,0,0.05)' } },
+            }
+          },
+          plugins: [{
+            afterDraw(chart) {
+              const xs = chart.scales.x, ys = chart.scales.y, ctx = chart.ctx;
+              // Max pain line
+              const mpI = D.strikes.indexOf(D.mp);
+              if (mpI >= 0) {
+                const x = xs.getPixelForValue(mpI);
+                ctx.save(); ctx.strokeStyle='#B8720A'; ctx.lineWidth=1;
+                ctx.setLineDash([3,2]); ctx.beginPath();
+                ctx.moveTo(x,ys.top); ctx.lineTo(x,ys.bottom); ctx.stroke();
+                ctx.fillStyle='#B8720A'; ctx.font="600 8px var(--mono)";
+                ctx.textAlign='center'; ctx.fillText('MP',x,ys.top-4); ctx.restore();
+              }
+              // μ line
+              const muI = D.strikes.reduce((a,v,i) => Math.abs(v-D.mu)<Math.abs(D.strikes[a]-D.mu)?i:a, 0);
+              const mx = xs.getPixelForValue(muI);
+              ctx.save(); ctx.strokeStyle='#2E6BBF'; ctx.lineWidth=1;
+              ctx.setLineDash([3,2]); ctx.beginPath();
+              ctx.moveTo(mx,ys.top); ctx.lineTo(mx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#2E6BBF'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ',mx,ys.top-4); ctx.restore();
+              // Spot line
+              const spI = D.strikes.reduce((a,v,i) => Math.abs(v-D.spot)<Math.abs(D.strikes[a]-D.spot)?i:a, 0);
+              const sx = xs.getPixelForValue(spI);
+              ctx.save(); ctx.strokeStyle='#6B6960'; ctx.lineWidth=1;
+              ctx.setLineDash([2,3]); ctx.beginPath();
+              ctx.moveTo(sx,ys.top); ctx.lineTo(sx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#6B6960'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('SPOT',sx,ys.top-4); ctx.restore();
+            }
+          }]
+        });
+
+        // ── Max Pain Curve ──
+        new Chart(document.getElementById('mp_3'), {
+          type: 'line',
+          data: {
+            labels: MPC.map(d=>d.strike),
+            datasets: [
+              { label:'Perda total', data: MPC.map(d=>d.total_loss), borderColor:'#B8720A',
+                 backgroundColor:'rgba(184,114,10,0.12)', borderWidth:1.8, fill:true,
+                 tension:0.3, pointRadius:0 },
+              { label:'Call loss', data: MPC.map(d=>d.call_loss), borderColor:'#148A63',
+                 borderWidth:1, borderDash:[3,2], fill:false, tension:0.3, pointRadius:0 },
+              { label:'Put loss', data: MPC.map(d=>d.put_loss), borderColor:'#B33530',
+                 borderWidth:1, borderDash:[3,2], fill:false, tension:0.3, pointRadius:0 },
+            ]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            interaction: { mode:'index', intersect:false },
+            plugins: { legend: { position:'top', labels:{ boxWidth:8, padding:10, font:{size:9} } } },
+            scales: {
+              x: { ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=>(v/1e6).toFixed(1)+'M', font:{size:9,family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          }
+        });
+
+        // ── Calls vs Puts ──
+        new Chart(document.getElementById('cp_3'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [
+              { label:'Call OI', data:D.call_oi, backgroundColor:'rgba(20,138,99,0.6)',
+                 borderRadius:2, barPercentage:0.9 },
+              { label:'Put OI', data:D.put_oi, backgroundColor:'rgba(179,53,48,0.55)',
+                 borderRadius:2, barPercentage:0.9 },
+            ]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins: { legend:{ position:'top', labels:{ boxWidth:8, padding:10, font:{size:9} } } },
+            scales: {
+              x: { stacked:false, ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=> {
+                     if(Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if(Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font:{size:9, family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          },
+          plugins: [{
+            afterDraw(chart) {
+              const xs=chart.scales.x, ys=chart.scales.y, ctx=chart.ctx;
+              // Call mean
+              const ci = D.strikes.reduce((a,v,i)=>Math.abs(v-D.call_mean)<Math.abs(D.strikes[a]-D.call_mean)?i:a,0);
+              const cx = xs.getPixelForValue(ci);
+              ctx.save(); ctx.strokeStyle='#148A63'; ctx.lineWidth=1; ctx.setLineDash([3,2]);
+              ctx.beginPath(); ctx.moveTo(cx,ys.top); ctx.lineTo(cx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#148A63'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ Call',cx,ys.top-4); ctx.restore();
+              // Put mean
+              const pi = D.strikes.reduce((a,v,i)=>Math.abs(v-D.put_mean)<Math.abs(D.strikes[a]-D.put_mean)?i:a,0);
+              const px = xs.getPixelForValue(pi);
+              ctx.save(); ctx.strokeStyle='#B33530'; ctx.lineWidth=1; ctx.setLineDash([3,2]);
+              ctx.beginPath(); ctx.moveTo(px,ys.top); ctx.lineTo(px,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#B33530'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ Put',px,ys.top-4); ctx.restore();
+            }
+          }]
+        });
+
+        // ── Residuals ──
+        const resColors = D.residuals.map(v => v >= 0 ? 'rgba(90,133,24,0.65)' : 'rgba(179,53,48,0.6)');
+        new Chart(document.getElementById('res_3'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [{ label:'Resíduo', data:D.residuals, backgroundColor:resColors,
+                          borderRadius:2, barPercentage:0.8 }]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins: { legend:{ display:false } },
+            scales: {
+              x: { ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=> {
+                     if(Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if(Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font:{size:9, family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          }
+        });
+      })();
+      </script>
+    </div>
+
+    <div class="exp-block" id="exp4" style="animation-delay:0.24s">
+      <div class="exp-top">
+        <div>
+          <h2>17 Jul — Mensal</h2>
+          <span class="tag tm">Mensal</span>
+          <span class="tag tg">42 DTE</span>
+        </div>
+        <div class="grade-pill" style="--gc:#148A63">
+          <span class="gp-dot"></span>Alta concentração
+        </div>
+      </div>
+
+      <!-- Stat cards row 1: Posição -->
+      <div class="stat-section-title">Posição</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Max Pain</div>
+      <div class="st-value" >R$ 168</div></div>
+        <div class="st-card">
+      <div class="st-label">Spot</div>
+      <div class="st-value" >R$ 169</div></div>
+        <div class="st-card">
+      <div class="st-label">Distância MP→Spot</div>
+      <div class="st-value" style="color:#148A63">+0.59%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI Total</div>
+      <div class="st-value" >72.8M</div></div>
+      </div>
+
+      <!-- Stat cards row 2: Centro de massa -->
+      <div class="stat-section-title">Centro de massa do OI</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Média ponderada (μ)</div>
+      <div class="st-value" >R$ 150.42</div><div class="st-sub">Centro de massa total</div></div>
+        <div class="st-card">
+      <div class="st-label">σ ponderado</div>
+      <div class="st-value" >R$ 33.42</div><div class="st-sub">Dispersão em torno de μ</div></div>
+        <div class="st-card">
+      <div class="st-label">μ Calls</div>
+      <div class="st-value" >R$ 170.14</div><div class="st-sub">Centro de massa das calls</div></div>
+        <div class="st-card">
+      <div class="st-label">μ Puts</div>
+      <div class="st-value" >R$ 137.70</div><div class="st-sub">Centro de massa das puts</div></div>
+        <div class="st-card">
+      <div class="st-label">MP vs μ OI</div>
+      <div class="st-value" >+17.58</div><div class="st-sub">Max pain acima</div></div>
+      </div>
+
+      <!-- Stat cards row 3: Forma -->
+      <div class="stat-section-title">Forma da distribuição</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">Assimetria (Skew)</div>
+      <div class="st-value" style="color:#148A63">+0.030</div><div class="st-sub">Simétrica</div></div>
+        <div class="st-card">
+      <div class="st-label">Curtose</div>
+      <div class="st-value" style="color:#B8720A">1.973</div><div class="st-sub">Excesso: -1.027</div></div>
+        <div class="st-card">
+      <div class="st-label">KS Estatística</div>
+      <div class="st-value" >0.1249</div><div class="st-sub">p-valor: 0.0000</div></div>
+        <div class="st-card">
+      <div class="st-label">Normalidade?</div>
+      <div class="st-value" style="color:#B33530">Não ✗</div><div class="st-sub">Rejeita H₀ de normalidade</div></div>
+      </div>
+
+      <!-- Stat cards row 4: Concentração -->
+      <div class="stat-section-title">Métricas de concentração</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">HHI</div>
+      <div class="st-value" >0.0174</div><div class="st-sub">Normalizado: 0.0114</div></div>
+        <div class="st-card">
+      <div class="st-label">Gini</div>
+      <div class="st-value" style="color:#148A63">0.636</div><div class="st-sub">0 = uniforme, 1 = concentrado</div></div>
+        <div class="st-card">
+      <div class="st-label">Entropia</div>
+      <div class="st-value" >6.28 bits</div><div class="st-sub">Máx: 7.37 · Ratio: 85.27%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±1σ do MP</div>
+      <div class="st-value" style="color:#B8720A">57.8%</div><div class="st-sub">Normal teórico: 68.3%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±2σ do MP</div>
+      <div class="st-value" >93.0%</div><div class="st-sub">Normal teórico: 95.4%</div></div>
+        <div class="st-card">
+      <div class="st-label">OI em ±R$2 do MP</div>
+      <div class="st-value" >6.6%</div><div class="st-sub">Contratos perto do max pain</div></div>
+      </div>
+
+      <!-- Ajuste normal -->
+      <div class="stat-section-title">Ajuste Gaussiano</div>
+      <div class="stats-grid">
+        <div class="st-card">
+      <div class="st-label">μ (fit)</div>
+      <div class="st-value" >R$ 164.36</div></div>
+        <div class="st-card">
+      <div class="st-label">σ (fit)</div>
+      <div class="st-value" >R$ 47.35</div></div>
+        <div class="st-card">
+      <div class="st-label">R²</div>
+      <div class="st-value" style="color:#B33530">0.1743</div><div class="st-sub">Ajuste ruim</div></div>
+        <div class="st-card">
+      <div class="st-label">Forma</div>
+      <div class="st-value" >simétrica, achatada (platicúrtica)</div></div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-2col">
+        <div class="ch-card">
+          <h4>Distribuição do OI vs Ajuste Normal</h4>
+          <div class="ch-wrap"><canvas id="oi_4"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <h4>Curva de max pain (perda total)</h4>
+          <div class="ch-wrap"><canvas id="mp_4"></canvas></div>
+        </div>
+      </div>
+      <div class="charts-2col">
+        <div class="ch-card">
+          <h4>Calls vs Puts — distribuição separada</h4>
+          <div class="ch-wrap"><canvas id="cp_4"></canvas></div>
+        </div>
+        <div class="ch-card">
+          <h4>Resíduos do ajuste (OI real − Normal)</h4>
+          <div class="ch-wrap"><canvas id="res_4"></canvas></div>
+        </div>
+      </div>
+
+      <script>
+      (function() {
+        const D = {"strikes": [78.5, 79.0, 79.5, 80.0, 80.5, 81.0, 81.5, 82.0, 82.5, 83.0, 83.5, 84.0, 84.5, 85.0, 85.5, 86.0, 86.5, 87.0, 87.5, 88.0, 88.5, 89.0, 89.5, 90.0, 90.5, 91.0, 91.5, 92.0, 92.5, 93.0, 93.5, 94.0, 94.5, 95.0, 95.5, 96.0, 96.5, 97.0, 97.5, 98.0, 98.5, 99.0, 99.5, 100.0, 101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0, 108.0, 109.0, 110.0, 111.0, 112.0, 113.0, 114.0, 115.0, 116.0, 117.0, 118.0, 119.0, 120.0, 121.0, 122.0, 123.0, 124.0, 125.0, 126.0, 127.0, 128.0, 129.0, 130.0, 131.0, 132.0, 133.0, 134.0, 135.0, 136.0, 137.0, 138.0, 139.0, 140.0, 141.0, 142.0, 143.0, 144.0, 145.0, 146.0, 147.0, 148.0, 149.0, 150.0, 151.0, 152.0, 153.0, 154.0, 155.0, 156.0, 157.0, 158.0, 159.0, 160.0, 161.0, 162.0, 163.0, 164.0, 165.0, 166.0, 167.0, 168.0, 169.0, 170.0, 171.0, 172.0, 173.0, 174.0, 175.0, 176.0, 177.0, 178.0, 179.0, 180.0, 181.0, 182.0, 183.0, 184.0, 185.0, 186.0, 187.0, 188.0, 189.0, 190.0, 191.0, 192.0, 193.0, 194.0, 195.0, 196.0, 197.0, 198.0, 199.0, 200.0, 205.0, 210.0, 215.0, 220.0, 225.0, 230.0, 235.0, 240.0, 245.0, 250.0, 255.0, 260.0, 265.0, 270.0, 275.0, 280.0, 285.0, 290.0, 295.0, 300.0, 375.0], "call_oi": [3460.0, 0.0, 0.0, 21160.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2660.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 300.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2690.0, 0.0, 310.0, 0.0, 8850.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 33660.0, 320.0, 0.0, 0.0, 0.0, 2830.0, 1970.0, 0.0, 7200.0, 4800.0, 47390.0, 0.0, 9210.0, 0.0, 16790.0, 873230.0, 10260.0, 0.0, 16100.000000000002, 50950.0, 85690.0, 607530.0, 22660.0, 109000.0, 804140.0, 656270.0, 1430.0, 8150.0, 4600.0, 17750.0, 249710.0, 25130.0, 26560.0, 13750.0, 14410.0, 58380.0, 48310.0, 32490.000000000004, 68400.0, 51580.0, 143200.0, 1250000.0, 101510.0, 37480.0, 56210.0, 61320.0, 46730.0, 20670.0, 86830.0, 128280.0, 1350000.0, 55890.0, 113000.0, 9430.0, 183600.0, 307810.0, 68810.0, 44180.0, 65790.0, 101630.0, 271450.0, 16120.000000000002, 306820.0, 78530.0, 155620.0, 471130.0, 189590.0, 610970.0, 334210.0, 230880.0, 620100.0, 295370.0, 457240.0, 466380.0, 402980.0, 424070.0, 551390.0, 1740000.0, 442510.0, 475690.0, 1290000.0, 600530.0, 543780.0, 389430.0, 252590.0, 1250000.0, 306600.0, 283660.0, 362180.0, 297680.0, 755100.0, 157590.0, 308170.0, 209780.0, 387600.0, 913330.0, 97760.0, 204730.0, 91000.0, 154470.0, 893770.0, 487290.0, 591780.0, 273500.0, 146410.0, 191270.0, 35940.0, 10800.0, 158800.0, 0.0, 500.0, 1400.0, 0.0, 109500.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "put_oi": [0.0, 0.0, 0.0, 20000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1500.0, 0.0, 100000.0, 0.0, 0.0, 0.0, 302000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 360000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2000.0, 0.0, 203000.0, 1000.0, 3490000.0, 250200.0, 120000.0, 9530.0, 398000.0, 2280000.0, 680100.0, 761400.0, 615000.0, 731000.0, 1700000.0, 331100.0, 380000.0, 367000.0, 410800.0, 1520000.0, 587900.0, 714040.0, 889910.0, 770500.0, 885810.0, 886210.0, 68610.0, 190410.0, 162450.0, 1780000.0, 380200.0, 802600.0, 298050.0, 83200.0, 372110.0, 209200.0, 75550.0, 79100.0, 127410.0, 213360.0, 40350.0, 29500.0, 24560.0, 76030.0, 329320.0, 25070.0, 236980.0, 25650.0, 44980.0, 305570.0, 520080.00000000006, 49810.0, 78310.0, 77340.0, 674360.0, 378920.0, 341580.0, 182500.0, 138040.0, 296000.0, 143900.0, 167410.0, 252330.0, 260070.0, 584590.0, 441800.0, 267660.0, 399980.0, 666280.0, 704980.0, 471920.0, 750990.0, 503470.0, 369610.0, 713510.0, 225940.0, 608650.0, 319980.0, 396340.0, 576180.0, 454600.0, 1770000.0, 470380.0, 605570.0, 457220.0, 130400.0, 207190.0, 161080.0, 166740.0, 346130.0, 97120.0, 84020.0, 70680.0, 72050.0, 167820.0, 29670.0, 62540.0, 328230.0, 206840.0, 147400.0, 27340.0, 53770.0, 16329.999999999998, 83570.0, 196200.0, 207010.0, 210770.0, 45350.0, 14770.0, 53000.0, 3210.0, 1250.0, 27.0, 0.0, 0.0, 62.0, 0.0, 0.0, 7500.0, 0.0, 0.0, 0.0, 0.0, 1.0, 45.0, 30.0], "total_oi": [3460.0, 0.0, 0.0, 41160.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2660.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1500.0, 0.0, 100000.0, 0.0, 0.0, 300.0, 302000.0, 0.0, 0.0, 0.0, 0.0, 2690.0, 360000.0, 310.0, 0.0, 8850.0, 0.0, 0.0, 2000.0, 0.0, 203000.0, 1000.0, 3523660.0, 250520.0, 120000.0, 9530.0, 398000.0, 2282830.0, 682070.0, 761400.0, 622200.0, 735800.0, 1747390.0, 331100.0, 389210.0, 367000.0, 427590.0, 2393230.0, 598160.0, 714040.0, 906010.0, 821450.0, 971500.0, 1493740.0, 91270.0, 299410.0, 966590.0, 2436270.0, 381630.0, 810750.0, 302650.0, 100950.0, 621820.0, 234330.0, 102110.0, 92850.0, 141820.0, 271740.0, 88660.0, 61990.0, 92960.0, 127610.0, 472520.0, 1275070.0, 338490.0, 63130.0, 101190.0, 366890.0, 566810.0, 70480.0, 165140.0, 205620.0, 2024360.0, 434810.0, 454580.0, 191930.0, 321640.0, 603810.0, 212710.0, 211590.0, 318120.0, 361700.0, 856040.0, 457920.0, 574480.0, 478510.0, 821900.0, 1176110.0, 661510.0, 1361960.0, 837680.0, 600490.0, 1333610.0, 521310.0, 1065890.0, 786360.0, 799320.0, 1000250.0, 1005990.0, 3510000.0, 912890.0, 1081260.0, 1747220.0, 730930.0, 750970.0, 550510.0, 419330.0, 1596130.0, 403720.0, 367680.0, 432860.0, 369730.0, 922920.0, 187260.0, 370710.0, 538010.0, 594440.0, 1060730.0, 125100.0, 258500.0, 107330.0, 238040.0, 1089970.0, 694300.0, 802550.0, 318850.0, 161180.0, 244270.0, 39150.0, 12050.0, 158827.0, 0.0, 500.0, 1462.0, 0.0, 109500.0, 7500.0, 0.0, 0.0, 0.0, 0.0, 1.0, 45.0, 30.0], "normal_fit": [144938.2402441339, 147731.8459445729, 150562.50865346915, 153430.3011800639, 156335.28518746546, 159277.5109525948, 162257.0171279797, 165273.83050559362, 168327.96578293634, 171419.42533155717, 174548.1989682222, 177714.26372892788, 180917.58364596774, 184158.10952825664, 187435.77874512054, 190750.51501376045, 194102.22819059997, 197490.8140667248, 200916.15416762693, 204378.11555746288, 207876.55064803612, 211411.29701271676, 214982.17720550724, 218588.99858546446, 222231.55314668835, 225909.61735408587, 229622.9519851165, 233371.3019777275, 237154.39628468372, 240971.94773449283, 244823.6528991311, 248709.19196876715, 252628.22863367986, 256580.40997356732, 260565.36635443746, 264582.71133326873, 268632.0415706284, 272712.9367514295, 276824.9595140054, 280967.65538767795, 285140.5527389903, 289343.16272676917, 293574.9792661824, 297835.4790019468, 306440.34819366585, 315153.23762354, 323969.33816208236, 332883.56506740494, 341890.55947053863, 350984.6905214286, 360160.05820796214, 369410.4968585955, 378729.57933726406, 388110.62193730555, 397546.68997908797, 407030.604113932, 416554.94733474776, 426112.07269158954, 435694.11170805723, 445292.98349216767, 454900.4045329813, 464507.8991719013, 474106.81073519535, 483688.31331190484, 493243.424158938, 502763.0167127828, 512237.8341849432, 521658.5037159095, 531015.5510602174, 540299.4157729553, 549500.4668659512, 558609.0188998126, 567615.3484760198, 576509.7110914038, 585282.3583155577, 593923.5552500753, 602423.5982269738, 610772.8327022374, 618961.6712991558, 626980.6119549935, 634820.2561235537, 642471.3269853732, 649924.6876166252, 657171.3590673205, 664202.5382990643, 671009.6159324907, 677584.1937545175, 683918.1019357779, 690003.4159089742, 695832.4728594667, 701397.8877801611, 706692.5690436894, 711709.7334459795, 716442.9206765896, 720886.0071726342, 725033.2193147391, 728879.1459252404, 732418.750030768, 735647.3798534336, 738560.7789970548, 741155.0957971977, 743426.8918062896, 745373.1493876382, 746991.2783948797, 748279.1219161607, 749234.961065225, 749857.5188045035, 750145.9627883096, 750099.9072172751, 749719.4136982462, 749004.9911069556, 747957.5944538978, 746578.6227569493, 744869.9159273629, 742833.7506788424, 740472.8354724272, 737790.3045128998, 734789.710815343, 731475.0183633171, 727850.5933828834, 723921.1947593581, 719691.9636262406, 715168.4121581911, 710356.4116022481, 705262.1795836537, 699892.2667246918, 694253.542616827, 688353.1811881684, 682198.6455098486, 675797.672086308, 669158.2546757137, 662288.6276877882, 655197.2492072136, 647892.7836914681, 640384.084392477, 632680.1755517995, 624790.2344192286, 616723.5731446665, 608489.6205929397, 600097.9041308505, 591558.0314352197, 582879.672369974, 574072.5409794601, 565146.3776441533, 519070.6389874161, 471465.28624006396, 423477.87068182114, 376157.2717999698, 330419.7094988145, 287025.293707279, 246565.40225465407, 209460.36000020234, 175966.21649723584, 146188.93045516714, 120103.98659230184, 97579.39011014898, 78400.08210302859, 62292.05774221303, 48944.80238577369, 38031.04186738502, 29223.189130231607, 22206.225021262228, 16687.051478412835, 12400.586239837941, 37.871317286371294], "residuals": [-141478.2402441339, -147731.8459445729, -150562.50865346915, -112270.30118006389, -156335.28518746546, -159277.5109525948, -162257.0171279797, -165273.83050559362, -168327.96578293634, -171419.42533155717, -174548.1989682222, -177714.26372892788, -180917.58364596774, -181498.10952825664, -187435.77874512054, -190750.51501376045, -194102.22819059997, -197490.8140667248, -200916.15416762693, -204378.11555746288, -207876.55064803612, -209911.29701271676, -214982.17720550724, -118588.99858546446, -222231.55314668835, -225909.61735408587, -229322.9519851165, 68628.6980222725, -237154.39628468372, -240971.94773449283, -244823.6528991311, -248709.19196876715, -249938.22863367986, 103419.59002643268, -260255.36635443746, -264582.71133326873, -259782.0415706284, -272712.9367514295, -276824.9595140054, -278967.65538767795, -285140.5527389903, -86343.16272676917, -292574.9792661824, 3225824.5209980533, -55920.34819366585, -195153.23762354, -314439.33816208236, 65116.43493259506, 1940939.4405294615, 331085.3094785714, 401239.94179203786, 252789.50314140448, 357070.42066273594, 1359279.3780626943, -66446.68997908797, -17820.604113932, -49554.94733474776, 1477.9273084104643, 1957535.888291943, 152867.01650783233, 259139.59546701872, 441502.1008280987, 347343.18926480465, 487811.68668809516, 1000496.575841062, -411493.0167127828, -212827.83418494317, 444931.4962840905, 1905254.4489397826, -158669.41577295528, 261249.5331340488, -255959.0188998126, -466665.3484760198, 45310.28890859615, -350952.3583155577, -491813.5552500753, -509573.5982269738, -468952.8327022374, -347221.6712991558, -538320.6119549935, -572830.2561235537, -549511.3269853732, -522314.6876166252, -184651.35906732047, 610867.4617009357, -332519.6159324907, -614454.1937545175, -582728.1019357779, -323113.41590897425, -129022.47285946668, -630917.8877801611, -541552.5690436894, -506089.73344597954, 1307917.0793234105, -286076.00717263424, -270453.2193147391, -536949.1459252404, -410778.750030768, -131837.37985343358, -525850.7789970548, -529565.0957971977, -425306.89180628955, -383673.1493876382, 109048.72160512034, -290359.1219161607, -174754.96106522495, -271347.5188045035, 71754.03721169045, 426010.0927827249, -88209.41369824624, 612955.0088930444, 89722.4055461022, -146088.62275694928, 588740.0840726371, -221523.75067884242, 325417.1645275728, 48569.695487100165, 64530.28918465704, 268774.9816366829, 278139.40661711665, 2786078.805240642, 193198.0363737594, 366091.5878418089, 1036863.5883977519, 25667.82041634631, 51077.73327530816, -143743.54261682695, -269023.18118816835, 913931.3544901514, -272077.672086308, -301478.2546757137, -229428.62768778822, -285467.24920721364, 275027.21630853193, -453124.08439247694, -261970.17555179948, -86780.23441922863, -22283.5731446665, 452240.37940706033, -474997.90413085045, -333058.0314352197, -475549.67236997397, -336032.5409794601, 524823.6223558467, 175229.3610125839, 331084.71375993604, -104627.87068182114, -214977.27179996978, -86149.70949881448, -247875.29370727902, -234515.40225465407, -50633.360000202345, -175966.21649723584, -145688.93045516714, -118641.98659230184, -97579.39011014898, 31099.917896971412, -54792.05774221303, -48944.80238577369, -38031.04186738502, -29223.189130231607, -22206.225021262228, -16686.051478412835, -12355.586239837941, -7.871317286371294], "mp": 168.0, "spot": 169.0, "mu": 150.42055274207743, "sigma": 33.42468798916002, "call_mean": 170.14459409382133, "put_mean": 137.69925218061746};
+        const MPC = [{"strike": 78.5, "call_loss": 0.0, "put_loss": 2620555832.5, "total_loss": 2620555832.5}, {"strike": 79.0, "call_loss": 1730.0, "put_loss": 2598422480.0, "total_loss": 2598424210.0}, {"strike": 79.5, "call_loss": 3460.0, "put_loss": 2576289127.5, "total_loss": 2576292587.5}, {"strike": 80.0, "call_loss": 5190.0, "put_loss": 2554155775.0, "total_loss": 2554160965.0}, {"strike": 80.5, "call_loss": 17500.0, "put_loss": 2532032422.5, "total_loss": 2532049922.5}, {"strike": 81.0, "call_loss": 29810.0, "put_loss": 2509909070.0, "total_loss": 2509938880.0}, {"strike": 81.5, "call_loss": 42120.0, "put_loss": 2487785717.5, "total_loss": 2487827837.5}, {"strike": 82.0, "call_loss": 54430.0, "put_loss": 2465662365.0, "total_loss": 2465716795.0}, {"strike": 82.5, "call_loss": 66740.0, "put_loss": 2443539012.5, "total_loss": 2443605752.5}, {"strike": 83.0, "call_loss": 79050.0, "put_loss": 2421415660.0, "total_loss": 2421494710.0}, {"strike": 83.5, "call_loss": 91360.0, "put_loss": 2399292307.5, "total_loss": 2399383667.5}, {"strike": 84.0, "call_loss": 103670.0, "put_loss": 2377168955.0, "total_loss": 2377272625.0}, {"strike": 84.5, "call_loss": 115980.0, "put_loss": 2355045602.5, "total_loss": 2355161582.5}, {"strike": 85.0, "call_loss": 128290.0, "put_loss": 2332922250.0, "total_loss": 2333050540.0}, {"strike": 85.5, "call_loss": 141930.0, "put_loss": 2310798897.5, "total_loss": 2310940827.5}, {"strike": 86.0, "call_loss": 155570.0, "put_loss": 2288675545.0, "total_loss": 2288831115.0}, {"strike": 86.5, "call_loss": 169210.0, "put_loss": 2266552192.5, "total_loss": 2266721402.5}, {"strike": 87.0, "call_loss": 182850.0, "put_loss": 2244428840.0, "total_loss": 2244611690.0}, {"strike": 87.5, "call_loss": 196490.0, "put_loss": 2222305487.5, "total_loss": 2222501977.5}, {"strike": 88.0, "call_loss": 210130.0, "put_loss": 2200182135.0, "total_loss": 2200392265.0}, {"strike": 88.5, "call_loss": 223770.0, "put_loss": 2178058782.5, "total_loss": 2178282552.5}, {"strike": 89.0, "call_loss": 237410.0, "put_loss": 2155935430.0, "total_loss": 2156172840.0}, {"strike": 89.5, "call_loss": 251050.0, "put_loss": 2133812827.5, "total_loss": 2134063877.5}, {"strike": 90.0, "call_loss": 264690.0, "put_loss": 2111690225.0, "total_loss": 2111954915.0}, {"strike": 90.5, "call_loss": 278330.0, "put_loss": 2089617622.5, "total_loss": 2089895952.5}, {"strike": 91.0, "call_loss": 291970.0, "put_loss": 2067545020.0, "total_loss": 2067836990.0}, {"strike": 91.5, "call_loss": 305610.0, "put_loss": 2045472417.5, "total_loss": 2045778027.5}, {"strike": 92.0, "call_loss": 319400.0, "put_loss": 2023399815.0, "total_loss": 2023719215.0}, {"strike": 92.5, "call_loss": 333190.0, "put_loss": 2001478212.5, "total_loss": 2001811402.5}, {"strike": 93.0, "call_loss": 346980.0, "put_loss": 1979556610.0, "total_loss": 1979903590.0}, {"strike": 93.5, "call_loss": 360770.0, "put_loss": 1957635007.5, "total_loss": 1957995777.5}, {"strike": 94.0, "call_loss": 374560.0, "put_loss": 1935713405.0, "total_loss": 1936087965.0}, {"strike": 94.5, "call_loss": 388350.0, "put_loss": 1913791802.5, "total_loss": 1914180152.5}, {"strike": 95.0, "call_loss": 403485.0, "put_loss": 1891870200.0, "total_loss": 1892273685.0}, {"strike": 95.5, "call_loss": 418620.0, "put_loss": 1870128597.5, "total_loss": 1870547217.5}, {"strike": 96.0, "call_loss": 433910.0, "put_loss": 1848386995.0, "total_loss": 1848820905.0}, {"strike": 96.5, "call_loss": 449200.0, "put_loss": 1826645392.5, "total_loss": 1827094592.5}, {"strike": 97.0, "call_loss": 468915.0, "put_loss": 1804903790.0, "total_loss": 1805372705.0}, {"strike": 97.5, "call_loss": 488630.0, "put_loss": 1783162187.5, "total_loss": 1783650817.5}, {"strike": 98.0, "call_loss": 508345.0, "put_loss": 1761420585.0, "total_loss": 1761928930.0}, {"strike": 98.5, "call_loss": 528060.0, "put_loss": 1739679982.5, "total_loss": 1740208042.5}, {"strike": 99.0, "call_loss": 547775.0, "put_loss": 1717939380.0, "total_loss": 1718487155.0}, {"strike": 99.5, "call_loss": 567490.0, "put_loss": 1696300277.5, "total_loss": 1696867767.5}, {"strike": 100.0, "call_loss": 587205.0, "put_loss": 1674661675.0, "total_loss": 1675248880.0}, {"strike": 101.0, "call_loss": 660295.0, "put_loss": 1634874470.0, "total_loss": 1635534765.0}, {"strike": 102.0, "call_loss": 733705.0, "put_loss": 1595337465.0, "total_loss": 1596071170.0}, {"strike": 103.0, "call_loss": 807115.0, "put_loss": 1555920460.0, "total_loss": 1556727575.0}, {"strike": 104.0, "call_loss": 880525.0, "put_loss": 1516512985.0, "total_loss": 1517393510.0}, {"strike": 105.0, "call_loss": 953935.0, "put_loss": 1477503510.0, "total_loss": 1478457445.0}, {"strike": 106.0, "call_loss": 1030175.0, "put_loss": 1440774035.0, "total_loss": 1441804210.0}, {"strike": 107.0, "call_loss": 1108385.0, "put_loss": 1404724660.0, "total_loss": 1405833045.0}, {"strike": 108.0, "call_loss": 1186595.0, "put_loss": 1369436685.0, "total_loss": 1370623280.0}, {"strike": 109.0, "call_loss": 1272005.0, "put_loss": 1334763710.0, "total_loss": 1336035715.0}, {"strike": 110.0, "call_loss": 1362215.0, "put_loss": 1300821735.0, "total_loss": 1302183950.0}, {"strike": 111.0, "call_loss": 1499815.0, "put_loss": 1268579760.0, "total_loss": 1270079575.0}, {"strike": 112.0, "call_loss": 1637415.0, "put_loss": 1236668885.0, "total_loss": 1238306300.0}, {"strike": 113.0, "call_loss": 1784225.0, "put_loss": 1205138010.0, "total_loss": 1206922235.0}, {"strike": 114.0, "call_loss": 1931035.0, "put_loss": 1173974135.0, "total_loss": 1175905170.0}, {"strike": 115.0, "call_loss": 2094635.0, "put_loss": 1143221060.0, "total_loss": 1145315695.0}, {"strike": 116.0, "call_loss": 3131465.0, "put_loss": 1113987985.0, "total_loss": 1117119450.0}, {"strike": 117.0, "call_loss": 4178555.0, "put_loss": 1085342810.0, "total_loss": 1089521365.0}, {"strike": 118.0, "call_loss": 5225645.0, "put_loss": 1057411675.0, "total_loss": 1062637320.0}, {"strike": 119.0, "call_loss": 6288835.0, "put_loss": 1030370450.0, "total_loss": 1036659285.0}, {"strike": 120.0, "call_loss": 7402975.0, "put_loss": 1004099725.0, "total_loss": 1011502700.0}, {"strike": 121.0, "call_loss": 8602805.0, "put_loss": 978714810.0, "total_loss": 987317615.0}, {"strike": 122.0, "call_loss": 10410165.0, "put_loss": 954216105.0, "total_loss": 964626270.0}, {"strike": 123.0, "call_loss": 12240185.0, "put_loss": 929786010.0, "total_loss": 942026195.0}, {"strike": 124.0, "call_loss": 14179205.0, "put_loss": 905546325.0, "total_loss": 919725530.0}, {"strike": 125.0, "call_loss": 16922365.0, "put_loss": 881469090.0, "total_loss": 898391455.0}, {"strike": 126.0, "call_loss": 20321795.0, "put_loss": 859171855.0, "total_loss": 879493650.0}, {"strike": 127.0, "call_loss": 23722655.0, "put_loss": 837254820.0, "total_loss": 860977475.0}, {"strike": 128.0, "call_loss": 27131665.0, "put_loss": 816140385.0, "total_loss": 843272050.0}, {"strike": 129.0, "call_loss": 30545275.0, "put_loss": 795324000.0, "total_loss": 825869275.0}, {"strike": 130.0, "call_loss": 33976635.0, "put_loss": 774590815.0, "total_loss": 808567450.0}, {"strike": 131.0, "call_loss": 37657705.0, "put_loss": 754229740.0, "total_loss": 791887445.0}, {"strike": 132.0, "call_loss": 41363905.0, "put_loss": 734077865.0, "total_loss": 775441770.0}, {"strike": 133.0, "call_loss": 45096665.0, "put_loss": 714001540.0, "total_loss": 759098205.0}, {"strike": 134.0, "call_loss": 48843175.0, "put_loss": 694004315.0, "total_loss": 742847490.0}, {"strike": 135.0, "call_loss": 52604095.0, "put_loss": 674134500.0, "total_loss": 726738595.0}, {"strike": 136.0, "call_loss": 56423395.0, "put_loss": 654478045.0, "total_loss": 710901440.0}, {"strike": 137.0, "call_loss": 60291005.0, "put_loss": 634861940.0, "total_loss": 695152945.0}, {"strike": 138.0, "call_loss": 64191105.0, "put_loss": 615275335.0, "total_loss": 679466440.0}, {"strike": 139.0, "call_loss": 68159605.0, "put_loss": 595713290.0, "total_loss": 663872895.0}, {"strike": 140.0, "call_loss": 72179685.0, "put_loss": 576227275.0, "total_loss": 648406960.0}, {"strike": 141.0, "call_loss": 76342965.0, "put_loss": 557070580.0, "total_loss": 633413545.0}, {"strike": 142.0, "call_loss": 81756245.0, "put_loss": 537938955.0, "total_loss": 619695200.0}, {"strike": 143.0, "call_loss": 87271035.0, "put_loss": 519044310.0, "total_loss": 606315345.0}, {"strike": 144.0, "call_loss": 92823305.0, "put_loss": 500175315.0, "total_loss": 592998620.0}, {"strike": 145.0, "call_loss": 98431785.0, "put_loss": 481351300.0, "total_loss": 579783085.0}, {"strike": 146.0, "call_loss": 104101585.0, "put_loss": 462832855.0, "total_loss": 566934440.0}, {"strike": 147.0, "call_loss": 109818115.0, "put_loss": 444834490.0, "total_loss": 554652605.0}, {"strike": 148.0, "call_loss": 115555315.0, "put_loss": 426885935.0, "total_loss": 542441250.0}, {"strike": 149.0, "call_loss": 121379345.0, "put_loss": 409015690.0, "total_loss": 530395035.0}, {"strike": 150.0, "call_loss": 127331655.0, "put_loss": 391222785.0, "total_loss": 518554440.0}, {"strike": 151.0, "call_loss": 134633965.0, "put_loss": 374104240.0, "total_loss": 508738205.0}, {"strike": 152.0, "call_loss": 141992165.0, "put_loss": 357364615.0, "total_loss": 499356780.0}, {"strike": 153.0, "call_loss": 149463365.0, "put_loss": 340966570.0, "total_loss": 490429935.0}, {"strike": 154.0, "call_loss": 156943995.0, "put_loss": 324751025.0, "total_loss": 481695020.0}, {"strike": 155.0, "call_loss": 164608225.0, "put_loss": 308673520.0, "total_loss": 473281745.0}, {"strike": 156.0, "call_loss": 172580265.0, "put_loss": 292892015.0, "total_loss": 465472280.0}, {"strike": 157.0, "call_loss": 180621115.0, "put_loss": 277254410.0, "total_loss": 457875525.0}, {"strike": 158.0, "call_loss": 188706145.0, "put_loss": 261784215.0, "total_loss": 450490360.0}, {"strike": 159.0, "call_loss": 196856965.0, "put_loss": 246566350.0, "total_loss": 443423315.0}, {"strike": 160.0, "call_loss": 205109415.0, "put_loss": 231608555.0, "total_loss": 436717970.0}, {"strike": 161.0, "call_loss": 213633315.0, "put_loss": 217235350.0, "total_loss": 430868665.0}, {"strike": 162.0, "call_loss": 222173335.0, "put_loss": 203303945.0, "total_loss": 425477280.0}, {"strike": 163.0, "call_loss": 231020175.0, "put_loss": 189640200.0, "total_loss": 420660375.0}, {"strike": 164.0, "call_loss": 239945545.0, "put_loss": 176376435.0, "total_loss": 416321980.0}, {"strike": 165.0, "call_loss": 249026535.0, "put_loss": 163778950.0, "total_loss": 412805485.0}, {"strike": 166.0, "call_loss": 258578655.0, "put_loss": 151886445.0, "total_loss": 410465100.0}, {"strike": 167.0, "call_loss": 268320365.0, "put_loss": 140465860.0, "total_loss": 408786225.0}, {"strike": 168.0, "call_loss": 278673045.0, "put_loss": 129796265.0, "total_loss": 408469310.0}, {"strike": 169.0, "call_loss": 289359935.0, "put_loss": 119630140.0, "total_loss": 408990075.0}, {"strike": 170.0, "call_loss": 300277705.0, "put_loss": 109833625.0, "total_loss": 410111330.0}, {"strike": 171.0, "call_loss": 311815575.0, "put_loss": 100750620.0, "total_loss": 412566195.0}, {"strike": 172.0, "call_loss": 323648815.0, "put_loss": 91893555.0, "total_loss": 415542370.0}, {"strike": 173.0, "call_loss": 335939295.0, "put_loss": 83645140.0, "total_loss": 419584435.0}, {"strike": 174.0, "call_loss": 348696155.0, "put_loss": 75716705.0, "total_loss": 424412860.0}, {"strike": 175.0, "call_loss": 361855995.0, "put_loss": 68184610.0, "total_loss": 430040605.0}, {"strike": 176.0, "call_loss": 375439905.0, "put_loss": 61228695.0, "total_loss": 436668600.0}, {"strike": 177.0, "call_loss": 389575205.0, "put_loss": 54727380.0, "total_loss": 444302585.0}, {"strike": 178.0, "call_loss": 405450505.0, "put_loss": 49996065.0, "total_loss": 455446570.0}, {"strike": 179.0, "call_loss": 421768315.0, "put_loss": 45735130.0, "total_loss": 467503445.0}, {"strike": 180.0, "call_loss": 438561815.0, "put_loss": 42079765.0, "total_loss": 480641580.0}, {"strike": 181.0, "call_loss": 456645315.0, "put_loss": 38881620.0, "total_loss": 495526935.0}, {"strike": 182.0, "call_loss": 475329345.0, "put_loss": 35813875.0, "total_loss": 511143220.0}, {"strike": 183.0, "call_loss": 494557155.0, "put_loss": 32953320.0, "total_loss": 527510475.0}, {"strike": 184.0, "call_loss": 514174395.0, "put_loss": 30253845.0, "total_loss": 544428240.0}, {"strike": 185.0, "call_loss": 534044225.0, "put_loss": 27721110.0, "total_loss": 561765335.0}, {"strike": 186.0, "call_loss": 555164055.0, "put_loss": 25534505.0, "total_loss": 580698560.0}, {"strike": 187.0, "call_loss": 576590485.0, "put_loss": 23445020.0, "total_loss": 600035505.0}, {"strike": 188.0, "call_loss": 598300575.0, "put_loss": 21439555.0, "total_loss": 619740130.0}, {"strike": 189.0, "call_loss": 620372845.0, "put_loss": 19504770.0, "total_loss": 639877615.0}, {"strike": 190.0, "call_loss": 642742795.0, "put_loss": 17642035.0, "total_loss": 660384830.0}, {"strike": 191.0, "call_loss": 665867845.0, "put_loss": 15947120.0, "total_loss": 681814965.0}, {"strike": 192.0, "call_loss": 689150485.0, "put_loss": 14281875.0, "total_loss": 703432360.0}, {"strike": 193.0, "call_loss": 712741295.0, "put_loss": 12679170.0, "total_loss": 725420465.0}, {"strike": 194.0, "call_loss": 736541885.0, "put_loss": 11404695.0, "total_loss": 747946580.0}, {"strike": 195.0, "call_loss": 760730075.0, "put_loss": 10337060.0, "total_loss": 771067135.0}, {"strike": 196.0, "call_loss": 785831595.0, "put_loss": 9416825.0, "total_loss": 795248420.0}, {"strike": 197.0, "call_loss": 811030875.0, "put_loss": 8523930.0, "total_loss": 819554805.0}, {"strike": 198.0, "call_loss": 836434885.0, "put_loss": 7684805.0, "total_loss": 844119690.0}, {"strike": 199.0, "call_loss": 861929895.0, "put_loss": 6862010.0, "total_loss": 868791905.0}, {"strike": 200.0, "call_loss": 887579375.0, "put_loss": 6122785.0, "total_loss": 893702160.0}, {"strike": 205.0, "call_loss": 1020295625.0, "put_loss": 3407660.0, "total_loss": 1023703285.0}, {"strike": 210.0, "call_loss": 1155448325.0, "put_loss": 1727585.0, "total_loss": 1157175910.0}, {"strike": 215.0, "call_loss": 1293559925.0, "put_loss": 1101360.0, "total_loss": 1294661285.0}, {"strike": 220.0, "call_loss": 1433039025.0, "put_loss": 701885.0, "total_loss": 1433740910.0}, {"strike": 225.0, "call_loss": 1573250175.0, "put_loss": 376260.0, "total_loss": 1573626435.0}, {"strike": 230.0, "call_loss": 1714417675.0, "put_loss": 315635.0, "total_loss": 1714733310.0}, {"strike": 235.0, "call_loss": 1855764875.0, "put_loss": 271060.0, "total_loss": 1856035935.0}, {"strike": 240.0, "call_loss": 1997166075.0, "put_loss": 232735.0, "total_loss": 1997398810.0}, {"strike": 245.0, "call_loss": 2139361275.0, "put_loss": 194545.0, "total_loss": 2139555820.0}, {"strike": 250.0, "call_loss": 2281556475.0, "put_loss": 156355.0, "total_loss": 2281712830.0}, {"strike": 255.0, "call_loss": 2423754175.0, "put_loss": 118165.0, "total_loss": 2423872340.0}, {"strike": 260.0, "call_loss": 2565958875.0, "put_loss": 80285.0, "total_loss": 2566039160.0}, {"strike": 265.0, "call_loss": 2708163575.0, "put_loss": 42405.0, "total_loss": 2708205980.0}, {"strike": 270.0, "call_loss": 2850915775.0, "put_loss": 4525.0, "total_loss": 2850920300.0}, {"strike": 275.0, "call_loss": 2993667975.0, "put_loss": 4145.0, "total_loss": 2993672120.0}, {"strike": 280.0, "call_loss": 3136420175.0, "put_loss": 3765.0, "total_loss": 3136423940.0}, {"strike": 285.0, "call_loss": 3279172375.0, "put_loss": 3385.0, "total_loss": 3279175760.0}, {"strike": 290.0, "call_loss": 3421924575.0, "put_loss": 3005.0, "total_loss": 3421927580.0}, {"strike": 295.0, "call_loss": 3564676775.0, "put_loss": 2625.0, "total_loss": 3564679400.0}, {"strike": 300.0, "call_loss": 3707428975.0, "put_loss": 2250.0, "total_loss": 3707431225.0}, {"strike": 375.0, "call_loss": 5848711975.0, "put_loss": 0.0, "total_loss": 5848711975.0}];
+
+        // ── OI Distribution + Normal Fit ──
+        new Chart(document.getElementById('oi_4'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [
+              { label: 'OI Total', data: D.total_oi, backgroundColor: 'rgba(90,133,24,0.55)',
+                 borderColor: 'rgba(90,133,24,0.9)', borderWidth: 1, borderRadius: 2,
+                 barPercentage: 0.8, order: 2 },
+              { label: 'Ajuste Normal', data: D.normal_fit, type: 'line',
+                 borderColor: '#B8720A', borderWidth: 2, pointRadius: 0,
+                 tension: 0.4, fill: false, order: 1 },
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { position: 'top', labels: { boxWidth: 8, padding: 10, font: { size: 9 } } },
+            },
+            scales: {
+              x: { ticks: { font: { size: 9, family: 'var(--mono)' } }, grid: { display: false } },
+              y: { ticks: { callback: v => {
+                     if (Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if (Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font: { size: 9, family: 'var(--mono)' } },
+                   grid: { color: 'rgba(0,0,0,0.05)' } },
+            }
+          },
+          plugins: [{
+            afterDraw(chart) {
+              const xs = chart.scales.x, ys = chart.scales.y, ctx = chart.ctx;
+              // Max pain line
+              const mpI = D.strikes.indexOf(D.mp);
+              if (mpI >= 0) {
+                const x = xs.getPixelForValue(mpI);
+                ctx.save(); ctx.strokeStyle='#B8720A'; ctx.lineWidth=1;
+                ctx.setLineDash([3,2]); ctx.beginPath();
+                ctx.moveTo(x,ys.top); ctx.lineTo(x,ys.bottom); ctx.stroke();
+                ctx.fillStyle='#B8720A'; ctx.font="600 8px var(--mono)";
+                ctx.textAlign='center'; ctx.fillText('MP',x,ys.top-4); ctx.restore();
+              }
+              // μ line
+              const muI = D.strikes.reduce((a,v,i) => Math.abs(v-D.mu)<Math.abs(D.strikes[a]-D.mu)?i:a, 0);
+              const mx = xs.getPixelForValue(muI);
+              ctx.save(); ctx.strokeStyle='#2E6BBF'; ctx.lineWidth=1;
+              ctx.setLineDash([3,2]); ctx.beginPath();
+              ctx.moveTo(mx,ys.top); ctx.lineTo(mx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#2E6BBF'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ',mx,ys.top-4); ctx.restore();
+              // Spot line
+              const spI = D.strikes.reduce((a,v,i) => Math.abs(v-D.spot)<Math.abs(D.strikes[a]-D.spot)?i:a, 0);
+              const sx = xs.getPixelForValue(spI);
+              ctx.save(); ctx.strokeStyle='#6B6960'; ctx.lineWidth=1;
+              ctx.setLineDash([2,3]); ctx.beginPath();
+              ctx.moveTo(sx,ys.top); ctx.lineTo(sx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#6B6960'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('SPOT',sx,ys.top-4); ctx.restore();
+            }
+          }]
+        });
+
+        // ── Max Pain Curve ──
+        new Chart(document.getElementById('mp_4'), {
+          type: 'line',
+          data: {
+            labels: MPC.map(d=>d.strike),
+            datasets: [
+              { label:'Perda total', data: MPC.map(d=>d.total_loss), borderColor:'#B8720A',
+                 backgroundColor:'rgba(184,114,10,0.12)', borderWidth:1.8, fill:true,
+                 tension:0.3, pointRadius:0 },
+              { label:'Call loss', data: MPC.map(d=>d.call_loss), borderColor:'#148A63',
+                 borderWidth:1, borderDash:[3,2], fill:false, tension:0.3, pointRadius:0 },
+              { label:'Put loss', data: MPC.map(d=>d.put_loss), borderColor:'#B33530',
+                 borderWidth:1, borderDash:[3,2], fill:false, tension:0.3, pointRadius:0 },
+            ]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            interaction: { mode:'index', intersect:false },
+            plugins: { legend: { position:'top', labels:{ boxWidth:8, padding:10, font:{size:9} } } },
+            scales: {
+              x: { ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=>(v/1e6).toFixed(1)+'M', font:{size:9,family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          }
+        });
+
+        // ── Calls vs Puts ──
+        new Chart(document.getElementById('cp_4'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [
+              { label:'Call OI', data:D.call_oi, backgroundColor:'rgba(20,138,99,0.6)',
+                 borderRadius:2, barPercentage:0.9 },
+              { label:'Put OI', data:D.put_oi, backgroundColor:'rgba(179,53,48,0.55)',
+                 borderRadius:2, barPercentage:0.9 },
+            ]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins: { legend:{ position:'top', labels:{ boxWidth:8, padding:10, font:{size:9} } } },
+            scales: {
+              x: { stacked:false, ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=> {
+                     if(Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if(Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font:{size:9, family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          },
+          plugins: [{
+            afterDraw(chart) {
+              const xs=chart.scales.x, ys=chart.scales.y, ctx=chart.ctx;
+              // Call mean
+              const ci = D.strikes.reduce((a,v,i)=>Math.abs(v-D.call_mean)<Math.abs(D.strikes[a]-D.call_mean)?i:a,0);
+              const cx = xs.getPixelForValue(ci);
+              ctx.save(); ctx.strokeStyle='#148A63'; ctx.lineWidth=1; ctx.setLineDash([3,2]);
+              ctx.beginPath(); ctx.moveTo(cx,ys.top); ctx.lineTo(cx,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#148A63'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ Call',cx,ys.top-4); ctx.restore();
+              // Put mean
+              const pi = D.strikes.reduce((a,v,i)=>Math.abs(v-D.put_mean)<Math.abs(D.strikes[a]-D.put_mean)?i:a,0);
+              const px = xs.getPixelForValue(pi);
+              ctx.save(); ctx.strokeStyle='#B33530'; ctx.lineWidth=1; ctx.setLineDash([3,2]);
+              ctx.beginPath(); ctx.moveTo(px,ys.top); ctx.lineTo(px,ys.bottom); ctx.stroke();
+              ctx.fillStyle='#B33530'; ctx.font="600 8px var(--mono)";
+              ctx.textAlign='center'; ctx.fillText('μ Put',px,ys.top-4); ctx.restore();
+            }
+          }]
+        });
+
+        // ── Residuals ──
+        const resColors = D.residuals.map(v => v >= 0 ? 'rgba(90,133,24,0.65)' : 'rgba(179,53,48,0.6)');
+        new Chart(document.getElementById('res_4'), {
+          type: 'bar',
+          data: {
+            labels: D.strikes,
+            datasets: [{ label:'Resíduo', data:D.residuals, backgroundColor:resColors,
+                          borderRadius:2, barPercentage:0.8 }]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins: { legend:{ display:false } },
+            scales: {
+              x: { ticks:{ font:{size:9,family:'var(--mono)'}}, grid:{display:false} },
+              y: { ticks:{ callback:v=> {
+                     if(Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M';
+                     if(Math.abs(v)>=1e3) return (v/1e3).toFixed(0)+'k';
+                     return Math.round(v);
+                   }, font:{size:9, family:'var(--mono)'} },
+                   grid:{ color:'rgba(0,0,0,0.05)' } }
+            }
+          }
+        });
+      })();
+      </script>
+    </div>
+
+  <details class="glossary">
+    <summary>📖 Glossário — o que cada métrica estatística significa</summary>
+    <div class="gl-grid">
+      <div class="gl-item">
+        <div class="gl-title">μ — Média ponderada (centro de massa)</div>
+        <div class="gl-body">O strike onde, se você "equilibrasse" toda a distribuição como uma régua, ela ficaria nivelada. Quando μ coincide com o max pain, a maior parte da exposição dos dealers está centrada no ponto de mínima perda, reforçando o efeito gravitacional. Quando μ diverge do max pain, existe assimetria de posicionamento que pode puxar o preço para um lado.</div>
+      </div>
+      <div class="gl-item">
+        <div class="gl-title">σ — Desvio padrão ponderado (dispersão)</div>
+        <div class="gl-body">Mede o quanto o OI está espalhado. σ baixo = OI extremamente concentrado em poucos strikes (efeito pinning forte). σ alto = distribuição espalhada por toda a cadeia, sem ponto de gravidade claro.</div>
+      </div>
+      <div class="gl-item">
+        <div class="gl-title">Skewness — Assimetria</div>
+        <div class="gl-body">Zero = distribuição simétrica. Negativo = cauda pesada à esquerda (mais OI em puts OTM profundas — proteção contra queda, viés bearish). Positivo = cauda à direita (mais OI em calls OTM — posicionamento para alta ou operações de financiamento).</div>
+      </div>
+      <div class="gl-item">
+        <div class="gl-title">Kurtosis — Concentração de pico</div>
+        <div class="gl-body">A distribuição normal tem curtose 3 (excesso 0). Acima de 3 (leptocúrtica) = pico concentrado com caudas finas, OI agrupado em poucos strikes. Abaixo de 3 (platicúrtica) = distribuição achatada e uniforme, sem concentração clara em nenhum ponto.</div>
+      </div>
+      <div class="gl-item">
+        <div class="gl-title">HHI — Índice Herfindahl-Hirschman</div>
+        <div class="gl-body">Índice de concentração que vai de 1/N (OI perfeitamente uniforme entre todos os strikes) a 1.0 (todo o OI em um único strike). Acima de 0.25 indica concentração alta — poucos strikes dominam o posicionamento.</div>
+      </div>
+      <div class="gl-item">
+        <div class="gl-title">Gini — Desigualdade de distribuição</div>
+        <div class="gl-body">0 = todos os strikes têm exatamente o mesmo OI. 1 = todo o OI está em um único strike. Valores acima de 0.5 indicam concentração significativa, com a maioria dos strikes tendo OI negligenciável comparado ao pico.</div>
+      </div>
+      <div class="gl-item">
+        <div class="gl-title">Entropia de Shannon — Desordem informacional</div>
+        <div class="gl-body">Máxima quando o OI está uniformemente distribuído (máxima incerteza sobre onde o preço "quer ir"). Mínima quando está concentrado em um único strike. O ratio entropia/máximo expressa o percentual de uniformidade — 100% = totalmente uniforme, 0% = totalmente concentrado.</div>
+      </div>
+      <div class="gl-item">
+        <div class="gl-title">R² Gaussiano — Ajuste à curva normal</div>
+        <div class="gl-body">Quanto a distribuição real do OI se parece com uma distribuição normal. R²≈1.0 = comportamento gaussiano previsível, com pico central e caudas simétricas. R²≈0 = distribuição irregular, com picos isolados, formas bimodais ou concentrações atípicas que não seguem padrão clássico.</div>
+      </div>
+      <div class="gl-item">
+        <div class="gl-title">Teste KS — Kolmogorov-Smirnov</div>
+        <div class="gl-body">Formaliza estatisticamente o teste de normalidade. Se p &gt; 0.05, não se rejeita a hipótese de que o OI segue uma distribuição normal. Complementa o R²: R² mede qualidade do ajuste, KS testa formalmente a hipótese.</div>
+      </div>
+    </div>
+  </details>
+
+  <div class="footer">
+    BOVA11 OI Distribution Analysis — Ajuste gaussiano, concentração e forma<br>
+    Métricas: HHI, Gini, Entropia de Shannon, Skewness, Kurtosis, KS Test, R²<br>
+    Não constitui recomendação de investimento.
+  </div>
+</div>
+
+<script>
+Chart.defaults.color = '#9C9A91';
+Chart.defaults.borderColor = 'rgba(0,0,0,0.06)';
+Chart.defaults.font.family = "'Instrument Sans', sans-serif";
+Chart.defaults.font.size = 10;
+</script>
+
+    }
+</script>
+</body>
+</html>
