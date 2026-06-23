@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>BOVA11 — GEX 23/Jun/2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="shared.js"></script>
+<style>
+:root{
+  --bg:#f3f5f7; --surface:#ffffff; --surface-2:#f7f9fb; --surface-3:#eef3f8;
+  --border:#dce2e8; --border-strong:#c9d3dd; --text:#111827; --muted:#5f6b7a;
+  --soft:#7a8696; --accent:#2563eb; --accent-soft:rgba(37,99,235,.08);
+  --positive:#15803d; --negative:#c2413b; --warning:#b7791f; --cyan:#0f7b9b;
+  --font:'Instrument Sans',system-ui,sans-serif; --mono:'JetBrains Mono',monospace;
+  --shadow:0 18px 45px rgba(17,24,39,.06);
+}
+[data-theme="dark"]{
+  --bg:#0f141b; --surface:#141b23; --surface-2:#19212b; --surface-3:#1f2933;
+  --border:#273240; --border-strong:#334155; --text:#e5ebf3; --muted:#a3afbf;
+  --soft:#7d8a9b; --accent:#6ea8ff; --accent-soft:rgba(110,168,255,.12);
+  --positive:#4ade80; --negative:#f87171; --warning:#f6c768; --cyan:#67e8f9;
+  --shadow:0 22px 50px rgba(0,0,0,.28);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;-webkit-font-smoothing:antialiased}
+button{font:inherit}
+.page{max-width:1440px;margin:0 auto;padding:28px 24px 44px}
+.page-header{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:18px}
+.page-kicker{font:.72rem var(--mono);text-transform:uppercase;letter-spacing:.1em;color:var(--soft);margin-bottom:10px}
+.page-header h1{font-size:1.7rem;letter-spacing:-.05em;line-height:1.05}
+.page-desc{margin-top:8px;color:var(--muted);line-height:1.55;max-width:70ch}
+.theme-toggle{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:999px;padding:9px 14px;cursor:pointer;transition:border-color .2s,color .2s}
+.theme-toggle:hover{border-color:var(--accent);color:var(--accent)}
+.theme-toggle.hidden{display:none}
+.scope{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:18px 20px;box-shadow:var(--shadow);display:flex;justify-content:space-between;gap:20px;align-items:flex-start}
+.scope-copy{max-width:70ch}
+.scope-label{font:.72rem var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--soft);margin-bottom:8px}
+.scope h2{font-size:1.2rem;letter-spacing:-.03em;margin-bottom:6px}
+.scope p{color:var(--muted);line-height:1.55}
+.view-switch,.tabs{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+.tab,.view-btn{border:1px solid var(--border);background:var(--surface);color:var(--muted);border-radius:999px;padding:10px 14px;cursor:pointer;transition:border-color .2s,background .2s,color .2s}
+.tab:hover,.view-btn:hover{border-color:var(--accent);color:var(--text)}
+.tab.active,.view-btn.active{background:var(--accent-soft);border-color:rgba(37,99,235,.2);color:var(--accent)}
+.summary-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:16px 0}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:14px 16px;box-shadow:var(--shadow)}
+.kpi .label{font:.68rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--soft)}
+.kpi .value{margin-top:8px;font-size:1.3rem;font-weight:700;letter-spacing:-.04em}
+.kpi .detail{margin-top:6px;color:var(--muted);font-size:.8rem;line-height:1.45}
+.view-panel{display:none}
+.view-panel.active{display:block}
+.layout{display:grid;grid-template-columns:1.05fr .95fr;gap:14px;margin-bottom:14px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:18px;box-shadow:var(--shadow)}
+.panel + .panel{margin-top:14px}
+.panel-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:14px}
+.panel-head h3{font-size:1.02rem;letter-spacing:-.03em}
+.panel-kicker{font:.72rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--soft)}
+.panel-sub{color:var(--muted);font-size:.84rem;line-height:1.45}
+.signal-list{display:grid;gap:10px}
+.signal-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--border)}
+.signal-row:first-child{padding-top:0;border-top:none}
+.signal-row strong{display:block;font-size:.92rem;letter-spacing:-.01em}
+.signal-row span{display:block;margin-top:3px;color:var(--muted);font-size:.79rem;line-height:1.45}
+.signal-value{text-align:right;white-space:nowrap;font:600 .9rem var(--mono)}
+.pos{color:var(--positive)} .neg{color:var(--negative)} .neut{color:var(--muted)} .warn{color:var(--warning)} .cyn{color:var(--cyan)}
+.bar-list{display:grid;gap:10px}
+.bar-item{display:grid;gap:6px;padding:12px 14px;border:1px solid var(--border);border-radius:16px;background:var(--surface-2)}
+.bar-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.bar-meta{font-size:.78rem;color:var(--muted);line-height:1.45}
+.bar-track{height:10px;border-radius:999px;background:var(--surface-3);overflow:hidden}
+.bar-fill{height:100%;border-radius:999px}
+.table-wrap{overflow:auto;max-height:600px;border-top:1px solid var(--border)}
+table{width:100%;border-collapse:collapse}
+th,td{padding:11px 10px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap;font-size:.83rem}
+th{position:sticky;top:0;background:var(--surface);z-index:2;color:var(--soft);font:500 .68rem var(--mono);letter-spacing:.08em;text-transform:uppercase}
+th:first-child,td:first-child{text-align:left}
+tr.focus{background:var(--accent-soft)}
+@media(max-width:1180px){.summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:960px){.layout{grid-template-columns:1fr}}
+@media(max-width:720px){
+  .page{padding:20px 14px 32px}
+  .page-header,.scope{flex-direction:column}
+  .summary-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:520px){.summary-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="page-header">
+    <div>
+      <div class="page-kicker">Hoje / GEX</div>
+      <h1>GEX & MaxPain</h1>
+      <p class="page-desc">Comparativo 22/Jun → 23/Jun/2026 · Spot 168.21 · abertura em regime agregado, com detalhe por vencimento apenas quando necessário.</p>
+    </div>
+    <div>
+      <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()">Tema</button>
+    </div>
+  </header>
+
+  <section class="scope">
+    <div class="scope-copy">
+      <div class="scope-label" id="scopeLabel">Agregado do dia</div>
+      <h2 id="scopeTitle">Regime gamma consolidado</h2>
+      <p id="scopeDesc">Visão inicial do flip, do strike dominante e do balanço líquido de exposição antes do detalhe por vencimento.</p>
+    </div>
+    <div class="view-switch" id="viewSel"></div>
+  </section>
+
+  <div class="tabs" id="gexTabs"></div>
+  <div class="summary-grid" id="gexKpis"></div>
+
+  <div id="gexSummary" class="view-panel"></div>
+  <div id="gexDetail" class="view-panel"></div>
+</div>
+
+<script>
+const EXP = [{"key": "V1", "name": "26 jun W4", "color": "red", "gex": 71341245, "iv_c_atm": 17.52, "div_c_atm": 0.95, "iv_p_atm": 15.17, "div_p_atm": 3.21, "mp": 168.0, "pcr_oi": 0.93, "dpcr_oi": -0.01, "pcr_vol": 0.85, "dpcr_vol": 0.03, "coi": 11642232, "poi": 10812975, "dcoi": 1609789, "dpoi": 1403610, "cvol": 12767523, "pvol": 10872375, "d_cvol": 2940070, "d_pvol": 2828775, "d_tvol": 5768845}, {"key": "V2", "name": "3 jul W1", "color": "blu", "gex": 16504154, "iv_c_atm": 16.25, "div_c_atm": 2.04, "iv_p_atm": 13.83, "div_p_atm": -0.86, "mp": 166.0, "pcr_oi": 1.75, "dpcr_oi": -0.04, "pcr_vol": 0.63, "dpcr_vol": 0.11, "coi": 42727757, "poi": 74686974, "dcoi": 1880152, "dpoi": 1712450, "cvol": 17822638, "pvol": 11269211, "d_cvol": 1497343, "d_pvol": 2839719, "d_tvol": 4337062}, {"key": "V3", "name": "10 jul W2", "color": "grn", "gex": -280871, "iv_c_atm": 15.98, "div_c_atm": -0.42, "iv_p_atm": 16.29, "div_p_atm": 0.61, "mp": 151.0, "pcr_oi": 3.32, "dpcr_oi": -0.34, "pcr_vol": 0.63, "dpcr_vol": 0.11, "coi": 13842303, "poi": 45913265, "dcoi": 1571338, "dpoi": 1007058, "cvol": 17822638, "pvol": 11269211, "d_cvol": 1497343, "d_pvol": 2839719, "d_tvol": 4337062}, {"key": "V4", "name": "17 jul Mensal", "color": "yel", "gex": 17109964, "iv_c_atm": 16.18, "div_c_atm": -0.04, "iv_p_atm": 15.86, "div_p_atm": 0.11, "mp": 169.0, "pcr_oi": 1.46, "dpcr_oi": -0.05, "pcr_vol": 0.63, "dpcr_vol": 0.11, "coi": 67698379, "poi": 98942054, "dcoi": 4083441, "dpoi": 2812041, "cvol": 17822638, "pvol": 11269211, "d_cvol": 1497343, "d_pvol": 2839719, "d_tvol": 4337062}, {"key": "V5", "name": "21 ago Mensal", "color": "pur", "gex": 17272979, "iv_c_atm": 16.23, "div_c_atm": 0.36, "iv_p_atm": 17.23, "div_p_atm": 0.28, "mp": 165.0, "pcr_oi": 1.44, "dpcr_oi": 0.03, "pcr_vol": 0.63, "dpcr_vol": 0.1, "coi": 18647213, "poi": 26788673, "dcoi": 1257881, "dpoi": 2334821, "cvol": 17755429, "pvol": 11272681, "d_cvol": 1820423, "d_pvol": 2839719, "d_tvol": 4660142}];
+const AGG = [{"s": 160.0, "c": 15739263, "p": -18922262, "n": -3182999}, {"s": 161.0, "c": 2985389, "p": -10547470, "n": -7562081}, {"s": 162.0, "c": 7352862, "p": -17726145, "n": -10373282}, {"s": 163.0, "c": 4608287, "p": -22864223, "n": -18255936}, {"s": 164.0, "c": 122217546, "p": -140061642, "n": -17844096}, {"s": 165.0, "c": 73332314, "p": -75428195, "n": -2095881}, {"s": 166.0, "c": 180562574, "p": -190910284, "n": -10347709}, {"s": 167.0, "c": 43455371, "p": -49600194, "n": -6144823}, {"s": 168.0, "c": 281997600, "p": -281251215, "n": 746385}, {"s": 169.0, "c": 49429119, "p": -39851225, "n": 9577894}, {"s": 170.0, "c": 84227857, "p": -50985738, "n": 33242118}, {"s": 171.0, "c": 52375334, "p": -15066451, "n": 37308883}, {"s": 172.0, "c": 56661384, "p": -25858634, "n": 30802749}, {"s": 173.0, "c": 28147030, "p": -16492114, "n": 11654917}, {"s": 174.0, "c": 24692720, "p": -13962931, "n": 10729788}, {"s": 175.0, "c": 41387516, "p": -29862679, "n": 11524836}, {"s": 176.0, "c": 21177911, "p": -13754420, "n": 7423491}, {"s": 177.0, "c": 37485583, "p": -15568625, "n": 21916958}, {"s": 178.0, "c": 14290494, "p": -6953134, "n": 7337360}, {"s": 179.0, "c": 12333812, "p": -10318314, "n": 2015499}, {"s": 180.0, "c": 23570242, "p": -11498882, "n": 12071360}, {"s": 181.0, "c": 6955415, "p": -2212000, "n": 4743414}, {"s": 182.0, "c": 7073175, "p": -8281436, "n": -1208261}, {"s": 183.0, "c": 5596753, "p": -1813838, "n": 3782915}, {"s": 184.0, "c": 2783250, "p": -1232901, "n": 1550349}, {"s": 185.0, "c": 5761177, "p": -4246246, "n": 1514931}, {"s": 186.0, "c": 1961074, "p": -803916, "n": 1157157}, {"s": 187.0, "c": 1539279, "p": -823873, "n": 715406}, {"s": 188.0, "c": 2372872, "p": -521473, "n": 1851399}, {"s": 189.0, "c": 1936525, "p": -1217906, "n": 718619}, {"s": 190.0, "c": 6952935, "p": -5436363, "n": 1516572}, {"s": 191.0, "c": 1224468, "p": -706725, "n": 517743}, {"s": 192.0, "c": 541446, "p": -164741, "n": 376704}, {"s": 193.0, "c": 1155236, "p": -396548, "n": 758688}, {"s": 194.0, "c": 509279, "p": -102379, "n": 406900}, {"s": 195.0, "c": 1453041, "p": -910230, "n": 542811}, {"s": 196.0, "c": 68412, "p": -58961, "n": 9452}, {"s": 197.0, "c": 149897, "p": -57301, "n": 92596}, {"s": 198.0, "c": 217851, "p": -27795, "n": 190055}, {"s": 199.0, "c": 238649, "p": -14978, "n": 223671}, {"s": 200.0, "c": 562021, "p": -196164, "n": 365857}];
+const GEX_EXP = {"V1": {"strikes": [{"s": 160.0, "c": 133899, "p": -767350, "n": -633451}, {"s": 161.0, "c": 54789, "p": -737850, "n": -683061}, {"s": 162.0, "c": 644627, "p": -2045280, "n": -1400653}, {"s": 163.0, "c": 635780, "p": -4638547, "n": -4002767}, {"s": 164.0, "c": 2983578, "p": -4091739, "n": -1108162}, {"s": 165.0, "c": 10944541, "p": -13028631, "n": -2084090}, {"s": 166.0, "c": 9205458, "p": -11312616, "n": -2107157}, {"s": 167.0, "c": 16768384, "p": -15743685, "n": 1024699}, {"s": 168.0, "c": 18148087, "p": -15781398, "n": 2366688}, {"s": 169.0, "c": 16294833, "p": -5603196, "n": 10691637}, {"s": 170.0, "c": 18866534, "p": -7406649, "n": 11459885}, {"s": 171.0, "c": 28222736, "p": -2576523, "n": 25646213}, {"s": 172.0, "c": 24222445, "p": -5585144, "n": 18637300}, {"s": 173.0, "c": 6292571, "p": -2315336, "n": 3977235}, {"s": 174.0, "c": 5051462, "p": -688496, "n": 4362966}, {"s": 175.0, "c": 4575520, "p": -493490, "n": 4082031}, {"s": 176.0, "c": 942324, "p": -138810, "n": 803514}, {"s": 177.0, "c": 285144, "p": -39940, "n": 245205}, {"s": 178.0, "c": 161241, "p": -20695, "n": 140546}, {"s": 179.0, "c": 71513, "p": -21516, "n": 49997}, {"s": 180.0, "c": 21416, "p": -6383, "n": 15032}, {"s": 181.0, "c": 1972, "p": -2469, "n": -497}, {"s": 182.0, "c": 0, "p": 0, "n": 0}, {"s": 183.0, "c": 0, "p": 0, "n": 0}, {"s": 184.0, "c": 0, "p": 0, "n": 0}, {"s": 185.0, "c": 0, "p": 0, "n": 0}, {"s": 186.0, "c": 0, "p": 0, "n": 0}, {"s": 187.0, "c": 0, "p": 0, "n": 0}, {"s": 188.0, "c": 0, "p": 0, "n": 0}, {"s": 189.0, "c": 0, "p": 0, "n": 0}, {"s": 190.0, "c": 0, "p": 0, "n": 0}, {"s": 191.0, "c": 0, "p": 0, "n": 0}, {"s": 192.0, "c": 0, "p": 0, "n": 0}, {"s": 193.0, "c": 0, "p": 0, "n": 0}, {"s": 194.0, "c": 0, "p": 0, "n": 0}, {"s": 195.0, "c": 0, "p": 0, "n": 0}, {"s": 196.0, "c": 0, "p": 0, "n": 0}, {"s": 197.0, "c": 0, "p": 0, "n": 0}, {"s": 198.0, "c": 0, "p": 0, "n": 0}, {"s": 199.0, "c": 0, "p": 0, "n": 0}, {"s": 200.0, "c": 0, "p": 0, "n": 0}], "net": 71341245, "flip": 166.7, "dom_s": 171.0, "dom_n": 25646213}, "V2": {"strikes": [{"s": 160.0, "c": 47990, "p": -633961, "n": -585971}, {"s": 161.0, "c": 75701, "p": -337653, "n": -261953}, {"s": 162.0, "c": 306152, "p": -983465, "n": -677313}, {"s": 163.0, "c": 331361, "p": -1227966, "n": -896605}, {"s": 164.0, "c": 107922680, "p": -108863489, "n": -940809}, {"s": 165.0, "c": 1267816, "p": -2341452, "n": -1073636}, {"s": 166.0, "c": 159684277, "p": -160056068, "n": -371791}, {"s": 167.0, "c": 3155054, "p": -2381615, "n": 773439}, {"s": 168.0, "c": 245400799, "p": -242338757, "n": 3062042}, {"s": 169.0, "c": 1138770, "p": -718601, "n": 420168}, {"s": 170.0, "c": 8110846, "p": -1579058, "n": 6531788}, {"s": 171.0, "c": 1281106, "p": -382859, "n": 898247}, {"s": 172.0, "c": 2180585, "p": -708402, "n": 1472183}, {"s": 173.0, "c": 3002065, "p": -761021, "n": 2241043}, {"s": 174.0, "c": 1199665, "p": -203202, "n": 996463}, {"s": 175.0, "c": 1904531, "p": -258816, "n": 1645715}, {"s": 176.0, "c": 1472193, "p": -268481, "n": 1203713}, {"s": 177.0, "c": 149942, "p": -281, "n": 149661}, {"s": 178.0, "c": 779743, "p": -336191, "n": 443552}, {"s": 179.0, "c": 1668976, "p": -258, "n": 1668718}, {"s": 180.0, "c": 368189, "p": -19944, "n": 348245}, {"s": 181.0, "c": 184663, "p": -22155, "n": 162509}, {"s": 182.0, "c": 84671, "p": -10737, "n": 73934}, {"s": 183.0, "c": 166429, "p": 0, "n": 166429}, {"s": 184.0, "c": 46703, "p": -16459, "n": 30244}, {"s": 185.0, "c": 77623, "p": 0, "n": 77623}, {"s": 186.0, "c": 3813, "p": -3531, "n": 282}, {"s": 187.0, "c": 204, "p": -2241, "n": -2037}, {"s": 188.0, "c": 413, "p": -402, "n": 11}, {"s": 189.0, "c": 584858, "p": -372300, "n": 212558}, {"s": 190.0, "c": 0, "p": 0, "n": 0}, {"s": 191.0, "c": 192019, "p": -223646, "n": -31627}, {"s": 192.0, "c": 0, "p": 0, "n": 0}, {"s": 193.0, "c": 172702, "p": -120068, "n": 52634}, {"s": 194.0, "c": 0, "p": 0, "n": 0}, {"s": 195.0, "c": 285776, "p": -168353, "n": 117423}, {"s": 196.0, "c": 0, "p": 0, "n": 0}, {"s": 197.0, "c": 28392, "p": -16412, "n": 11980}, {"s": 198.0, "c": 0, "p": 0, "n": 0}, {"s": 199.0, "c": 7766, "p": -4522, "n": 3244}, {"s": 200.0, "c": 0, "p": 0, "n": 0}], "net": 16504154, "flip": 166.3, "dom_s": 170.0, "dom_n": 6531788}, "V3": {"strikes": [{"s": 160.0, "c": 0, "p": -301744, "n": -301744}, {"s": 161.0, "c": 37892, "p": -796858, "n": -758965}, {"s": 162.0, "c": 206437, "p": -1064959, "n": -858522}, {"s": 163.0, "c": 505898, "p": -1592365, "n": -1086466}, {"s": 164.0, "c": 683824, "p": -790237, "n": -106413}, {"s": 165.0, "c": 24447, "p": -321336, "n": -296890}, {"s": 166.0, "c": 180143, "p": -16827, "n": 163316}, {"s": 167.0, "c": 19421, "p": -123164, "n": -103743}, {"s": 168.0, "c": 228378, "p": -37581, "n": 190797}, {"s": 169.0, "c": 19727, "p": -524, "n": 19204}, {"s": 170.0, "c": 772010, "p": -7169, "n": 764840}, {"s": 171.0, "c": 61695, "p": -513, "n": 61182}, {"s": 172.0, "c": 236319, "p": -654, "n": 235665}, {"s": 173.0, "c": 23224, "p": -15585, "n": 7640}, {"s": 174.0, "c": 121219, "p": -418, "n": 120800}, {"s": 175.0, "c": 401789, "p": -374712, "n": 27077}, {"s": 176.0, "c": 110200, "p": -109654, "n": 546}, {"s": 177.0, "c": 149942, "p": -281, "n": 149661}, {"s": 178.0, "c": 231209, "p": -314, "n": 230896}, {"s": 179.0, "c": 1668976, "p": -258, "n": 1668718}, {"s": 180.0, "c": 241620, "p": -2239, "n": 239381}, {"s": 181.0, "c": 184663, "p": -22155, "n": 162509}, {"s": 182.0, "c": 86514, "p": 0, "n": 86514}, {"s": 183.0, "c": 166429, "p": 0, "n": 166429}, {"s": 184.0, "c": 34949, "p": 0, "n": 34949}, {"s": 185.0, "c": 77623, "p": 0, "n": 77623}, {"s": 186.0, "c": 289, "p": -221, "n": 67}, {"s": 187.0, "c": 204, "p": -2241, "n": -2037}, {"s": 188.0, "c": 43, "p": 0, "n": 43}, {"s": 189.0, "c": 584858, "p": -372300, "n": 212558}, {"s": 190.0, "c": 951, "p": 0, "n": 951}, {"s": 191.0, "c": 192019, "p": -223646, "n": -31627}, {"s": 192.0, "c": 0, "p": 0, "n": 0}, {"s": 193.0, "c": 172702, "p": -120068, "n": 52634}, {"s": 194.0, "c": 0, "p": 0, "n": 0}, {"s": 195.0, "c": 285776, "p": -168353, "n": 117423}, {"s": 196.0, "c": 0, "p": 0, "n": 0}, {"s": 197.0, "c": 28392, "p": -16412, "n": 11980}, {"s": 198.0, "c": 0, "p": 0, "n": 0}, {"s": 199.0, "c": 7766, "p": -4522, "n": 3244}, {"s": 200.0, "c": 0, "p": 0, "n": 0}], "net": -280871, "flip": 165.6, "dom_s": 179.0, "dom_n": 1668718}, "V4": {"strikes": [{"s": 160.0, "c": 13666294, "p": -15508273, "n": -1841979}, {"s": 161.0, "c": 2491057, "p": -8346908, "n": -5855851}, {"s": 162.0, "c": 5850064, "p": -13098704, "n": -7248640}, {"s": 163.0, "c": 2383248, "p": -13444747, "n": -11061499}, {"s": 164.0, "c": 9800884, "p": -25093353, "n": -15292468}, {"s": 165.0, "c": 55602009, "p": -55720564, "n": -118554}, {"s": 166.0, "c": 10116811, "p": -18152403, "n": -8035593}, {"s": 167.0, "c": 20131045, "p": -28484744, "n": -8353699}, {"s": 168.0, "c": 14775725, "p": -18505520, "n": -3729795}, {"s": 169.0, "c": 29335563, "p": -33020935, "n": -3685372}, {"s": 170.0, "c": 52834514, "p": -37505064, "n": 15329451}, {"s": 171.0, "c": 20234603, "p": -9762974, "n": 10471629}, {"s": 172.0, "c": 28427589, "p": -18615020, "n": 9812569}, {"s": 173.0, "c": 14973504, "p": -11842378, "n": 3131126}, {"s": 174.0, "c": 17423534, "p": -12289749, "n": 5133785}, {"s": 175.0, "c": 32926431, "p": -27438692, "n": 5487738}, {"s": 176.0, "c": 17323371, "p": -12294005, "n": 5029366}, {"s": 177.0, "c": 35758721, "p": -15210047, "n": 20548673}, {"s": 178.0, "c": 11570512, "p": -6251485, "n": 5319027}, {"s": 179.0, "c": 8307862, "p": -10267263, "n": -1959401}, {"s": 180.0, "c": 17582267, "p": -9602623, "n": 7979644}, {"s": 181.0, "c": 6030995, "p": -2036466, "n": 3994529}, {"s": 182.0, "c": 5387293, "p": -7936636, "n": -2549344}, {"s": 183.0, "c": 4428388, "p": -1683466, "n": 2744923}, {"s": 184.0, "c": 2150001, "p": -1106775, "n": 1043226}, {"s": 185.0, "c": 4552319, "p": -2592743, "n": 1959576}, {"s": 186.0, "c": 1279940, "p": -584715, "n": 695226}, {"s": 187.0, "c": 1369093, "p": -802016, "n": 567078}, {"s": 188.0, "c": 569070, "p": -473244, "n": 95825}, {"s": 189.0, "c": 584858, "p": -372300, "n": 212558}, {"s": 190.0, "c": 1037280, "p": -507443, "n": 529837}, {"s": 191.0, "c": 192019, "p": -223646, "n": -31627}, {"s": 192.0, "c": 179056, "p": -145948, "n": 33108}, {"s": 193.0, "c": 172702, "p": -120068, "n": 52634}, {"s": 194.0, "c": 44144, "p": -87805, "n": -43661}, {"s": 195.0, "c": 285776, "p": -168353, "n": 117423}, {"s": 196.0, "c": 29738, "p": -25104, "n": 4634}, {"s": 197.0, "c": 28392, "p": -16412, "n": 11980}, {"s": 198.0, "c": 6165, "p": -13577, "n": -7413}, {"s": 199.0, "c": 7766, "p": -4522, "n": 3244}, {"s": 200.0, "c": 55457, "p": -16600, "n": 38858}], "net": 17109964, "flip": 169.2, "dom_s": 177.0, "dom_n": 20548673}, "V5": {"strikes": [{"s": 160.0, "c": 1891081, "p": -1710935, "n": 180146}, {"s": 161.0, "c": 325950, "p": -328202, "n": -2251}, {"s": 162.0, "c": 345582, "p": -533737, "n": -188155}, {"s": 163.0, "c": 751999, "p": -1960599, "n": -1208599}, {"s": 164.0, "c": 826580, "p": -1222824, "n": -396244}, {"s": 165.0, "c": 5493501, "p": -4016212, "n": 1477289}, {"s": 166.0, "c": 1375886, "p": -1372370, "n": 3516}, {"s": 167.0, "c": 3381467, "p": -2866986, "n": 514482}, {"s": 168.0, "c": 3444612, "p": -4587959, "n": -1143347}, {"s": 169.0, "c": 2640226, "p": -507969, "n": 2132258}, {"s": 170.0, "c": 3643952, "p": -4487798, "n": -843846}, {"s": 171.0, "c": 2575193, "p": -2343582, "n": 231612}, {"s": 172.0, "c": 1594446, "p": -949414, "n": 645032}, {"s": 173.0, "c": 3855666, "p": -1557793, "n": 2297873}, {"s": 174.0, "c": 896840, "p": -781066, "n": 115774}, {"s": 175.0, "c": 1579245, "p": -1296969, "n": 282275}, {"s": 176.0, "c": 1329821, "p": -943469, "n": 386353}, {"s": 177.0, "c": 1141834, "p": -318077, "n": 823758}, {"s": 178.0, "c": 1547788, "p": -344450, "n": 1203338}, {"s": 179.0, "c": 616487, "p": -29018, "n": 587468}, {"s": 180.0, "c": 5356750, "p": -1867693, "n": 3489057}, {"s": 181.0, "c": 553121, "p": -128756, "n": 424365}, {"s": 182.0, "c": 1514698, "p": -334063, "n": 1180635}, {"s": 183.0, "c": 835507, "p": -130372, "n": 705134}, {"s": 184.0, "c": 551597, "p": -109667, "n": 441929}, {"s": 185.0, "c": 1053612, "p": -1653503, "n": -599891}, {"s": 186.0, "c": 677032, "p": -215449, "n": 461583}, {"s": 187.0, "c": 169778, "p": -17376, "n": 152403}, {"s": 188.0, "c": 1803346, "p": -47827, "n": 1755519}, {"s": 189.0, "c": 181951, "p": -101005, "n": 80946}, {"s": 190.0, "c": 5914704, "p": -4928920, "n": 985784}, {"s": 191.0, "c": 648410, "p": -35787, "n": 612623}, {"s": 192.0, "c": 362389, "p": -18793, "n": 343596}, {"s": 193.0, "c": 637131, "p": -36344, "n": 600787}, {"s": 194.0, "c": 465135, "p": -14575, "n": 450560}, {"s": 195.0, "c": 595715, "p": -405172, "n": 190543}, {"s": 196.0, "c": 38675, "p": -33857, "n": 4818}, {"s": 197.0, "c": 64721, "p": -8064, "n": 56657}, {"s": 198.0, "c": 211686, "p": -14218, "n": 197468}, {"s": 199.0, "c": 215350, "p": -1411, "n": 213939}, {"s": 200.0, "c": 506564, "p": -179564, "n": 326999}], "net": 17272979, "flip": 161.0, "dom_s": 180.0, "dom_n": 3489057}};
+const KEYS = ["V1", "V2", "V3", "V4", "V5"];
+const NAMES = ["26 jun W4", "3 jul W1", "10 jul W2", "17 jul Mensal", "21 ago Mensal"];
+const SPOT = parseFloat('168.21');
+let gexCur = 'AGG';
+let gexView = 'summary';
+
+const cc = c => ({red:'var(--negative)', blu:'var(--accent)', grn:'var(--positive)', yel:'var(--warning)', pur:'var(--accent)', org:'var(--warning)', cyn:'var(--cyan)'}[c] || 'var(--accent)');
+const pc = n => n == null ? 'neut' : n >= 0 ? 'pos' : 'neg';
+const fI = n => { if(n == null) return '–'; const a = Math.abs(n); return a >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : a >= 1e3 ? (n / 1e3).toFixed(0) + 'k' : String(Math.round(n)); };
+const fG = n => n == null ? '–' : `${n >= 0 ? '+' : '−'}${fI(Math.abs(n))}`;
+const signalRow = (label, value, detail, tone = '') => `<div class="signal-row"><div><strong>${label}</strong><span>${detail}</span></div><div class="signal-value ${tone}">${value}</div></div>`;
+const currentRows = () => gexCur === 'AGG' ? AGG : GEX_EXP[gexCur].strikes;
+
+function renderTabs() {
+  const el = document.getElementById('gexTabs');
+  const tabs = [`<button class="tab ${gexCur === 'AGG' ? 'active' : ''}" data-k="AGG">Agregado</button>`];
+  KEYS.forEach((key, index) => {
+    const exp = EXP.find(item => item.key === key);
+    tabs.push(`<button class="tab ${gexCur === key ? 'active' : ''}" data-k="${key}" style="${gexCur === key ? `border-color:${cc(exp.color)};color:${cc(exp.color)}` : ''}">${NAMES[index]}</button>`);
+  });
+  el.innerHTML = tabs.join('');
+  el.querySelectorAll('.tab').forEach(tab => {
+    tab.onclick = () => {
+      gexCur = tab.dataset.k;
+      renderAll();
+    };
+  });
+}
+
+function renderViewSel() {
+  const el = document.getElementById('viewSel');
+  const views = [{id:'summary', label:'Resumo'}, {id:'detail', label:'Detalhe por strike'}];
+  el.innerHTML = views.map(view => `<button class="view-btn ${gexView === view.id ? 'active' : ''}" data-view="${view.id}">${view.label}</button>`).join('');
+  el.querySelectorAll('.view-btn').forEach(btn => {
+    btn.onclick = () => {
+      gexView = btn.dataset.view;
+      renderAll();
+    };
+  });
+}
+
+function renderScope() {
+  const label = document.getElementById('scopeLabel');
+  const title = document.getElementById('scopeTitle');
+  const desc = document.getElementById('scopeDesc');
+  if (gexCur === 'AGG') {
+    label.textContent = 'Agregado do dia';
+    title.textContent = 'Regime gamma consolidado';
+    desc.textContent = 'Resumo operacional do flip agregado, do strike dominante e da distribuição líquida de GEX.';
+    return;
+  }
+  const exp = EXP.find(item => item.key === gexCur);
+  const g = GEX_EXP[gexCur];
+  const regime = g.flip == null || SPOT >= g.flip ? 'Long Gamma' : 'Short Gamma';
+  label.textContent = exp.name;
+  title.textContent = `Leitura de ${exp.name}`;
+  desc.textContent = `${regime} com dominante em K${g.dom_s} e exposição líquida ${fG(g.net)}.`;
+}
+
+function renderKpis() {
+  const el = document.getElementById('gexKpis');
+  if (gexCur === 'AGG') {
+    el.innerHTML = [
+      ['GEX agregado', '+121.9M', 'Exposição líquida consolidada', 'pos', ''],
+      ['Regime', 'Spot acima do flip → Long Gamma', 'Leitura do flip agregado', 'pos', ''],
+      ['Flip agregado', '167.9', 'Referência versus spot 168.21', 'warn', ''],
+      ['Dominante', 'K171', 'Net +37.3M no strike dominante', '', ''],
+      ['Vencimentos', KEYS.length, 'Cobertura agregada do dia', 'cyn', ''],
+    ].map(([label, value, detail, tone, style]) => `<div class="kpi"><div class="label">${label}</div><div class="value ${tone}" style="${style}">${value}</div><div class="detail">${detail}</div></div>`).join('');
+    return;
+  }
+  const exp = EXP.find(item => item.key === gexCur);
+  const g = GEX_EXP[gexCur];
+  const regime = g.flip == null || SPOT >= g.flip ? 'Long Gamma' : 'Short Gamma';
+  const regClass = g.flip == null || SPOT >= g.flip ? 'pos' : 'neg';
+  el.innerHTML = [
+    ['Vencimento', exp.name, `Max pain K${exp.mp}`, '', `color:${cc(exp.color)}`],
+    ['Net GEX', fG(g.net), `Dominante K${g.dom_s} (${fG(g.dom_n)})`, pc(g.net), ''],
+    ['Flip', g.flip == null ? '–' : g.flip, regime, 'warn', ''],
+    ['Regime', regime, `Spot ${SPOT.toFixed(2)}`, regClass, ''],
+    ['IV Call ATM', `${exp.iv_c_atm}%`, `Δ ${exp.div_c_atm >= 0 ? '+' : ''}${exp.div_c_atm.toFixed(2)}pp`, pc(exp.div_c_atm), ''],
+  ].map(([label, value, detail, tone, style]) => `<div class="kpi"><div class="label">${label}</div><div class="value ${tone}" style="${style}">${value}</div><div class="detail">${detail}</div></div>`).join('');
+}
+
+function renderBarList(rows) {
+  const maxAbs = Math.max(...rows.map(row => Math.abs(row.n)), 1);
+  return rows.map(row => {
+    const width = Math.max(4, Math.round(Math.abs(row.n) / maxAbs * 100));
+    const tone = row.n >= 0 ? 'pos' : 'neg';
+    return `
+      <div class="bar-item">
+        <div class="bar-top"><strong>K${row.s}</strong><span class="${tone}">${fG(row.n)}</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${width}%;background:${row.n >= 0 ? 'var(--positive)' : 'var(--negative)'}"></div></div>
+        <div class="bar-meta">Call ${fG(row.c)} · Put ${fG(row.p)}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderSummary() {
+  const rows = currentRows();
+  const topAbs = [...rows].sort((a, b) => Math.abs(b.n) - Math.abs(a.n)).slice(0, 6);
+  const topPositive = [...rows].sort((a, b) => b.n - a.n)[0];
+  const topNegative = [...rows].sort((a, b) => a.n - b.n)[0];
+  const summaryRows = EXP.map(exp => {
+    const g = GEX_EXP[exp.key];
+    return `
+      <tr>
+        <td style="color:${cc(exp.color)}">${exp.name}</td>
+        <td class="${pc(g.net)}">${fG(g.net)}</td>
+        <td>${g.flip == null ? '–' : g.flip}</td>
+        <td>K${g.dom_s}</td>
+        <td>${exp.iv_c_atm}%</td>
+        <td class="${pc(exp.div_c_atm)}">${exp.div_c_atm >= 0 ? '+' : ''}${exp.div_c_atm.toFixed(2)}pp</td>
+        <td>${exp.pcr_oi}</td>
+      </tr>`;
+  }).join('');
+
+  let html = `
+    <div class="layout">
+      <section class="panel">
+        <div class="panel-head">
+          <div><div class="panel-kicker">Resumo</div><h3>Leitura do regime</h3></div>
+          <div class="panel-sub">Use este bloco antes de abrir o detalhe por strike.</div>
+        </div>
+        <div class="signal-list">
+          ${gexCur === 'AGG' ? signalRow('Regime agregado', 'Spot acima do flip → Long Gamma', `Flip 167.9 versus spot 168.21`, 'pos') : signalRow('Regime do vencimento', (GEX_EXP[gexCur].flip == null || SPOT >= GEX_EXP[gexCur].flip) ? 'Long Gamma' : 'Short Gamma', `Flip ${GEX_EXP[gexCur].flip == null ? '–' : GEX_EXP[gexCur].flip}`, (GEX_EXP[gexCur].flip == null || SPOT >= GEX_EXP[gexCur].flip) ? 'pos' : 'neg')}
+          ${topPositive ? signalRow('Maior GEX positivo', `K${topPositive.s} · ${fG(topPositive.n)}`, `Call ${fG(topPositive.c)} · Put ${fG(topPositive.p)}`, pc(topPositive.n)) : ''}
+          ${topNegative ? signalRow('Maior GEX negativo', `K${topNegative.s} · ${fG(topNegative.n)}`, `Call ${fG(topNegative.c)} · Put ${fG(topNegative.p)}`, pc(topNegative.n)) : ''}
+          ${signalRow('Spot monitorado', SPOT.toFixed(2), 'Referência usada na leitura de regime', 'cyn')}
+          ${signalRow('Range útil', '160–200', 'Janela usada para o mapa de GEX por strike', '')}
+        </div>
+      </section>
+      <section class="panel">
+        <div class="panel-head">
+          <div><div class="panel-kicker">Mapa</div><h3>Strikes dominantes</h3></div>
+          <div class="panel-sub">Os níveis com maior impacto líquido na exposição.</div>
+        </div>
+        <div class="bar-list">${renderBarList(topAbs)}</div>
+      </section>
+    </div>
+    <section class="panel">
+      <div class="panel-head">
+        <div><div class="panel-kicker">Cobertura</div><h3>Resumo por vencimento</h3></div>
+        <div class="panel-sub">Comparação rápida para decidir qual vencimento merece aprofundamento.</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Vencimento</th><th>Net GEX</th><th>Flip</th><th>Dominante</th><th>IV C ATM</th><th>ΔIV C</th><th>PCR OI</th></tr></thead>
+          <tbody>${summaryRows}</tbody>
+        </table>
+      </div>
+    </section>`;
+
+  document.getElementById('gexSummary').innerHTML = html;
+}
+
+function renderDetail() {
+  const rows = [...currentRows()].sort((a, b) => a.s - b.s);
+  const title = gexCur === 'AGG' ? 'Mapa agregado por strike' : `Mapa por strike — ${EXP.find(item => item.key === gexCur).name}`;
+  const body = rows.map(row => `
+    <tr class="${Math.abs(row.s - SPOT) < 1.5 ? 'focus' : ''}">
+      <td>K${row.s}</td>
+      <td class="${pc(row.c)}">${fG(row.c)}</td>
+      <td class="${pc(row.p)}">${fG(row.p)}</td>
+      <td class="${pc(row.n)}">${fG(row.n)}</td>
+      <td>${Math.abs(row.s - SPOT).toFixed(1)}</td>
+    </tr>`).join('');
+  document.getElementById('gexDetail').innerHTML = `
+    <section class="panel">
+      <div class="panel-head">
+        <div><div class="panel-kicker">Detalhe</div><h3>${title}</h3></div>
+        <div class="panel-sub">Tabela completa por strike disponível sob demanda.</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Strike</th><th>Call GEX</th><th>Put GEX</th><th>Net</th><th>Distância do spot</th></tr></thead>
+          <tbody>${body}</tbody>
+        </table>
+      </div>
+    </section>`;
+}
+
+function showView() {
+  document.querySelectorAll('.view-panel').forEach(panel => panel.classList.remove('active'));
+  document.getElementById(gexView === 'summary' ? 'gexSummary' : 'gexDetail').classList.add('active');
+}
+
+function renderAll() {
+  renderScope();
+  renderTabs();
+  renderViewSel();
+  renderKpis();
+  renderSummary();
+  renderDetail();
+  showView();
+}
+
+renderAll();
+</script>
+</body>
+</html>
