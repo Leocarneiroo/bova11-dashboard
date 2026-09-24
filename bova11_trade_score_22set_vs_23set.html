@@ -1,0 +1,1401 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BOVA11 Trade Score & Bias — 22/Set vs 23/Set</title>
+<script src="shared.js"></script>
+<style>
+:root{--bg:#ffffff;--bg2:#f6f8fa;--bg3:#eaeef2;--text:#1f2328;--text2:#636c76;--brd:#d0d7de}
+[data-theme="dark"]{--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--text:#c9d1d9;--text2:#8b949e;--brd:#30363d}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--text);padding:20px;line-height:1.6}
+[data-theme="dark"] .bias-sell-vol{color:#3fb950!important;background:#0d2818!important;border-color:#3fb950!important}
+[data-theme="dark"] .bias-buy-vol{color:#38bdf8!important;background:#0c2d48!important;border-color:#38bdf8!important}
+[data-theme="dark"] .bias-directional{color:#fbbf24!important;background:#3d3310!important;border-color:#fbbf24!important}
+[data-theme="dark"] .bias-neutral{color:#8b949e!important;background:#21262d!important;border-color:#8b949e!important}
+[data-theme="dark"] .bias-avoid{color:#f85149!important;background:#3d1418!important;border-color:#f85149!important}
+[data-theme="dark"] .conv-strong{color:#4ade80!important;background:#0d2818!important;border-color:#4ade80!important}
+[data-theme="dark"] .conv-moderate{color:#38bdf8!important;background:#0c2d48!important;border-color:#38bdf8!important}
+[data-theme="dark"] .conv-weak{color:#6b7280!important;background:#1f2937!important;border-color:#6b7280!important}
+.bias-sell-vol{color:#1a7f37;background:#d1f7dd;padding:3px 8px;border-radius:4px;border:1px solid #1a7f37;font-size:.8em;font-weight:600}
+.bias-buy-vol{color:#0969da;background:#cce5ff;padding:3px 8px;border-radius:4px;border:1px solid #0969da;font-size:.8em;font-weight:600}
+.bias-directional{color:#9a6700;background:#fff3cd;padding:3px 8px;border-radius:4px;border:1px solid #9a6700;font-size:.8em;font-weight:600}
+.bias-neutral{color:#636c76;background:#eaeef2;padding:3px 8px;border-radius:4px;border:1px solid #636c76;font-size:.8em;font-weight:600}
+.bias-avoid{color:#cf222e;background:#ffdce0;padding:3px 8px;border-radius:4px;border:1px solid #cf222e;font-size:.8em;font-weight:600}
+.conv-strong{color:#1a7f37;background:#d1f7dd;padding:2px 6px;border-radius:4px;border:1px solid #1a7f37;font-size:.75em}
+.conv-moderate{color:#0969da;background:#cce5ff;padding:2px 6px;border-radius:4px;border:1px solid #0969da;font-size:.75em}
+.conv-weak{color:#636c76;background:#eaeef2;padding:2px 6px;border-radius:4px;border:1px solid #636c76;font-size:.75em}
+.hdr{background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid var(--brd);border-radius:12px;padding:24px;margin-bottom:24px}
+.hdr h1{font-size:1.8em;margin-bottom:8px} .hdr .meta{color:var(--text2)}
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:24px}
+.sc{background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:14px;text-align:center}
+.sc .l{color:var(--text2);font-size:.82em;margin-bottom:3px} .sc .v{font-size:1.5em;font-weight:700}
+.sec{background:var(--bg2);border:1px solid var(--brd);border-radius:12px;padding:20px;margin-bottom:24px}
+.sec h2{font-size:1.3em;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--brd)}
+.og{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-bottom:24px}
+table{width:100%;border-collapse:collapse;font-size:.85em}
+th,td{padding:10px 8px;text-align:center;border-bottom:1px solid var(--brd)}
+th{background:var(--bg3);font-weight:600;color:var(--text2);position:sticky;top:0;font-size:.75em;text-transform:uppercase}
+tr:hover{background:var(--bg3)}
+.meth{background:var(--bg3);border:1px solid var(--brd);padding:16px;border-radius:8px;margin-top:24px}
+.meth h3{margin-bottom:12px;color:#38bdf8} .meth ul{margin-left:20px;color:var(--text2)} .meth li{margin:8px 0}
+</style></head><body>
+<button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="position:fixed;top:12px;right:16px;z-index:9999;background:var(--bg2);border:1px solid var(--brd);color:var(--text);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:1rem;line-height:1;transition:all 0.2s;">◐</button>
+<div class="hdr"><h1>📊 BOVA11 Trade Score & Institutional Bias</h1>
+<div class="meta">22/Set vs 23/Set | Spot: <strong style="color:#38bdf8">184.30 → 182.86</strong> (Δ-1.44)</div></div>
+
+<div class="sg">
+<div class="sc"><div class="l">Total</div><div class="v" style="color:#7dd3fc">2624</div></div>
+<div class="sc"><div class="l">SELL VOL</div><div class="v" style="color:#3fb950">425</div></div>
+<div class="sc"><div class="l">BUY VOL</div><div class="v" style="color:#38bdf8">412</div></div>
+<div class="sc"><div class="l">DIRECTIONAL</div><div class="v" style="color:#fbbf24">100</div></div>
+<div class="sc"><div class="l">NEUTRAL</div><div class="v" style="color:#8b949e">156</div></div>
+<div class="sc"><div class="l">AVOID</div><div class="v" style="color:#f85149">1531</div></div>
+</div>
+<div class="sg">
+<div class="sc"><div class="l">Convicção STRONG</div><div class="v" style="color:#4ade80">2</div></div>
+<div class="sc"><div class="l">Convicção MODERATE</div><div class="v" style="color:#38bdf8">604</div></div>
+<div class="sc"><div class="l">Convicção WEAK</div><div class="v" style="color:#6b7280">2018</div></div>
+</div>
+
+<div class="sec"><h2>🎯 Top Oportunidades (Score ≥ 50)</h2><div class="og"><div style="background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:16px;border-top:3px solid #4ade80">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+<span style="font-size:1.3em;font-weight:700">K174</span>
+<span style="background:#4ade80;color:#000;padding:4px 12px;border-radius:20px;font-weight:700">110</span>
+</div>
+<div style="margin-bottom:6px"><span class="bias-neutral">NEUTRAL</span> <span class="conv-moderate">MODERATE</span></div>
+<div style="font-size:.85em;color:var(--text2)">
+<div>CALL · 25 set W4 · <span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></div>
+<div>ΔOI: <span style="color:#3fb950">+22k</span> · ΔIV: <span style="color:#f85149">-0.21pp</span></div>
+<div>Inst:28 · Flow:12 · Conv:70</div>
+</div></div><div style="background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:16px;border-top:3px solid #4ade80">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+<span style="font-size:1.3em;font-weight:700">K174</span>
+<span style="background:#4ade80;color:#000;padding:4px 12px;border-radius:20px;font-weight:700">101</span>
+</div>
+<div style="margin-bottom:6px"><span class="bias-neutral">NEUTRAL</span> <span class="conv-moderate">MODERATE</span></div>
+<div style="font-size:.85em;color:var(--text2)">
+<div>CALL · 2 out W1 · <span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></div>
+<div>ΔOI: <span style="color:#3fb950">+22k</span> · ΔIV: <span style="color:#f85149">-0.21pp</span></div>
+<div>Inst:28 · Flow:3 · Conv:70</div>
+</div></div><div style="background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:16px;border-top:3px solid #4ade80">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+<span style="font-size:1.3em;font-weight:700">K174</span>
+<span style="background:#4ade80;color:#000;padding:4px 12px;border-radius:20px;font-weight:700">101</span>
+</div>
+<div style="margin-bottom:6px"><span class="bias-neutral">NEUTRAL</span> <span class="conv-moderate">MODERATE</span></div>
+<div style="font-size:.85em;color:var(--text2)">
+<div>CALL · 9 out W2 · <span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></div>
+<div>ΔOI: <span style="color:#3fb950">+22k</span> · ΔIV: <span style="color:#f85149">-0.21pp</span></div>
+<div>Inst:28 · Flow:3 · Conv:70</div>
+</div></div><div style="background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:16px;border-top:3px solid #4ade80">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+<span style="font-size:1.3em;font-weight:700">K174</span>
+<span style="background:#4ade80;color:#000;padding:4px 12px;border-radius:20px;font-weight:700">101</span>
+</div>
+<div style="margin-bottom:6px"><span class="bias-neutral">NEUTRAL</span> <span class="conv-moderate">MODERATE</span></div>
+<div style="font-size:.85em;color:var(--text2)">
+<div>CALL · 16 out Mensal · <span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></div>
+<div>ΔOI: <span style="color:#3fb950">+22k</span> · ΔIV: <span style="color:#f85149">-0.21pp</span></div>
+<div>Inst:28 · Flow:3 · Conv:70</div>
+</div></div><div style="background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:16px;border-top:3px solid #4ade80">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+<span style="font-size:1.3em;font-weight:700">K174</span>
+<span style="background:#4ade80;color:#000;padding:4px 12px;border-radius:20px;font-weight:700">96</span>
+</div>
+<div style="margin-bottom:6px"><span class="bias-neutral">NEUTRAL</span> <span class="conv-weak">WEAK</span></div>
+<div style="font-size:.85em;color:var(--text2)">
+<div>CALL · 19 nov Mensal · <span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></div>
+<div>ΔOI: <span style="color:#3fb950">+22k</span> · ΔIV: <span style="color:#f85149">-0.21pp</span></div>
+<div>Inst:21 · Flow:6 · Conv:70</div>
+</div></div><div style="background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:16px;border-top:3px solid #4ade80">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+<span style="font-size:1.3em;font-weight:700">K204</span>
+<span style="background:#4ade80;color:#000;padding:4px 12px;border-radius:20px;font-weight:700">95</span>
+</div>
+<div style="margin-bottom:6px"><span class="bias-neutral">NEUTRAL</span> <span class="conv-weak">WEAK</span></div>
+<div style="font-size:.85em;color:var(--text2)">
+<div>PUT · 2 out W1 · <span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></div>
+<div>ΔOI: <span style="color:#3fb950">+500</span> · ΔIV: <span style="color:#3fb950">N/A</span></div>
+<div>Inst:10 · Flow:8 · Conv:77</div>
+</div></div><div style="background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:16px;border-top:3px solid #4ade80">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+<span style="font-size:1.3em;font-weight:700">K204</span>
+<span style="background:#4ade80;color:#000;padding:4px 12px;border-radius:20px;font-weight:700">89</span>
+</div>
+<div style="margin-bottom:6px"><span class="bias-neutral">NEUTRAL</span> <span class="conv-weak">WEAK</span></div>
+<div style="font-size:.85em;color:var(--text2)">
+<div>PUT · 25 set W4 · <span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></div>
+<div>ΔOI: <span style="color:#3fb950">+500</span> · ΔIV: <span style="color:#3fb950">N/A</span></div>
+<div>Inst:10 · Flow:2 · Conv:77</div>
+</div></div><div style="background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:16px;border-top:3px solid #4ade80">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+<span style="font-size:1.3em;font-weight:700">K184</span>
+<span style="background:#4ade80;color:#000;padding:4px 12px;border-radius:20px;font-weight:700">68</span>
+</div>
+<div style="margin-bottom:6px"><span class="bias-sell-vol">SELL_VOL</span> <span class="conv-moderate">MODERATE</span></div>
+<div style="font-size:.85em;color:var(--text2)">
+<div>CALL · 2 out W1 · <span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></div>
+<div>ΔOI: <span style="color:#3fb950">+447k</span> · ΔIV: <span style="color:#f85149">-7.95pp</span></div>
+<div>Inst:37 · Flow:14 · Conv:17</div>
+</div></div><div style="background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:16px;border-top:3px solid #4ade80">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+<span style="font-size:1.3em;font-weight:700">K183</span>
+<span style="background:#4ade80;color:#000;padding:4px 12px;border-radius:20px;font-weight:700">66</span>
+</div>
+<div style="margin-bottom:6px"><span class="bias-sell-vol">SELL_VOL</span> <span class="conv-moderate">MODERATE</span></div>
+<div style="font-size:.85em;color:var(--text2)">
+<div>PUT · 25 set W4 · <span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></div>
+<div>ΔOI: <span style="color:#3fb950">+532k</span> · ΔIV: <span style="color:#f85149">-8.72pp</span></div>
+<div>Inst:35 · Flow:8 · Conv:24</div>
+</div></div><div style="background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:16px;border-top:3px solid #4ade80">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+<span style="font-size:1.3em;font-weight:700">K183</span>
+<span style="background:#4ade80;color:#000;padding:4px 12px;border-radius:20px;font-weight:700">66</span>
+</div>
+<div style="margin-bottom:6px"><span class="bias-sell-vol">SELL_VOL</span> <span class="conv-moderate">MODERATE</span></div>
+<div style="font-size:.85em;color:var(--text2)">
+<div>PUT · 2 out W1 · <span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></div>
+<div>ΔOI: <span style="color:#3fb950">+532k</span> · ΔIV: <span style="color:#f85149">-8.72pp</span></div>
+<div>Inst:38 · Flow:5 · Conv:24</div>
+</div></div><div style="background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:16px;border-top:3px solid #4ade80">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+<span style="font-size:1.3em;font-weight:700">K184</span>
+<span style="background:#4ade80;color:#000;padding:4px 12px;border-radius:20px;font-weight:700">64</span>
+</div>
+<div style="margin-bottom:6px"><span class="bias-sell-vol">SELL_VOL</span> <span class="conv-moderate">MODERATE</span></div>
+<div style="font-size:.85em;color:var(--text2)">
+<div>CALL · 25 set W4 · <span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></div>
+<div>ΔOI: <span style="color:#3fb950">+447k</span> · ΔIV: <span style="color:#f85149">-7.95pp</span></div>
+<div>Inst:35 · Flow:12 · Conv:17</div>
+</div></div><div style="background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:16px;border-top:3px solid #4ade80">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+<span style="font-size:1.3em;font-weight:700">K179</span>
+<span style="background:#4ade80;color:#000;padding:4px 12px;border-radius:20px;font-weight:700">64</span>
+</div>
+<div style="margin-bottom:6px"><span class="bias-sell-vol">SELL_VOL</span> <span class="conv-moderate">MODERATE</span></div>
+<div style="font-size:.85em;color:var(--text2)">
+<div>CALL · 25 set W4 · <span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></div>
+<div>ΔOI: <span style="color:#3fb950">+90k</span> · ΔIV: <span style="color:#f85149">-6.71pp</span></div>
+<div>Inst:33 · Flow:11 · Conv:20</div>
+</div></div></div></div>
+
+<div class="sec"><h2>📋 Ranking Completo (Top 120)</h2>
+<div style="overflow-x:auto;max-height:700px;overflow-y:auto">
+<table><thead><tr>
+<th>#</th><th>Strike</th><th>Tipo</th><th>Venc.</th><th>Driver</th>
+<th>Score</th><th>Bias</th><th>Conv.</th>
+<th>Inst</th><th>Flow</th><th>Conv</th>
+<th>ΔOI</th><th>Vol</th><th>ΔIV</th><th>Sprd%</th>
+</tr></thead><tbody><tr>
+<td>1</td><td><strong>K174</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">109.9</td>
+<td><span class="bias-neutral">NEUTRAL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>28</td><td>12</td><td>70</td>
+<td style="color:#3fb950">+22k</td>
+<td>+16k</td>
+<td style="color:#f85149">-0.21</td>
+<td>-177%</td></tr><tr>
+<td>2</td><td><strong>K174</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">101.0</td>
+<td><span class="bias-neutral">NEUTRAL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>28</td><td>3</td><td>70</td>
+<td style="color:#3fb950">+22k</td>
+<td>+794k</td>
+<td style="color:#f85149">-0.21</td>
+<td>-177%</td></tr><tr>
+<td>3</td><td><strong>K174</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>9 out W2</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">101.0</td>
+<td><span class="bias-neutral">NEUTRAL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>28</td><td>3</td><td>70</td>
+<td style="color:#3fb950">+22k</td>
+<td>+779k</td>
+<td style="color:#f85149">-0.21</td>
+<td>-177%</td></tr><tr>
+<td>4</td><td><strong>K174</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">100.8</td>
+<td><span class="bias-neutral">NEUTRAL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>28</td><td>3</td><td>70</td>
+<td style="color:#3fb950">+22k</td>
+<td>+775k</td>
+<td style="color:#f85149">-0.21</td>
+<td>-177%</td></tr><tr>
+<td>5</td><td><strong>K174</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>19 nov Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">96.3</td>
+<td><span class="bias-neutral">NEUTRAL</span></td><td><span class="conv-weak">WEAK</span></td>
+<td>21</td><td>6</td><td>70</td>
+<td style="color:#3fb950">+22k</td>
+<td>+15</td>
+<td style="color:#f85149">-0.21</td>
+<td>-177%</td></tr><tr>
+<td>6</td><td><strong>K204</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">95.1</td>
+<td><span class="bias-neutral">NEUTRAL</span></td><td><span class="conv-weak">WEAK</span></td>
+<td>10</td><td>8</td><td>77</td>
+<td style="color:#3fb950">+500</td>
+<td>+323</td>
+<td style="color:#8b949e">N/A</td>
+<td>-200%</td></tr><tr>
+<td>7</td><td><strong>K204</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">88.7</td>
+<td><span class="bias-neutral">NEUTRAL</span></td><td><span class="conv-weak">WEAK</span></td>
+<td>10</td><td>2</td><td>77</td>
+<td style="color:#3fb950">+500</td>
+<td>+21k</td>
+<td style="color:#8b949e">N/A</td>
+<td>-200%</td></tr><tr>
+<td>8</td><td><strong>K184</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">67.6</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>37</td><td>14</td><td>17</td>
+<td style="color:#3fb950">+447k</td>
+<td>+14.4M</td>
+<td style="color:#f85149">-7.95</td>
+<td>9%</td></tr><tr>
+<td>9</td><td><strong>K183</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">66.4</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>35</td><td>8</td><td>24</td>
+<td style="color:#3fb950">+532k</td>
+<td>+465k</td>
+<td style="color:#f85149">-8.72</td>
+<td>-10%</td></tr><tr>
+<td>10</td><td><strong>K183</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">66.2</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>38</td><td>5</td><td>24</td>
+<td style="color:#3fb950">+532k</td>
+<td>+3.2M</td>
+<td style="color:#f85149">-8.72</td>
+<td>-10%</td></tr><tr>
+<td>11</td><td><strong>K184</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">64.1</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>35</td><td>12</td><td>17</td>
+<td style="color:#3fb950">+447k</td>
+<td>+1.3M</td>
+<td style="color:#f85149">-7.95</td>
+<td>9%</td></tr><tr>
+<td>12</td><td><strong>K179</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">63.6</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>33</td><td>11</td><td>20</td>
+<td style="color:#3fb950">+90k</td>
+<td>+121k</td>
+<td style="color:#f85149">-6.71</td>
+<td>1%</td></tr><tr>
+<td>13</td><td><strong>K185</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">63.0</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-strong">STRONG</span></td>
+<td>38</td><td>15</td><td>9</td>
+<td style="color:#3fb950">+5.6M</td>
+<td>+8.0M</td>
+<td style="color:#f85149">-1.04</td>
+<td>12%</td></tr><tr>
+<td>14</td><td><strong>K184</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">62.4</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>37</td><td>14</td><td>12</td>
+<td style="color:#3fb950">+2.8M</td>
+<td>+13.9M</td>
+<td style="color:#f85149">-0.77</td>
+<td>3%</td></tr><tr>
+<td>15</td><td><strong>K179</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">62.3</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>33</td><td>11</td><td>18</td>
+<td style="color:#3fb950">+492k</td>
+<td>+85k</td>
+<td style="color:#f85149">-9.59</td>
+<td>5%</td></tr><tr>
+<td>16</td><td><strong>K187</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">62.2</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>35</td><td>12</td><td>15</td>
+<td style="color:#3fb950">+334k</td>
+<td>+8.9M</td>
+<td style="color:#f85149">-7.42</td>
+<td>192%</td></tr><tr>
+<td>17</td><td><strong>K161</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">62.1</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>12</td><td>20</td>
+<td style="color:#3fb950">+107k</td>
+<td>+21k</td>
+<td style="color:#3fb950">+23.14</td>
+<td>0%</td></tr><tr>
+<td>18</td><td><strong>K181</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">62.1</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>34</td><td>8</td><td>20</td>
+<td style="color:#3fb950">+415k</td>
+<td>+460k</td>
+<td style="color:#f85149">-7.06</td>
+<td>2%</td></tr><tr>
+<td>19</td><td><strong>K182</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">61.4</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>35</td><td>12</td><td>15</td>
+<td style="color:#3fb950">+402k</td>
+<td>+1.8M</td>
+<td style="color:#f85149">-7.83</td>
+<td>198%</td></tr><tr>
+<td>20</td><td><strong>K186</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">61.4</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>33</td><td>13</td><td>15</td>
+<td style="color:#3fb950">+220k</td>
+<td>+412k</td>
+<td style="color:#f85149">-9.24</td>
+<td>88%</td></tr><tr>
+<td>21</td><td><strong>K188</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">61.4</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>32</td><td>11</td><td>18</td>
+<td style="color:#3fb950">+544k</td>
+<td>+320k</td>
+<td style="color:#f85149">-8.70</td>
+<td>6%</td></tr><tr>
+<td>22</td><td><strong>K173</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">61.3</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>35</td><td>11</td><td>15</td>
+<td style="color:#3fb950">+1.2M</td>
+<td>+308k</td>
+<td style="color:#f85149">-7.38</td>
+<td>73%</td></tr><tr>
+<td>23</td><td><strong>K187</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">61.3</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>33</td><td>14</td><td>15</td>
+<td style="color:#3fb950">+372k</td>
+<td>+1.3M</td>
+<td style="color:#f85149">-8.73</td>
+<td>28%</td></tr><tr>
+<td>24</td><td><strong>K187</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">61.3</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>33</td><td>14</td><td>15</td>
+<td style="color:#3fb950">+334k</td>
+<td>+1.3M</td>
+<td style="color:#f85149">-7.42</td>
+<td>192%</td></tr><tr>
+<td>25</td><td><strong>K168</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">61.0</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>12</td><td>18</td>
+<td style="color:#3fb950">+561k</td>
+<td>+249k</td>
+<td style="color:#3fb950">+8.42</td>
+<td>5%</td></tr><tr>
+<td>26</td><td><strong>K182</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">60.7</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>32</td><td>12</td><td>17</td>
+<td style="color:#f85149">-240k</td>
+<td>+1.8M</td>
+<td style="color:#3fb950">+2.15</td>
+<td>2%</td></tr><tr>
+<td>27</td><td><strong>K180</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">60.5</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>34</td><td>12</td><td>15</td>
+<td style="color:#3fb950">+369k</td>
+<td>+155k</td>
+<td style="color:#f85149">-10.17</td>
+<td>79%</td></tr><tr>
+<td>28</td><td><strong>K181</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">60.5</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>34</td><td>11</td><td>15</td>
+<td style="color:#3fb950">+698k</td>
+<td>+210k</td>
+<td style="color:#f85149">-9.95</td>
+<td>136%</td></tr><tr>
+<td>29</td><td><strong>K180</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">60.4</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>35</td><td>13</td><td>12</td>
+<td style="color:#3fb950">+1.3M</td>
+<td>+3.7M</td>
+<td style="color:#f85149">-1.45</td>
+<td>10%</td></tr><tr>
+<td>30</td><td><strong>K181</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">60.2</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>37</td><td>4</td><td>20</td>
+<td style="color:#3fb950">+415k</td>
+<td>+2.0M</td>
+<td style="color:#f85149">-7.06</td>
+<td>2%</td></tr><tr>
+<td>31</td><td><strong>K185</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#4ade80;font-weight:700;font-size:1.1em">60.2</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>27</td><td>15</td><td>18</td>
+<td style="color:#3fb950">+113k</td>
+<td>+1.2M</td>
+<td style="color:#f85149">-7.81</td>
+<td>4%</td></tr><tr>
+<td>32</td><td><strong>K182</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">59.8</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>35</td><td>10</td><td>15</td>
+<td style="color:#3fb950">+340k</td>
+<td>+623k</td>
+<td style="color:#f85149">-10.45</td>
+<td>67%</td></tr><tr>
+<td>33</td><td><strong>K182</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">59.8</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>35</td><td>10</td><td>15</td>
+<td style="color:#3fb950">+240k</td>
+<td>+623k</td>
+<td style="color:#f85149">-8.52</td>
+<td>199%</td></tr><tr>
+<td>34</td><td><strong>K185</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">59.7</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>32</td><td>8</td><td>19</td>
+<td style="color:#f85149">-197k</td>
+<td>+5.8M</td>
+<td style="color:#f85149">-9.90</td>
+<td>2%</td></tr><tr>
+<td>35</td><td><strong>K180</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>9 out W2</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">59.6</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>31</td><td>9</td><td>20</td>
+<td style="color:#f85149">-1.3M</td>
+<td>+3.7M</td>
+<td style="color:#3fb950">+4.01</td>
+<td>1%</td></tr><tr>
+<td>36</td><td><strong>K179</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">59.1</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>33</td><td>11</td><td>15</td>
+<td style="color:#3fb950">+667k</td>
+<td>+85k</td>
+<td style="color:#f85149">-8.37</td>
+<td>168%</td></tr><tr>
+<td>37</td><td><strong>K182</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">59.1</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>32</td><td>12</td><td>15</td>
+<td style="color:#f85149">-122k</td>
+<td>+1.8M</td>
+<td style="color:#f85149">-8.04</td>
+<td>110%</td></tr><tr>
+<td>38</td><td><strong>K180</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">59.0</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>31</td><td>8</td><td>19</td>
+<td style="color:#f85149">-817k</td>
+<td>+480k</td>
+<td style="color:#f85149">-3.78</td>
+<td>2%</td></tr><tr>
+<td>39</td><td><strong>K186</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">58.9</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>34</td><td>10</td><td>15</td>
+<td style="color:#3fb950">+1.5M</td>
+<td>+1.9M</td>
+<td style="color:#f85149">-1.24</td>
+<td>-2%</td></tr><tr>
+<td>40</td><td><strong>K184</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>9 out W2</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">58.9</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>32</td><td>14</td><td>13</td>
+<td style="color:#f85149">-250k</td>
+<td>+14.0M</td>
+<td style="color:#3fb950">+1.00</td>
+<td>2%</td></tr><tr>
+<td>41</td><td><strong>K184</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">58.8</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>32</td><td>14</td><td>13</td>
+<td style="color:#f85149">-250k</td>
+<td>+14.4M</td>
+<td style="color:#3fb950">+1.00</td>
+<td>2%</td></tr><tr>
+<td>42</td><td><strong>K183</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">58.7</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>35</td><td>8</td><td>15</td>
+<td style="color:#3fb950">+415k</td>
+<td>+1.7M</td>
+<td style="color:#f85149">-7.57</td>
+<td>15%</td></tr><tr>
+<td>43</td><td><strong>K137</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#4ade80;font-weight:700;font-size:.85em">GAMMA/SPOT</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">58.6</td>
+<td><span class="bias-directional">DIRECTIONAL</span></td><td><span class="conv-strong">STRONG</span></td>
+<td>30</td><td>15</td><td>13</td>
+<td style="color:#3fb950">+135k</td>
+<td>+62k</td>
+<td style="color:#3fb950">+3.90</td>
+<td>5%</td></tr><tr>
+<td>44</td><td><strong>K185</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">58.6</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>29</td><td>11</td><td>18</td>
+<td style="color:#3fb950">+113k</td>
+<td>+8.6M</td>
+<td style="color:#f85149">-7.81</td>
+<td>4%</td></tr><tr>
+<td>45</td><td><strong>K188</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">58.5</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>32</td><td>11</td><td>15</td>
+<td style="color:#3fb950">+306k</td>
+<td>+320k</td>
+<td style="color:#f85149">-7.78</td>
+<td>194%</td></tr><tr>
+<td>46</td><td><strong>K186</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">58.4</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>34</td><td>5</td><td>20</td>
+<td style="color:#3fb950">+75k</td>
+<td>+2.4M</td>
+<td style="color:#f85149">-9.56</td>
+<td>1%</td></tr><tr>
+<td>47</td><td><strong>K188</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">58.2</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>9</td><td>20</td>
+<td style="color:#f85149">-79k</td>
+<td>+604k</td>
+<td style="color:#f85149">-8.12</td>
+<td>1%</td></tr><tr>
+<td>48</td><td><strong>K163</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">58.1</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>11</td><td>17</td>
+<td style="color:#3fb950">+178k</td>
+<td>+373k</td>
+<td style="color:#3fb950">+2.02</td>
+<td>0%</td></tr><tr>
+<td>49</td><td><strong>K184</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">58.1</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>35</td><td>8</td><td>15</td>
+<td style="color:#3fb950">+334k</td>
+<td>+761k</td>
+<td style="color:#f85149">-12.90</td>
+<td>57%</td></tr><tr>
+<td>50</td><td><strong>K162</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">58.0</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>8</td><td>20</td>
+<td style="color:#3fb950">+371k</td>
+<td>+966k</td>
+<td style="color:#3fb950">+3.73</td>
+<td>0%</td></tr><tr>
+<td>51</td><td><strong>K195</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">58.0</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>35</td><td>12</td><td>11</td>
+<td style="color:#3fb950">+5.8M</td>
+<td>+1.7M</td>
+<td style="color:#f85149">-0.76</td>
+<td>4%</td></tr><tr>
+<td>52</td><td><strong>K179</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">58.0</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>35</td><td>8</td><td>15</td>
+<td style="color:#3fb950">+667k</td>
+<td>+1.5M</td>
+<td style="color:#f85149">-8.37</td>
+<td>168%</td></tr><tr>
+<td>53</td><td><strong>K167</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">57.9</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>8</td><td>20</td>
+<td style="color:#3fb950">+305k</td>
+<td>+944k</td>
+<td style="color:#3fb950">+7.63</td>
+<td>0%</td></tr><tr>
+<td>54</td><td><strong>K184</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">57.9</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>34</td><td>8</td><td>15</td>
+<td style="color:#3fb950">+99k</td>
+<td>+1.3M</td>
+<td style="color:#f85149">-9.09</td>
+<td>28%</td></tr><tr>
+<td>55</td><td><strong>K187</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>9 out W2</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">57.9</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>12</td><td>15</td>
+<td style="color:#f85149">-377k</td>
+<td>+8.7M</td>
+<td style="color:#3fb950">+3.66</td>
+<td>199%</td></tr><tr>
+<td>56</td><td><strong>K183</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">57.8</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>35</td><td>8</td><td>15</td>
+<td style="color:#3fb950">+263k</td>
+<td>+465k</td>
+<td style="color:#f85149">-12.24</td>
+<td>148%</td></tr><tr>
+<td>57</td><td><strong>K159</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">57.7</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>8</td><td>20</td>
+<td style="color:#3fb950">+209k</td>
+<td>+305k</td>
+<td style="color:#3fb950">+33.83</td>
+<td>0%</td></tr><tr>
+<td>58</td><td><strong>K180</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">57.7</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>35</td><td>9</td><td>14</td>
+<td style="color:#3fb950">+1.1M</td>
+<td>+1.8M</td>
+<td style="color:#f85149">-1.69</td>
+<td>4%</td></tr><tr>
+<td>59</td><td><strong>K187</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">57.7</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>12</td><td>15</td>
+<td style="color:#f85149">-377k</td>
+<td>+8.9M</td>
+<td style="color:#3fb950">+3.66</td>
+<td>199%</td></tr><tr>
+<td>60</td><td><strong>K187</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">57.6</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>36</td><td>13</td><td>9</td>
+<td style="color:#3fb950">+3.8M</td>
+<td>+8.7M</td>
+<td style="color:#f85149">-1.02</td>
+<td>12%</td></tr><tr>
+<td>61</td><td><strong>K180</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">57.6</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>31</td><td>7</td><td>20</td>
+<td style="color:#f85149">-1.3M</td>
+<td>+3.9M</td>
+<td style="color:#3fb950">+4.01</td>
+<td>1%</td></tr><tr>
+<td>62</td><td><strong>K179</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">57.6</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>31</td><td>7</td><td>20</td>
+<td style="color:#f85149">-90k</td>
+<td>+121k</td>
+<td style="color:#3fb950">+8.00</td>
+<td>1%</td></tr><tr>
+<td>63</td><td><strong>K178</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">57.5</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>35</td><td>5</td><td>18</td>
+<td style="color:#3fb950">+418k</td>
+<td>+2.3M</td>
+<td style="color:#f85149">-8.73</td>
+<td>8%</td></tr><tr>
+<td>64</td><td><strong>K186</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">57.5</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>33</td><td>5</td><td>20</td>
+<td style="color:#3fb950">+75k</td>
+<td>+723k</td>
+<td style="color:#f85149">-9.56</td>
+<td>1%</td></tr><tr>
+<td>65</td><td><strong>K187</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">57.4</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>36</td><td>12</td><td>10</td>
+<td style="color:#3fb950">+4.7M</td>
+<td>+5.9M</td>
+<td style="color:#f85149">-1.37</td>
+<td>32%</td></tr><tr>
+<td>66</td><td><strong>K179</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">57.1</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>33</td><td>4</td><td>20</td>
+<td style="color:#3fb950">+90k</td>
+<td>+902k</td>
+<td style="color:#f85149">-6.71</td>
+<td>1%</td></tr><tr>
+<td>67</td><td><strong>K186</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">57.1</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>33</td><td>9</td><td>15</td>
+<td style="color:#3fb950">+281k</td>
+<td>+723k</td>
+<td style="color:#f85149">-13.62</td>
+<td>61%</td></tr><tr>
+<td>68</td><td><strong>K191</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">57.0</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>12</td><td>15</td>
+<td style="color:#3fb950">+814k</td>
+<td>+142k</td>
+<td style="color:#f85149">-4.73</td>
+<td>120%</td></tr><tr>
+<td>69</td><td><strong>K191</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">56.8</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>12</td><td>15</td>
+<td style="color:#3fb950">+182k</td>
+<td>+142k</td>
+<td style="color:#f85149">-7.50</td>
+<td>182%</td></tr><tr>
+<td>70</td><td><strong>K173</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">56.7</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>31</td><td>11</td><td>14</td>
+<td style="color:#3fb950">+1.2M</td>
+<td>+288k</td>
+<td style="color:#f85149">-2.06</td>
+<td>8%</td></tr><tr>
+<td>71</td><td><strong>K182</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">56.6</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>37</td><td>4</td><td>15</td>
+<td style="color:#3fb950">+240k</td>
+<td>+2.3M</td>
+<td style="color:#f85149">-8.52</td>
+<td>199%</td></tr><tr>
+<td>72</td><td><strong>K169</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">56.5</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>8</td><td>19</td>
+<td style="color:#3fb950">+223k</td>
+<td>+340k</td>
+<td style="color:#3fb950">+5.90</td>
+<td>4%</td></tr><tr>
+<td>73</td><td><strong>K183</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">56.5</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>33</td><td>8</td><td>15</td>
+<td style="color:#f85149">-192k</td>
+<td>+1.7M</td>
+<td style="color:#f85149">-7.58</td>
+<td>75%</td></tr><tr>
+<td>74</td><td><strong>K187</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">56.5</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>32</td><td>9</td><td>15</td>
+<td style="color:#3fb950">+156k</td>
+<td>+543k</td>
+<td style="color:#f85149">-9.75</td>
+<td>14%</td></tr><tr>
+<td>75</td><td><strong>K100</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">56.3</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>12</td><td>14</td>
+<td style="color:#3fb950">+193k</td>
+<td>+63k</td>
+<td style="color:#3fb950">+121.07</td>
+<td>2%</td></tr><tr>
+<td>76</td><td><strong>K135</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#4ade80;font-weight:700;font-size:.85em">GAMMA/SPOT</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">56.3</td>
+<td><span class="bias-directional">DIRECTIONAL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>12</td><td>14</td>
+<td style="color:#3fb950">+104k</td>
+<td>+22k</td>
+<td style="color:#3fb950">+3.90</td>
+<td>3%</td></tr><tr>
+<td>77</td><td><strong>K185</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">56.3</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>31</td><td>11</td><td>15</td>
+<td style="color:#f85149">-162k</td>
+<td>+1.2M</td>
+<td style="color:#f85149">-8.99</td>
+<td>53%</td></tr><tr>
+<td>78</td><td><strong>K167</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">56.3</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>11</td><td>15</td>
+<td style="color:#3fb950">+12k</td>
+<td>+91k</td>
+<td style="color:#3fb950">+5.05</td>
+<td>200%</td></tr><tr>
+<td>79</td><td><strong>K187</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">56.2</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>33</td><td>8</td><td>15</td>
+<td style="color:#3fb950">+156k</td>
+<td>+6.1M</td>
+<td style="color:#f85149">-9.75</td>
+<td>14%</td></tr><tr>
+<td>80</td><td><strong>K181</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">56.1</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>34</td><td>7</td><td>15</td>
+<td style="color:#3fb950">+75k</td>
+<td>+210k</td>
+<td style="color:#f85149">-8.54</td>
+<td>69%</td></tr><tr>
+<td>81</td><td><strong>K193</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">56.0</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>11</td><td>15</td>
+<td style="color:#3fb950">+106k</td>
+<td>+41k</td>
+<td style="color:#f85149">-7.09</td>
+<td>181%</td></tr><tr>
+<td>82</td><td><strong>K157</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">55.9</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>12</td><td>14</td>
+<td style="color:#3fb950">+490k</td>
+<td>+144k</td>
+<td style="color:#3fb950">+33.57</td>
+<td>3%</td></tr><tr>
+<td>83</td><td><strong>K183</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">55.9</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>37</td><td>8</td><td>10</td>
+<td style="color:#3fb950">+2.8M</td>
+<td>+2.3M</td>
+<td style="color:#f85149">-1.52</td>
+<td>41%</td></tr><tr>
+<td>84</td><td><strong>K181</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">55.8</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>32</td><td>4</td><td>20</td>
+<td style="color:#f85149">-413k</td>
+<td>+460k</td>
+<td style="color:#3fb950">+3.67</td>
+<td>1%</td></tr><tr>
+<td>85</td><td><strong>K181</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>9 out W2</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">55.8</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>32</td><td>4</td><td>20</td>
+<td style="color:#f85149">-413k</td>
+<td>+1.8M</td>
+<td style="color:#3fb950">+3.67</td>
+<td>1%</td></tr><tr>
+<td>86</td><td><strong>K151</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">55.7</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>12</td><td>13</td>
+<td style="color:#3fb950">+43k</td>
+<td>+17k</td>
+<td style="color:#3fb950">+34.38</td>
+<td>5%</td></tr><tr>
+<td>87</td><td><strong>K181</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">55.7</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>35</td><td>6</td><td>15</td>
+<td style="color:#3fb950">+75k</td>
+<td>+2.8M</td>
+<td style="color:#f85149">-8.54</td>
+<td>69%</td></tr><tr>
+<td>88</td><td><strong>K178</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">55.5</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>34</td><td>9</td><td>13</td>
+<td style="color:#3fb950">+1.6M</td>
+<td>+2.1M</td>
+<td style="color:#f85149">-1.38</td>
+<td>5%</td></tr><tr>
+<td>89</td><td><strong>K181</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">55.3</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>32</td><td>4</td><td>20</td>
+<td style="color:#f85149">-413k</td>
+<td>+2.0M</td>
+<td style="color:#3fb950">+3.67</td>
+<td>1%</td></tr><tr>
+<td>90</td><td><strong>K183</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">55.2</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>37</td><td>10</td><td>8</td>
+<td style="color:#3fb950">+2.6M</td>
+<td>+4.5M</td>
+<td style="color:#f85149">-0.92</td>
+<td>19%</td></tr><tr>
+<td>91</td><td><strong>K138</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">55.1</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>11</td><td>14</td>
+<td style="color:#3fb950">+45k</td>
+<td>+79k</td>
+<td style="color:#3fb950">+60.87</td>
+<td>3%</td></tr><tr>
+<td>92</td><td><strong>K174</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">55.1</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>7</td><td>17</td>
+<td style="color:#3fb950">+495k</td>
+<td>+775k</td>
+<td style="color:#f85149">-4.17</td>
+<td>8%</td></tr><tr>
+<td>93</td><td><strong>K175</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">55.1</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>32</td><td>11</td><td>12</td>
+<td style="color:#3fb950">+1.3M</td>
+<td>+1.1M</td>
+<td style="color:#f85149">-1.34</td>
+<td>7%</td></tr><tr>
+<td>94</td><td><strong>K185</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">55.1</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>36</td><td>9</td><td>11</td>
+<td style="color:#3fb950">+2.0M</td>
+<td>+5.4M</td>
+<td style="color:#f85149">-1.15</td>
+<td>9%</td></tr><tr>
+<td>95</td><td><strong>K176</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">55.1</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>32</td><td>8</td><td>15</td>
+<td style="color:#3fb950">+258k</td>
+<td>+1.5M</td>
+<td style="color:#f85149">-8.25</td>
+<td>89%</td></tr><tr>
+<td>96</td><td><strong>K160</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">55.0</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>31</td><td>12</td><td>12</td>
+<td style="color:#3fb950">+1.4M</td>
+<td>+1.6M</td>
+<td style="color:#3fb950">+1.98</td>
+<td>26%</td></tr><tr>
+<td>97</td><td><strong>K183</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">55.0</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>34</td><td>6</td><td>15</td>
+<td style="color:#f85149">-192k</td>
+<td>+5.5M</td>
+<td style="color:#f85149">-7.58</td>
+<td>75%</td></tr><tr>
+<td>98</td><td><strong>K189</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">55.0</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>29</td><td>6</td><td>20</td>
+<td style="color:#f85149">-50k</td>
+<td>+2.6M</td>
+<td style="color:#f85149">-8.70</td>
+<td>1%</td></tr><tr>
+<td>99</td><td><strong>K185</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">55.0</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>32</td><td>4</td><td>19</td>
+<td style="color:#f85149">-197k</td>
+<td>+516k</td>
+<td style="color:#f85149">-9.90</td>
+<td>2%</td></tr><tr>
+<td>100</td><td><strong>K187</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">55.0</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>10</td><td>15</td>
+<td style="color:#f85149">-377k</td>
+<td>+1.3M</td>
+<td style="color:#3fb950">+3.66</td>
+<td>199%</td></tr><tr>
+<td>101</td><td><strong>K184</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">54.9</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>33</td><td>7</td><td>15</td>
+<td style="color:#f85149">-296k</td>
+<td>+5.9M</td>
+<td style="color:#f85149">-9.81</td>
+<td>27%</td></tr><tr>
+<td>102</td><td><strong>K175</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">54.6</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>28</td><td>7</td><td>20</td>
+<td style="color:#f85149">-66k</td>
+<td>+182k</td>
+<td style="color:#3fb950">+3.78</td>
+<td>1%</td></tr><tr>
+<td>103</td><td><strong>K179</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">54.5</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>31</td><td>4</td><td>20</td>
+<td style="color:#f85149">-90k</td>
+<td>+902k</td>
+<td style="color:#3fb950">+8.00</td>
+<td>1%</td></tr><tr>
+<td>104</td><td><strong>K188</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">54.3</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>5</td><td>20</td>
+<td style="color:#f85149">-79k</td>
+<td>+2.2M</td>
+<td style="color:#f85149">-8.12</td>
+<td>1%</td></tr><tr>
+<td>105</td><td><strong>K130</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">54.2</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>10</td><td>14</td>
+<td style="color:#3fb950">+267k</td>
+<td>+99k</td>
+<td style="color:#3fb950">+73.35</td>
+<td>4%</td></tr><tr>
+<td>106</td><td><strong>K179</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">54.2</td>
+<td><span class="bias-neutral">NEUTRAL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>33</td><td>11</td><td>10</td>
+<td style="color:#3fb950">+32k</td>
+<td>+121k</td>
+<td style="color:#f85149">-0.11</td>
+<td>0%</td></tr><tr>
+<td>107</td><td><strong>K179</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">54.2</td>
+<td><span class="bias-neutral">NEUTRAL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>33</td><td>11</td><td>10</td>
+<td style="color:#3fb950">+107k</td>
+<td>+85k</td>
+<td style="color:#3fb950">+0.17</td>
+<td>1%</td></tr><tr>
+<td>108</td><td><strong>K190</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">54.1</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>32</td><td>11</td><td>11</td>
+<td style="color:#3fb950">+789k</td>
+<td>+423k</td>
+<td style="color:#f85149">-1.84</td>
+<td>86%</td></tr><tr>
+<td>109</td><td><strong>K158</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">54.1</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>4</td><td>20</td>
+<td style="color:#3fb950">+1k</td>
+<td>+18k</td>
+<td style="color:#3fb950">+27.49</td>
+<td>0%</td></tr><tr>
+<td>110</td><td><strong>K152</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">54.1</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>14</td><td>10</td>
+<td style="color:#3fb950">+86k</td>
+<td>+18k</td>
+<td style="color:#3fb950">+5.97</td>
+<td>200%</td></tr><tr>
+<td>111</td><td><strong>K158</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">54.1</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>4</td><td>20</td>
+<td style="color:#3fb950">+1k</td>
+<td>+18k</td>
+<td style="color:#3fb950">+27.49</td>
+<td>0%</td></tr><tr>
+<td>112</td><td><strong>K158</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>9 out W2</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">54.1</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>4</td><td>20</td>
+<td style="color:#3fb950">+1k</td>
+<td>+18k</td>
+<td style="color:#3fb950">+27.49</td>
+<td>0%</td></tr><tr>
+<td>113</td><td><strong>K188</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>25 set W4</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">54.0</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>9</td><td>16</td>
+<td style="color:#f85149">-175k</td>
+<td>+604k</td>
+<td style="color:#f85149">-1.78</td>
+<td>1%</td></tr><tr>
+<td>114</td><td><strong>K200</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>9 out W2</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">54.0</td>
+<td><span class="bias-neutral">NEUTRAL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>36</td><td>12</td><td>6</td>
+<td style="color:#3fb950">+861k</td>
+<td>+327k</td>
+<td style="color:#f85149">-0.41</td>
+<td>34%</td></tr><tr>
+<td>115</td><td><strong>K200</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">53.9</td>
+<td><span class="bias-neutral">NEUTRAL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>36</td><td>12</td><td>6</td>
+<td style="color:#3fb950">+861k</td>
+<td>+327k</td>
+<td style="color:#f85149">-0.41</td>
+<td>34%</td></tr><tr>
+<td>116</td><td><strong>K189</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">53.8</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>34</td><td>11</td><td>9</td>
+<td style="color:#3fb950">+3.2M</td>
+<td>+2.1M</td>
+<td style="color:#f85149">-1.08</td>
+<td>15%</td></tr><tr>
+<td>117</td><td><strong>K166</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>16 out Mensal</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">53.7</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>30</td><td>12</td><td>11</td>
+<td style="color:#3fb950">+359k</td>
+<td>+128k</td>
+<td style="color:#3fb950">+1.84</td>
+<td>179%</td></tr><tr>
+<td>118</td><td><strong>K180</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>2 out W1</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">53.7</td>
+<td><span class="bias-sell-vol">SELL_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>32</td><td>7</td><td>15</td>
+<td style="color:#f85149">-1.1M</td>
+<td>+3.9M</td>
+<td style="color:#f85149">-7.08</td>
+<td>199%</td></tr><tr>
+<td>119</td><td><strong>K179</strong></td>
+<td><span style="color:#38bdf8;font-weight:700">CALL</span></td>
+<td>9 out W2</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">53.7</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>31</td><td>4</td><td>20</td>
+<td style="color:#f85149">-90k</td>
+<td>+861k</td>
+<td style="color:#3fb950">+8.00</td>
+<td>1%</td></tr><tr>
+<td>120</td><td><strong>K185</strong></td>
+<td><span style="color:#f472b6;font-weight:700">PUT</span></td>
+<td>9 out W2</td><td><span style="color:#fbbf24;font-weight:700;font-size:.85em">MIXED/MIX</span></td>
+<td style="color:#fbbf24;font-weight:700;font-size:1.1em">53.7</td>
+<td><span class="bias-buy-vol">BUY_VOL</span></td><td><span class="conv-moderate">MODERATE</span></td>
+<td>32</td><td>8</td><td>13</td>
+<td style="color:#f85149">-245k</td>
+<td>+5.5M</td>
+<td style="color:#3fb950">+1.14</td>
+<td>2%</td></tr></tbody></table></div></div>
+
+<div class="meth"><h3>📖 Metodologia</h3><ul>
+<li><strong>SCORE (0-100):</strong> Inst(0-50) + Flow(0-30) + Convexity(0-20)</li>
+<li><strong>Inst Score:</strong> OI size(15) + OI change(20) + Direction clarity(10) + Proximity(5)</li>
+<li><strong>Flow Score:</strong> Volume relative(15) + Vol/OI ratio(10) + Volume change(5)</li>
+<li><strong>Convexity:</strong> IV change(10) + Gamma(5) + Bid/Ask spread(5)</li>
+<li><strong>SELL_VOL:</strong> IV caindo + abertura de posição + driver Vanna/Mixed</li>
+<li><strong>BUY_VOL:</strong> IV subindo + abertura + driver Vanna/Mixed</li>
+<li><strong>DIRECTIONAL:</strong> Driver Gamma + abertura clara</li>
+<li><strong>AVOID:</strong> Charm dominante (perto do vencimento) ou score baixo</li>
+<li><strong>Conviction:</strong> STRONG (Inst>25 E Flow>15), MODERATE (um dos dois), WEAK (nenhum)</li>
+</ul></div>
+</body></html>
