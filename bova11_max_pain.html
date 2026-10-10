@@ -216,7 +216,7 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
   </details>
 
   <!-- Expiration cards -->
-  
+  <p>Vencimento ativo ausente: 16 out Mensal</p>
     <div class="exp-card" style="animation-delay:0.0s">
       <div class="exp-header">
         <div>
@@ -312,6 +312,7 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
         const MP_S = 204.0;
         const SPOT = 205.55;
         const VC = '#1D9E75';
+        const EXPOSURE_COVERAGE = {"gamma_coverage": 1.0, "partial_net_gex": 1812291.9796701751};
 
         // Max pain chart
         new Chart(document.getElementById('mp_0'), {
@@ -484,6 +485,7 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
         const MP_S = 205.0;
         const SPOT = 205.55;
         const VC = '#6B9E1D';
+        const EXPOSURE_COVERAGE = {"gamma_coverage": 1.0, "partial_net_gex": -2529867.018591029};
 
         // Max pain chart
         new Chart(document.getElementById('mp_1'), {
@@ -656,6 +658,7 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
         const MP_S = 249.0;
         const SPOT = 205.55;
         const VC = '#D4870E';
+        const EXPOSURE_COVERAGE = {"gamma_coverage": 1.0, "partial_net_gex": -282711.1469869525};
 
         // Max pain chart
         new Chart(document.getElementById('mp_2'), {
@@ -828,6 +831,7 @@ body { background:var(--bg); color:var(--t1); font-family:var(--font); -webkit-f
         const MP_S = 205.0;
         const SPOT = 205.55;
         const VC = '#6B9E1D';
+        const EXPOSURE_COVERAGE = {"gamma_coverage": 1.0, "partial_net_gex": 82546805.2885776};
 
         // Max pain chart
         new Chart(document.getElementById('mp_3'), {
@@ -929,7 +933,7 @@ SUM.forEach((s,i) => {
       <span class="sc-score" style="color:${s.color}">${s.score}%</span>
       <span class="sc-verdict" style="color:${s.color}">${s.verdict}</span>
     </div>
-    <div class="sc-mp">MP R$${s.mp} · ${s.dte} DTE · ${s.direction}</div>`;
+    <div class="sc-mp">MP ${s.mp == null ? 'N/A' : 'R$' + s.mp} · ${s.dte} DTE · ${s.direction}</div>`;
   strip.appendChild(chip);
 });
 
