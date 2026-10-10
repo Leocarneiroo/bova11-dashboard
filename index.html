@@ -116,6 +116,9 @@
             min-height: 100%;
             box-shadow: inset -1px 0 0 rgba(255,255,255,0.02);
         }
+        @media (min-width: 981px) {
+            body.sidebar-collapsed .sidebar { display: none; }
+        }
         .brand {
             padding: 28px 24px 20px;
             border-bottom: 1px solid var(--border);
@@ -252,6 +255,19 @@
             gap: 18px;
             box-shadow: var(--shadow);
         }
+        .sidebar-toggle {
+            flex-shrink: 0;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            border-radius: 999px;
+            padding: 9px 12px;
+            cursor: pointer;
+        }
+        .sidebar-toggle:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
         .context-meta {
             min-width: 0;
             display: grid;
@@ -371,6 +387,7 @@
             .topbar {
                 display: flex;
             }
+            .sidebar-toggle { display: none; }
             .sidebar {
                 position: fixed;
                 top: 0;
@@ -391,6 +408,13 @@
             .content-shell {
                 padding: 14px 14px 16px;
             }
+            .frame-shell {
+                flex: 1;
+            }
+            body.mobile-header-hidden .topbar,
+            body.mobile-header-hidden .context-bar,
+            body.mobile-header-hidden .quick-switch { display: none; }
+            body.mobile-header-hidden .content { height: 100dvh; }
             .context-bar {
                 flex-direction: column;
                 align-items: stretch;
@@ -523,16 +547,17 @@
     <main class="content">
         <div class="content-shell">
             <section class="context-bar">
+                <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleDesktopSidebar()" aria-controls="sidebar" aria-expanded="true" aria-label="Ocultar menu" title="Ocultar menu">☰</button>
                 <div class="context-meta">
                     <div class="context-kicker" id="context-group">Hoje</div>
                     <div class="context-head">
                         <h2 id="context-title">Rankings &amp; Overview</h2>
-                        <span class="context-time mono">Atualizado em 09/10/2026 21:14:41</span>
+                        <span class="context-time mono">Atualizado em 09/10/2026 21:47:03</span>
                     </div>
                     <p class="context-desc" id="context-desc">Panorama agregado de OI, IV e volume por vencimento.</p>
                 </div>
                 <div class="context-side">
-                    <div class="update-badge mono" title="Momento em que os dados do dashboard foram gerados">09/10/2026 21:14:41</div>
+                    <div class="update-badge mono" title="Momento em que os dados do dashboard foram gerados">09/10/2026 21:47:03</div>
                     <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Alternar tema">Tema</button>
                 </div>
             </section>
@@ -542,7 +567,7 @@
             </div>
 
             <section class="frame-shell">
-                <iframe id="main-frame" src="bova11_rankings_pro_8out_vs_9out.html?v=09/10/2026 21:14:41" onload="checkIframe()"></iframe>
+                <iframe id="main-frame" src="bova11_rankings_pro_8out_vs_9out.html?v=09/10/2026 21:47:03" onload="checkIframe()"></iframe>
                 <div id="error-msg" class="missing-file">
                     <h2>Arquivo não encontrado</h2>
                     <p>Este módulo pode não ter sido processado ainda ou o nome do arquivo gerado está incorreto.</p>
@@ -553,7 +578,7 @@
 
     <script>
         const MODULES = [{"title": "Rankings & Overview", "file": "bova11_rankings_pro_8out_vs_9out.html", "group": "Hoje", "priority": 1, "description": "Panorama agregado de OI, IV e volume por vencimento.", "quick": true}, {"title": "GEX & MaxPain", "file": "bova11_gex_pro_8out_vs_9out.html", "group": "Hoje", "priority": 2, "description": "Regime gamma, flip e strikes dominantes do dia.", "quick": true}, {"title": "Insights Analíticos", "file": "bova11_insights_8Out_vs_9Out.html", "group": "Hoje", "priority": 3, "description": "Leitura operacional por vencimento com foco no que mudou.", "quick": true}, {"title": "Trade Score & Bias", "file": "bova11_trade_score_8out_vs_9out.html", "group": "Hoje", "priority": 4, "description": "Score por strike e viés institucional estimado.", "quick": false}, {"title": "OI Stats", "file": "bova11_oi_stats_light.html", "group": "Estrutura", "priority": 1, "description": "Distribuição estatística do OI e concentração por vencimento.", "quick": false}, {"title": "GEX DEX VEX TEX CEX", "file": "bova11_tex_dex_vex_8out_vs_9out.html", "group": "Estrutura", "priority": 2, "description": "Perfis por spot para GEX, DEX, VEX, TEX e CEX com Merton + forward implícito via put-call parity.", "quick": false}, {"title": "Max Pain Relevance", "file": "bova11_max_pain.html", "group": "Estrutura", "priority": 3, "description": "Força relativa do pinning considerando prazo e OI.", "quick": false}, {"title": "Mapa Gravitacional", "file": "bova11_gravity_map.html", "group": "Estrutura", "priority": 4, "description": "Centros de massa de OI, GEX e DEX no mesmo painel.", "quick": false}, {"title": "Market Gamma", "file": "bova11_market_gamma.html", "group": "Estrutura", "priority": 5, "description": "Curva gamma líquida agregada e por vencimento.", "quick": false}, {"title": "Skew & IV History", "file": "bova11_skew_history.html", "group": "Histórico", "priority": 1, "description": "Evolução histórica de skew e IV média.", "quick": false}, {"title": "Quant Institucional", "file": "bova11_quant_institucional.html", "group": "Histórico", "priority": 2, "description": "Força relativa, momentum e leitura institucional.", "quick": false}, {"title": "Diagnóstico 4D", "file": "bova11_diagnostico_4d.html", "group": "Laboratório", "priority": 1, "description": "Leitura cruzada entre GEX, DEX, VEX e TEX.", "quick": false}];
-        const DASHBOARD_VERSION = "09/10/2026 21:14:41";
+        const DASHBOARD_VERSION = "09/10/2026 21:47:03";
         const MODULE_MAP = Object.fromEntries(MODULES.map(module => [module.file, module]));
 
         function setActiveModule(url) {
@@ -575,6 +600,7 @@
 
         function loadPage(url) {
             const frame = document.getElementById('main-frame');
+            document.body.classList.remove('mobile-header-hidden');
             document.getElementById('error-msg').style.display = 'none';
             frame.style.display = 'block';
             frame.src = `${url}?v=${encodeURIComponent(DASHBOARD_VERSION)}`;
@@ -603,6 +629,30 @@
             document.getElementById('overlay').classList.remove('open');
         }
 
+        function toggleDesktopSidebar() {
+            const collapsed = document.body.classList.toggle('sidebar-collapsed');
+            const button = document.getElementById('sidebar-toggle');
+            button.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+            button.setAttribute('aria-label', collapsed ? 'Mostrar menu' : 'Ocultar menu');
+            button.title = collapsed ? 'Mostrar menu' : 'Ocultar menu';
+        }
+
+        function watchMobileHeaderScroll(doc) {
+            const view = doc.defaultView;
+            let previousY = view.scrollY;
+            view.addEventListener('scroll', () => {
+                if (!window.matchMedia('(max-width: 980px)').matches) {
+                    document.body.classList.remove('mobile-header-hidden');
+                    return;
+                }
+                const currentY = view.scrollY;
+                if (currentY <= 0) document.body.classList.remove('mobile-header-hidden');
+                else if (currentY > previousY + 4) document.body.classList.add('mobile-header-hidden');
+                else if (currentY < previousY - 4) document.body.classList.remove('mobile-header-hidden');
+                if (Math.abs(currentY - previousY) > 4) previousY = currentY;
+            }, { passive: true });
+        }
+
         function checkIframe() {
             const iframe = document.getElementById('main-frame');
             try {
@@ -615,6 +665,7 @@
                 doc.querySelectorAll('#theme-toggle, #theme-btn, button.theme-toggle, button.theme-btn').forEach(btn => {
                     btn.style.display = 'none';
                 });
+                watchMobileHeaderScroll(doc);
                 syncThemeToIframe();
                 requestAnimationFrame(syncThemeToIframe);
             } catch(e) {
