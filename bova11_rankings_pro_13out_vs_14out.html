@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>BOVA11 PRO — Rankings 13/Out→14/Out/2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="shared.js"></script>
+<style>
+:root{
+  --bg:#f3f5f7; --surface:#ffffff; --surface-2:#f7f9fb; --surface-3:#eef3f8;
+  --border:#dce2e8; --border-strong:#c9d3dd; --text:#111827; --muted:#5f6b7a;
+  --soft:#7a8696; --accent:#2563eb; --accent-soft:rgba(37,99,235,.08);
+  --positive:#15803d; --negative:#c2413b; --warning:#b7791f; --cyan:#0f7b9b;
+  --font:'Instrument Sans',system-ui,sans-serif; --mono:'JetBrains Mono',monospace;
+  --shadow:0 18px 45px rgba(17,24,39,.06);
+}
+[data-theme="dark"]{
+  --bg:#0f141b; --surface:#141b23; --surface-2:#19212b; --surface-3:#1f2933;
+  --border:#273240; --border-strong:#334155; --text:#e5ebf3; --muted:#a3afbf;
+  --soft:#7d8a9b; --accent:#6ea8ff; --accent-soft:rgba(110,168,255,.12);
+  --positive:#4ade80; --negative:#f87171; --warning:#f6c768; --cyan:#67e8f9;
+  --shadow:0 22px 50px rgba(0,0,0,.28);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;-webkit-font-smoothing:antialiased}
+button{font:inherit}
+.page{max-width:1480px;margin:0 auto;padding:28px 24px 44px}
+.page-header{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:18px}
+.page-copy{max-width:68ch}
+.page-kicker{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.1em;color:var(--soft);margin-bottom:10px}
+.page-header h1{font-size:1.7rem;letter-spacing:-.05em;line-height:1.05}
+.page-desc{margin-top:8px;color:var(--muted);line-height:1.55}
+.page-tools{display:flex;align-items:flex-start;gap:10px}
+.theme-toggle{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:999px;padding:9px 14px;cursor:pointer;transition:border-color .2s,color .2s}
+.theme-toggle:hover{border-color:var(--accent);color:var(--accent)}
+.theme-toggle.hidden{display:none}
+.scope{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:18px 20px;box-shadow:var(--shadow);display:flex;justify-content:space-between;gap:20px;align-items:flex-start}
+.scope-copy{max-width:70ch}
+.scope-label{font:.72rem var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--soft);margin-bottom:8px}
+.scope h2{font-size:1.2rem;letter-spacing:-.03em;margin-bottom:6px}
+.scope p{color:var(--muted);line-height:1.55}
+.view-switch{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.exp-tabs,.view-switch{margin-top:14px}
+.exp-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab,.view-btn{border:1px solid var(--border);background:var(--surface);color:var(--muted);border-radius:999px;padding:10px 14px;cursor:pointer;transition:border-color .2s,background .2s,color .2s}
+.tab:hover,.view-btn:hover{border-color:var(--accent);color:var(--text)}
+.tab.active,.view-btn.active{background:var(--accent-soft);border-color:rgba(37,99,235,.2);color:var(--accent)}
+.summary-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:16px 0}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:14px 16px;box-shadow:var(--shadow)}
+.kpi .label{font:.68rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--soft)}
+.kpi .value{margin-top:8px;font-size:1.3rem;font-weight:700;letter-spacing:-.04em}
+.kpi .detail{margin-top:6px;color:var(--muted);font-size:.8rem;line-height:1.45}
+.view-panel{display:none}
+.view-panel.active{display:block}
+.summary-layout{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-bottom:14px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:18px;box-shadow:var(--shadow)}
+.panel + .panel{margin-top:14px}
+.panel-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:14px}
+.panel-head h3{font-size:1.02rem;letter-spacing:-.03em}
+.panel-kicker{font:.72rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--soft)}
+.panel-sub{color:var(--muted);font-size:.84rem;line-height:1.45}
+.signal-list{display:grid;gap:10px}
+.signal-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--border)}
+.signal-row:first-child{padding-top:0;border-top:none}
+.signal-row strong{display:block;font-size:.92rem;letter-spacing:-.01em}
+.signal-row span{display:block;margin-top:3px;color:var(--muted);font-size:.79rem;line-height:1.45}
+.signal-value{text-align:right;white-space:nowrap;font:600 .9rem var(--mono)}
+.pos{color:var(--positive)} .neg{color:var(--negative)} .neut{color:var(--muted)} .warn{color:var(--warning)} .cyn{color:var(--cyan)}
+.strike-list{display:grid;gap:10px}
+.strike-item{padding:12px 14px;border:1px solid var(--border);border-radius:16px;background:var(--surface-2)}
+.strike-top{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.strike-top strong{font-size:.95rem}
+.strike-meta{margin-top:4px;color:var(--muted);font-size:.78rem;line-height:1.45}
+.section-title{font:.8rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--soft);margin:18px 0 10px}
+.table-wrap{overflow:auto;max-height:560px;border-top:1px solid var(--border)}
+table{width:100%;border-collapse:collapse}
+th,td{padding:11px 10px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap;font-size:.83rem}
+th{position:sticky;top:0;background:var(--surface);z-index:2;color:var(--soft);font:500 .68rem var(--mono);letter-spacing:.08em;text-transform:uppercase}
+th:first-child,td:first-child{text-align:left}
+tr.focus{background:var(--accent-soft)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:1180px){.summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:960px){.summary-layout,.grid-2{grid-template-columns:1fr}}
+@media(max-width:720px){
+  .page{padding:20px 14px 32px}
+  .page-header,.scope{flex-direction:column}
+  .summary-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:520px){.summary-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="page-header">
+    <div class="page-copy">
+      <div class="page-kicker">Hoje / Rankings</div>
+      <h1>Rankings & Overview</h1>
+      <p class="page-desc">Comparativo 13/Out → 14/Out/2026 · Spot 203.65 · o resumo abre agregado e o detalhe fica em segundo nível.</p>
+    </div>
+    <div class="page-tools">
+      <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()">Tema</button>
+    </div>
+  </header>
+
+  <section class="scope">
+    <div class="scope-copy">
+      <div class="scope-label" id="scopeLabel">Agregado do dia</div>
+      <h2 id="scopeTitle">Leitura consolidada dos vencimentos</h2>
+      <p id="scopeDesc">Resumo técnico para entender volume, OI e variações implícitas antes de abrir tabela completa.</p>
+    </div>
+    <div class="view-switch" id="viewSel"></div>
+  </section>
+
+  <div class="exp-tabs" id="expTabs"></div>
+  <div class="summary-grid" id="kpis"></div>
+
+  <div id="vSummary" class="view-panel"></div>
+  <div id="vTable" class="view-panel"></div>
+  <div id="vGreeks" class="view-panel"></div>
+</div>
+
+<script>
+const D = {"V1": {"name": "16 out Mensal", "color": "red", "strikes": [], "mp": 0, "iv_c_atm": null, "iv_c_atm1": null, "div_c_atm": null, "iv_p_atm": null, "iv_p_atm1": null, "div_p_atm": null, "pcr_oi": 0.0, "pcr_oi1": 0.0, "dpcr_oi": 0.0, "pcr_vol": 0.0, "pcr_vol1": 0.0, "dpcr_vol": 0.0, "coi": 0, "poi": 0, "coi1": 0, "poi1": 0, "dcoi": 0, "dpoi": 0, "cvol": 0, "pvol": 0, "cvol1": 0, "pvol1": 0, "d_cvol": 0, "d_pvol": 0, "d_tvol": 0}, "V2": {"name": "23 out W4", "color": "blu", "strikes": [], "mp": 0, "iv_c_atm": null, "iv_c_atm1": null, "div_c_atm": null, "iv_p_atm": null, "iv_p_atm1": null, "div_p_atm": null, "pcr_oi": 0.0, "pcr_oi1": 0.0, "dpcr_oi": 0.0, "pcr_vol": 0.0, "pcr_vol1": 0.0, "dpcr_vol": 0.0, "coi": 0, "poi": 0, "coi1": 0, "poi1": 0, "dcoi": 0, "dpoi": 0, "cvol": 0, "pvol": 0, "cvol1": 0, "pvol1": 0, "d_cvol": 0, "d_pvol": 0, "d_tvol": 0}, "V3": {"name": "30 out W5", "color": "grn", "strikes": [], "mp": 0, "iv_c_atm": null, "iv_c_atm1": null, "div_c_atm": null, "iv_p_atm": null, "iv_p_atm1": null, "div_p_atm": null, "pcr_oi": 0.0, "pcr_oi1": 0.0, "dpcr_oi": 0.0, "pcr_vol": 0.0, "pcr_vol1": 0.0, "dpcr_vol": 0.0, "coi": 0, "poi": 0, "coi1": 0, "poi1": 0, "dcoi": 0, "dpoi": 0, "cvol": 0, "pvol": 0, "cvol1": 0, "pvol1": 0, "d_cvol": 0, "d_pvol": 0, "d_tvol": 0}, "V4": {"name": "6 nov W1", "color": "yel", "strikes": [], "mp": 0, "iv_c_atm": null, "iv_c_atm1": null, "div_c_atm": null, "iv_p_atm": null, "iv_p_atm1": null, "div_p_atm": null, "pcr_oi": 0.0, "pcr_oi1": 0.0, "dpcr_oi": 0.0, "pcr_vol": 0.0, "pcr_vol1": 0.0, "dpcr_vol": 0.0, "coi": 0, "poi": 0, "coi1": 0, "poi1": 0, "dcoi": 0, "dpoi": 0, "cvol": 0, "pvol": 0, "cvol1": 0, "pvol1": 0, "d_cvol": 0, "d_pvol": 0, "d_tvol": 0}, "V5": {"name": "19 nov Mensal", "color": "pur", "strikes": [], "mp": 0, "iv_c_atm": null, "iv_c_atm1": null, "div_c_atm": null, "iv_p_atm": null, "iv_p_atm1": null, "div_p_atm": null, "pcr_oi": 0.0, "pcr_oi1": 0.0, "dpcr_oi": 0.0, "pcr_vol": 0.0, "pcr_vol1": 0.0, "dpcr_vol": 0.0, "coi": 0, "poi": 0, "coi1": 0, "poi1": 0, "dcoi": 0, "dpoi": 0, "cvol": 0, "pvol": 0, "cvol1": 0, "pvol1": 0, "d_cvol": 0, "d_pvol": 0, "d_tvol": 0}};
+const KEYS = ["V1", "V2", "V3", "V4", "V5"];
+const NAMES = ["16 out Mensal", "23 out W4", "30 out W5", "6 nov W1", "19 nov Mensal"];
+const AGG = [];
+const SPOT = 203.65;
+let cur = 'AGG';
+let view = 'summary';
+
+const cc = c => ({red:'var(--negative)', blu:'var(--accent)', grn:'var(--positive)', yel:'var(--warning)', pur:'var(--accent)', org:'var(--warning)', cyn:'var(--cyan)'}[c] || 'var(--accent)');
+const fI = n => { if(n == null) return '–'; const a = Math.abs(n); return a >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : a >= 1e3 ? (n / 1e3).toFixed(0) + 'k' : String(Math.round(n)); };
+const fP = n => n == null ? '–' : `${n >= 0 ? '+' : ''}${n.toFixed(2)}pp`;
+const fPct = n => n == null ? '–' : `${n >= 0 ? '+' : ''}${n.toFixed(1)}%`;
+const fNum = (n, d = 2) => n == null ? '–' : n.toFixed(d);
+const pc = n => n == null ? 'neut' : n >= 0 ? 'pos' : 'neg';
+const nullableSum = values => values.every(value => value != null) ? values.reduce((a, b) => a + b, 0) : null;
+const rowsForScope = () => cur === 'AGG' ? AGG : D[cur].strikes;
+const getCurrent = () => cur === 'AGG' ? null : D[cur];
+
+function pickTop(rows, key, mode = 'abs') {
+  const valid = rows.filter(row => row[key] != null);
+  if (!valid.length) return null;
+  const sorted = [...valid].sort((a, b) => {
+    const av = mode === 'abs' ? Math.abs(a[key]) : a[key];
+    const bv = mode === 'abs' ? Math.abs(b[key]) : b[key];
+    return bv - av;
+  });
+  return sorted[0];
+}
+
+function renderTabs() {
+  const el = document.getElementById('expTabs');
+  const tabs = [`<button class="tab ${cur === 'AGG' ? 'active' : ''}" data-k="AGG">Agregado</button>`];
+  KEYS.forEach((key, index) => {
+    tabs.push(`<button class="tab ${cur === key ? 'active' : ''}" data-k="${key}" style="${cur === key ? `border-color:${cc(D[key].color)};color:${cc(D[key].color)}` : ''}">${NAMES[index]}</button>`);
+  });
+  el.innerHTML = tabs.join('');
+  el.querySelectorAll('.tab').forEach(tab => {
+    tab.onclick = () => {
+      cur = tab.dataset.k;
+      if (cur === 'AGG' && view === 'greeks') view = 'summary';
+      renderAll();
+    };
+  });
+}
+
+function renderViewSwitch() {
+  const el = document.getElementById('viewSel');
+  const views = [{id:'summary', label:'Resumo'}, {id:'table', label:'Tabela'}];
+  if (cur !== 'AGG') views.push({id:'greeks', label:'Gregas'});
+  if (!views.find(item => item.id === view)) view = 'summary';
+  el.innerHTML = views.map(item => `<button class="view-btn ${view === item.id ? 'active' : ''}" data-view="${item.id}">${item.label}</button>`).join('');
+  el.querySelectorAll('.view-btn').forEach(btn => {
+    btn.onclick = () => {
+      view = btn.dataset.view;
+      renderAll();
+    };
+  });
+}
+
+function renderScope() {
+  const label = document.getElementById('scopeLabel');
+  const title = document.getElementById('scopeTitle');
+  const desc = document.getElementById('scopeDesc');
+  if (cur === 'AGG') {
+    label.textContent = 'Agregado do dia';
+    title.textContent = 'Leitura consolidada dos vencimentos';
+    desc.textContent = `Use este resumo para localizar onde volume, OI e IV estão mais ativos antes de abrir o detalhe por strike. ${KEYS.length} vencimentos foram consolidados.`;
+    return;
+  }
+  const e = D[cur];
+  label.textContent = e.name;
+  title.textContent = `Resumo técnico de ${e.name}`;
+  desc.textContent = `Max pain em K${e.mp}, IV ATM e principais deslocamentos de volume/OI reunidos em uma única superfície.`;
+}
+
+function renderKPIs() {
+  const el = document.getElementById('kpis');
+  if (cur === 'AGG') {
+    const sum = field => nullableSum(KEYS.map(key => D[key][field]));
+    const tco = sum('coi'), tpo = sum('poi'), tcv = sum('cvol'), tpv = sum('pvol');
+    const doi = nullableSum([sum('dcoi'), sum('dpoi')]);
+    const dvol = sum('d_tvol');
+    const pcr = tpo == null || tco == null ? 'N/A' : (tpo / Math.max(tco, 1)).toFixed(2);
+    el.innerHTML = [
+      ['Vencimentos', KEYS.length, 'Cobertura consolidada do dia', 'cyn'],
+      ['OI Total', fI(nullableSum([tco, tpo])), `Call ${fI(tco)} · Put ${fI(tpo)}`, ''],
+      ['ΔOI Total', fI(doi), `Call ${fI(sum('dcoi'))} · Put ${fI(sum('dpoi'))}`, pc(doi)],
+      ['Volume D', fI(nullableSum([tcv, tpv])), `Call ${fI(tcv)} · Put ${fI(tpv)}`, ''],
+      ['PCR OI', pcr, `ΔVolume ${dvol == null ? 'N/A' : (dvol >= 0 ? '+' : '') + fI(dvol)}`, pc(dvol)],
+    ].map(([label, value, detail, tone]) => `<div class="kpi"><div class="label">${label}</div><div class="value ${tone}">${value}</div><div class="detail">${detail}</div></div>`).join('');
+    return;
+  }
+  const e = D[cur];
+  el.innerHTML = [
+    ['Max Pain', e.mp == null ? 'N/A' : `K${e.mp}`, 'Ponto de equilíbrio do vencimento', ''],
+    ['IV Call ATM', e.iv_c_atm == null ? 'N/A' : `${e.iv_c_atm}%`, `Δ ${fP(e.div_c_atm)}`, pc(e.div_c_atm)],
+    ['IV Put ATM', e.iv_p_atm == null ? 'N/A' : `${e.iv_p_atm}%`, `Δ ${fP(e.div_p_atm)}`, pc(e.div_p_atm)],
+    ['PCR OI', e.pcr_oi == null ? 'N/A' : e.pcr_oi, `Δ ${e.dpcr_oi == null ? 'N/A' : (e.dpcr_oi >= 0 ? '+' : '') + e.dpcr_oi.toFixed(2)}`, pc(e.dpcr_oi)],
+    ['Volume D', fI(nullableSum([e.cvol, e.pvol])), `Δ ${e.d_tvol == null ? 'N/A' : (e.d_tvol >= 0 ? '+' : '') + fI(e.d_tvol)}`, pc(e.d_tvol)],
+  ].map(([label, value, detail, tone]) => `<div class="kpi"><div class="label">${label}</div><div class="value ${tone}">${value}</div><div class="detail">${detail}</div></div>`).join('');
+}
+
+function signalRow(label, value, detail, tone = '') {
+  return `<div class="signal-row"><div><strong>${label}</strong><span>${detail}</span></div><div class="signal-value ${tone}">${value}</div></div>`;
+}
+
+function strikeCard(title, value, meta, tone = '') {
+  return `<div class="strike-item"><div class="strike-top"><strong>${title}</strong><span class="${tone}">${value}</span></div><div class="strike-meta">${meta}</div></div>`;
+}
+
+function renderSummary() {
+  const rows = rowsForScope();
+  const topVolume = pickTop(rows, 'tv', 'value');
+  const topDeltaVol = pickTop(rows, 'dtv');
+  const topDeltaCall = pickTop(rows, 'dco');
+  const topDeltaPut = pickTop(rows, 'dpo');
+  const topIvCall = pickTop(rows, cur === 'AGG' ? 'div_c' : 'c_ivd');
+  const topIvPut = pickTop(rows, cur === 'AGG' ? 'div_p' : 'p_ivd');
+
+  const topStrikeRows = [...rows].sort((a, b) => (b.tv || 0) - (a.tv || 0)).slice(0, 6);
+  const strikeCards = topStrikeRows.map(row => {
+    const ivCall = cur === 'AGG' ? row.div_c : row.c_ivd;
+    return strikeCard(`K${row.s}`, fI(row.tv), `ΔVol ${row.dtv >= 0 ? '+' : ''}${fI(row.dtv)} · ΔIV Call ${ivCall == null ? '–' : fP(ivCall)}`, pc(row.dtv));
+  }).join('');
+
+  let summaryHtml = `
+    <div class="summary-layout">
+      <section class="panel">
+        <div class="panel-head">
+          <div><div class="panel-kicker">Resumo</div><h3>Top movimentos</h3></div>
+          <div class="panel-sub">Leitura rápida para decidir se vale abrir o detalhe por strike.</div>
+        </div>
+        <div class="signal-list">
+          ${topVolume ? signalRow('Maior volume total', `K${topVolume.s} · ${fI(topVolume.tv)}`, `Call ${fI(topVolume.cv)} · Put ${fI(topVolume.pv)}`) : ''}
+          ${topDeltaVol ? signalRow('Maior delta de volume', `K${topDeltaVol.s} · ${topDeltaVol.dtv >= 0 ? '+' : ''}${fI(topDeltaVol.dtv)}`, `ΔCall ${topDeltaVol.dcv >= 0 ? '+' : ''}${fI(topDeltaVol.dcv)} · ΔPut ${topDeltaVol.dpv >= 0 ? '+' : ''}${fI(topDeltaVol.dpv)}`, pc(topDeltaVol.dtv)) : ''}
+          ${topDeltaCall ? signalRow('Maior delta de OI call', `K${topDeltaCall.s} · ${topDeltaCall.dco >= 0 ? '+' : ''}${fI(topDeltaCall.dco)}`, `OI D ${fI(topDeltaCall.co2)} · OI D-1 ${fI(topDeltaCall.co1)}`, pc(topDeltaCall.dco)) : ''}
+          ${topDeltaPut ? signalRow('Maior delta de OI put', `K${topDeltaPut.s} · ${topDeltaPut.dpo >= 0 ? '+' : ''}${fI(topDeltaPut.dpo)}`, `OI D ${fI(topDeltaPut.po2)} · OI D-1 ${fI(topDeltaPut.po1)}`, pc(topDeltaPut.dpo)) : ''}
+          ${topIvCall ? signalRow('Maior variação de IV call', `K${topIvCall.s} · ${fP(cur === 'AGG' ? topIvCall.div_c : topIvCall.c_ivd)}`, `Leitura de compressão ou expansão implícita`, pc(cur === 'AGG' ? topIvCall.div_c : topIvCall.c_ivd)) : ''}
+          ${topIvPut ? signalRow('Maior variação de IV put', `K${topIvPut.s} · ${fP(cur === 'AGG' ? topIvPut.div_p : topIvPut.p_ivd)}`, `Útil para localizar assimetria de hedge`, pc(cur === 'AGG' ? topIvPut.div_p : topIvPut.p_ivd)) : ''}
+        </div>
+      </section>
+      <section class="panel">
+        <div class="panel-head">
+          <div><div class="panel-kicker">Foco</div><h3>Strikes de atenção</h3></div>
+          <div class="panel-sub">Os níveis com maior combinação de volume e deslocamento.</div>
+        </div>
+        <div class="strike-list">${strikeCards}</div>
+      </section>
+    </div>`;
+
+  if (cur === 'AGG') {
+    const rowsByExp = KEYS.map(key => D[key]).map(exp => `
+      <tr>
+        <td style="color:${cc(exp.color)}">${exp.name}</td>
+        <td>${exp.mp == null ? 'N/A' : `K${exp.mp}`}</td>
+        <td>${fI(nullableSum([exp.coi, exp.poi]))}</td>
+        <td class="${pc(nullableSum([exp.dcoi, exp.dpoi]))}">${nullableSum([exp.dcoi, exp.dpoi]) == null ? 'N/A' : (exp.dcoi + exp.dpoi >= 0 ? '+' : '') + fI(exp.dcoi + exp.dpoi)}</td>
+        <td>${fI(nullableSum([exp.cvol, exp.pvol]))}</td>
+        <td class="${pc(exp.d_tvol)}">${exp.d_tvol == null ? 'N/A' : (exp.d_tvol >= 0 ? '+' : '') + fI(exp.d_tvol)}</td>
+        <td>${exp.pcr_oi == null ? 'N/A' : exp.pcr_oi}</td>
+        <td>${exp.iv_c_atm == null ? 'N/A' : exp.iv_c_atm + '%'}</td>
+      </tr>`).join('');
+    summaryHtml += `
+      <section class="panel">
+        <div class="panel-head">
+          <div><div class="panel-kicker">Cobertura</div><h3>Resumo por vencimento</h3></div>
+          <div class="panel-sub">Comparação rápida antes de aprofundar em um vencimento específico.</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Vencimento</th><th>Max Pain</th><th>OI Total</th><th>ΔOI</th><th>Volume</th><th>ΔVolume</th><th>PCR OI</th><th>IV C ATM</th></tr></thead>
+            <tbody>${rowsByExp}</tbody>
+          </table>
+        </div>
+      </section>`;
+  } else {
+    const exp = D[cur];
+    const topPriceCall = pickTop(rows, 'cp_pct');
+    const topPricePut = pickTop(rows, 'pp_pct');
+    summaryHtml += `
+      <section class="panel">
+        <div class="panel-head">
+          <div><div class="panel-kicker">Contexto</div><h3>Leitura do vencimento</h3></div>
+          <div class="panel-sub">Resumo para leitura técnica sem abrir a tabela completa.</div>
+        </div>
+        <div class="signal-list">
+          ${signalRow('OI total', fI(nullableSum([exp.coi, exp.poi])), `Call ${fI(exp.coi)} · Put ${fI(exp.poi)}`)}
+          ${signalRow('ΔOI líquido', exp.dcoi == null || exp.dpoi == null ? 'N/A' : `${exp.dcoi + exp.dpoi >= 0 ? '+' : ''}${fI(exp.dcoi + exp.dpoi)}`, `ΔCall ${fI(exp.dcoi)} · ΔPut ${fI(exp.dpoi)}`, pc(exp.dcoi == null || exp.dpoi == null ? null : exp.dcoi + exp.dpoi))}
+          ${signalRow('PCR volume', exp.pcr_vol, `Δ ${exp.dpcr_vol == null ? 'N/A' : exp.dpcr_vol.toFixed(2)} vs D-1`, pc(exp.dpcr_vol))}
+          ${topPriceCall ? signalRow('Maior alta de call', `K${topPriceCall.s} · ${fPct(topPriceCall.cp_pct)}`, `Preço ${topPriceCall.c_last1.toFixed(2)} → ${topPriceCall.c_last2.toFixed(2)}`, pc(topPriceCall.cp_pct)) : ''}
+          ${topPricePut ? signalRow('Maior alta de put', `K${topPricePut.s} · ${fPct(topPricePut.pp_pct)}`, `Preço ${topPricePut.p_last1.toFixed(2)} → ${topPricePut.p_last2.toFixed(2)}`, pc(topPricePut.pp_pct)) : ''}
+        </div>
+      </section>`;
+  }
+
+  document.getElementById('vSummary').innerHTML = summaryHtml;
+}
+
+function renderTable() {
+  const rows = [...rowsForScope()].sort((a, b) => a.s - b.s);
+  let head = '';
+  let body = '';
+  if (cur === 'AGG') {
+    head = '<tr><th>Strike</th><th>OI Call D-1</th><th>OI Call D</th><th>ΔOI Call</th><th>OI Put D-1</th><th>OI Put D</th><th>ΔOI Put</th><th>Vol Call</th><th>Vol Put</th><th>ΔVol Total</th><th>ΔIV Call</th><th>ΔIV Put</th></tr>';
+    body = rows.map(row => `
+      <tr class="${Math.abs(row.s - SPOT) < 1.5 ? 'focus' : ''}">
+        <td>K${row.s}</td>
+        <td>${fI(row.co1)}</td><td>${fI(row.co2)}</td><td class="${pc(row.dco)}">${row.dco == null ? '–' : (row.dco >= 0 ? '+' : '') + fI(row.dco)}</td>
+        <td>${fI(row.po1)}</td><td>${fI(row.po2)}</td><td class="${pc(row.dpo)}">${row.dpo == null ? '–' : (row.dpo >= 0 ? '+' : '') + fI(row.dpo)}</td>
+        <td>${fI(row.cv)}</td><td>${fI(row.pv)}</td><td class="${pc(row.dtv)}">${row.dtv == null ? '–' : (row.dtv >= 0 ? '+' : '') + fI(row.dtv)}</td>
+        <td class="${pc(row.div_c)}">${row.div_c == null ? '–' : fP(row.div_c)}</td>
+        <td class="${pc(row.div_p)}">${row.div_p == null ? '–' : fP(row.div_p)}</td>
+      </tr>`).join('');
+  } else {
+    head = '<tr><th>Strike</th><th>Call D-1</th><th>Call D</th><th>ΔPreço Call</th><th>Put D-1</th><th>Put D</th><th>ΔPreço Put</th><th>ΔOI Call</th><th>ΔOI Put</th><th>ΔVol Total</th><th>ΔIV Call</th><th>ΔIV Put</th></tr>';
+    body = rows.map(row => `
+      <tr class="${Math.abs(row.s - SPOT) < 1.5 ? 'focus' : ''}">
+        <td>K${row.s}</td>
+        <td>${fNum(row.c_last1)}</td><td>${fNum(row.c_last2)}</td><td class="${pc(row.cp_pct)}">${fPct(row.cp_pct)}</td>
+        <td>${fNum(row.p_last1)}</td><td>${fNum(row.p_last2)}</td><td class="${pc(row.pp_pct)}">${fPct(row.pp_pct)}</td>
+        <td class="${pc(row.dco)}">${row.dco == null ? '–' : (row.dco >= 0 ? '+' : '') + fI(row.dco)}</td>
+        <td class="${pc(row.dpo)}">${row.dpo == null ? '–' : (row.dpo >= 0 ? '+' : '') + fI(row.dpo)}</td>
+        <td class="${pc(row.dtv)}">${row.dtv == null ? '–' : (row.dtv >= 0 ? '+' : '') + fI(row.dtv)}</td>
+        <td class="${pc(row.c_ivd)}">${row.c_ivd == null ? '–' : fP(row.c_ivd)}</td>
+        <td class="${pc(row.p_ivd)}">${row.p_ivd == null ? '–' : fP(row.p_ivd)}</td>
+      </tr>`).join('');
+  }
+
+  document.getElementById('vTable').innerHTML = `
+    <section class="panel">
+      <div class="panel-head">
+        <div><div class="panel-kicker">Detalhe</div><h3>${cur === 'AGG' ? 'Tabela agregada por strike' : `Tabela por strike — ${getCurrent().name}`}</h3></div>
+        <div class="panel-sub">Abre o detalhe completo sem poluir a primeira dobra.</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>${head}</thead>
+          <tbody>${body}</tbody>
+        </table>
+      </div>
+    </section>`;
+}
+
+function greekPanel(title, fields) {
+  const rows = [...D[cur].strikes].sort((a, b) => a.s - b.s);
+  const head = fields.map(field => `<th>${field.h}</th>`).join('');
+  const body = rows.map(row => `
+    <tr class="${Math.abs(row.s - SPOT) < 1.5 ? 'focus' : ''}">
+      <td>K${row.s}</td>
+      ${fields.map(field => {
+        const value = row[field.k];
+        const formatted = value == null ? '–' : value.toFixed(field.p || 4);
+        return `<td class="${field.d ? pc(value) : ''}">${field.d && value != null && value > 0 ? '+' : ''}${formatted}</td>`;
+      }).join('')}
+    </tr>`).join('');
+  return `
+    <section class="panel">
+      <div class="panel-head">
+        <div><div class="panel-kicker">Gregas</div><h3>${title}</h3></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Strike</th>${head}</tr></thead>
+          <tbody>${body}</tbody>
+        </table>
+      </div>
+    </section>`;
+}
+
+function renderGreeks() {
+  if (cur === 'AGG') {
+    document.getElementById('vGreeks').innerHTML = '';
+    return;
+  }
+  document.getElementById('vGreeks').innerHTML = `
+    <div class="grid-2">
+      ${greekPanel('Delta Call / Put', [{h:'ΔCall', k:'dc_delta', d:1, p:4}, {h:'Call D-1', k:'c_delta1', p:4}, {h:'Call D', k:'c_delta2', p:4}, {h:'ΔPut', k:'dp_delta', d:1, p:4}, {h:'Put D-1', k:'p_delta1', p:4}, {h:'Put D', k:'p_delta2', p:4}])}
+      ${greekPanel('Gamma Call / Put', [{h:'ΔCall', k:'dc_gamma', d:1, p:6}, {h:'Call D-1', k:'c_gamma1', p:6}, {h:'Call D', k:'c_gamma2', p:6}, {h:'ΔPut', k:'dp_gamma', d:1, p:6}, {h:'Put D-1', k:'p_gamma1', p:6}, {h:'Put D', k:'p_gamma2', p:6}])}
+      ${greekPanel('Theta Call / Put', [{h:'ΔCall', k:'dc_theta', d:1, p:4}, {h:'Call D-1', k:'c_theta1', p:4}, {h:'Call D', k:'c_theta2', p:4}, {h:'ΔPut', k:'dp_theta', d:1, p:4}, {h:'Put D-1', k:'p_theta1', p:4}, {h:'Put D', k:'p_theta2', p:4}])}
+      ${greekPanel('Vega Call / Put', [{h:'ΔCall', k:'dc_vega', d:1, p:4}, {h:'Call D-1', k:'c_vega1', p:4}, {h:'Call D', k:'c_vega2', p:4}, {h:'ΔPut', k:'dp_vega', d:1, p:4}, {h:'Put D-1', k:'p_vega1', p:4}, {h:'Put D', k:'p_vega2', p:4}])}
+    </div>`;
+}
+
+function showView() {
+  document.querySelectorAll('.view-panel').forEach(panel => panel.classList.remove('active'));
+  document.getElementById(view === 'summary' ? 'vSummary' : view === 'table' ? 'vTable' : 'vGreeks').classList.add('active');
+}
+
+function renderAll() {
+  renderScope();
+  renderTabs();
+  renderViewSwitch();
+  renderKPIs();
+  renderSummary();
+  renderTable();
+  renderGreeks();
+  showView();
+}
+
+renderAll();
+</script>
+</body>
+</html>
