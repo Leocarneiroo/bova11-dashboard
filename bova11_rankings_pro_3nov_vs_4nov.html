@@ -367,7 +367,7 @@ function renderTable() {
 }
 
 function greekPanel(title, fields) {
-  const rows = [...D[cur].strikes].sort((a, b) => a.s - b.s);
+  const rows = D[cur].strikes.filter(row => row.s >= 145 && row.s <= 180).sort((a, b) => a.s - b.s);
   const head = fields.map(field => `<th>${field.h}</th>`).join('');
   const body = rows.map(row => `
     <tr class="${Math.abs(row.s - SPOT) < 1.5 ? 'focus' : ''}">
