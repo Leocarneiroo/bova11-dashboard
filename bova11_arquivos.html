@@ -399,16 +399,16 @@
         : '';
     }
 
-    async function fetchJson(path) {
-      const res = await fetch(`${path}?ts=${Date.now()}`, { cache: 'no-store' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    }
-
     async function fetchText(path) {
       const res = await fetch(`${path}?ts=${Date.now()}`, { cache: 'no-store' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.text();
+      if (!path.endsWith('.gz')) return res.text();
+      const stream = res.body.pipeThrough(new DecompressionStream('gzip'));
+      return new Response(stream).text();
+    }
+
+    async function fetchJson(path) {
+      return JSON.parse(await fetchText(path));
     }
 
     function renderFileList() {
@@ -599,14 +599,22 @@
       }
     }
 
-    function download(path) {
+    async function download(path) {
       if (!path) return;
-      const a = document.createElement('a');
-      a.href = path;
-      a.download = path.split('/').pop();
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      try {
+        const text = await fetchText(path);
+        const url = URL.createObjectURL(new Blob([text]));
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = path.split('/').pop();
+        if (a.download.endsWith('.gz')) a.download = a.download.slice(0, -3);
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      } catch (err) {
+        setNotice('Falha ao baixar o arquivo.', true);
+      }
     }
 
     async function init() {
