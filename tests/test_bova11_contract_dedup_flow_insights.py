@@ -90,7 +90,7 @@ class ContractDedupFlowInsightsTests(unittest.TestCase):
                 rows.append(';'.join(row))
             path.write_text(';'.join(['header']*11)+'\n'+'\n'.join(rows)+'\n',encoding='latin-1')
             for parser in (flow.parse_vol_csv, insights.parse_vol_csv):
-                self.assertEqual(parser(str(path))[190], {'cv':28,'pv':32})
+                self.assertEqual(parser(str(path))[190], {'cv':28.0,'pv':32.0,'coi':0.0,'poi':0.0})
 
 
 if __name__ == '__main__':

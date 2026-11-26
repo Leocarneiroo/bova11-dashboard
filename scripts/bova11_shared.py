@@ -153,6 +153,7 @@ def merge_b3_close_open_interest(rows, volume_path: Optional[str]):
 
 def parse_b3_close_csv(path: str, merge_volume: bool = True):
     """Read a B3 close export using either supported schema."""
+    path = os.fspath(path)
     try:
         with open(path, "r", encoding="latin-1") as source:
             lines = source.readlines()

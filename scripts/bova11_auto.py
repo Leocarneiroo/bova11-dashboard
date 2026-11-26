@@ -300,7 +300,12 @@ def calc_gex(spot, fech_rows):
                     record['oi_with_gamma'] += oi
     for record in r.values():
         record['n'] = nullable_sum([record['c'], record['p']])
-        record['gamma_coverage'] = record['oi_with_gamma'] / record['oi_total'] if record['oi_complete'] and record['oi_total'] else 0.0
+        if not record['oi_complete']:
+            record['gamma_coverage'] = 0.0
+        elif record['oi_total']:
+            record['gamma_coverage'] = record['oi_with_gamma'] / record['oi_total']
+        else:
+            record['gamma_coverage'] = 1.0
         record['partial'] = not record['oi_complete'] or record['gamma_coverage'] < 1.0
     return r
 
