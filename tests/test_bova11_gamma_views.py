@@ -11,7 +11,6 @@ from unittest.mock import patch
 SCRIPTS = os.path.join(os.path.dirname(os.path.dirname(__file__)), "scripts")
 sys.path.insert(0, SCRIPTS)
 import bova11_market_gamma as market
-import bova11_gex_history as history
 import bova11_diagnostico_4d as diagnostic
 
 
@@ -99,15 +98,6 @@ class GammaViewsTests(unittest.TestCase):
         self.assertEqual(payload["gamma_atual"], 27)
         self.assertIsNone(payload["flip"])
 
-    def test_missing_iv_disables_model_flip_despite_cumulative_crossing(self):
-        with tempfile.TemporaryDirectory() as folder:
-            write_csv(folder)
-            payload = history.compute_gex_for_tag(folder, "8out", 190)
-        self.assertIsNone(payload["gamma_flip"])
-        self.assertEqual(payload.get("iv_coverage"), 0)
-        self.assertEqual(payload["regime"], "Indisponível")
-        self.assertEqual(payload.get("static_regime"), "Long Gamma")
-        self.assertTrue(payload["total_gex_b"] > 0)
 
     def test_gamma_coverage_preserves_blank_positive_oi(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -189,15 +179,6 @@ class GammaViewsTests(unittest.TestCase):
         self.assertEqual(result["net"], [None, None])
         self.assertIsNone(result["gamma_score"])
 
-    def test_unknown_gamma_is_null_in_history_totals_and_arrays(self):
-        with tempfile.TemporaryDirectory() as folder:
-            write_csv(folder, gamma_missing=True)
-            result = history.compute_gex_for_tag(folder, "8out", 190)
-        self.assertIsNone(result["total_gex_b"])
-        self.assertEqual(result["gex_call"], [None, None])
-        self.assertEqual(result["gex_net"], [None, None])
-        self.assertEqual(result["cum_gex"], [None, None])
-        self.assertIn("N/A", history.build_html([result], "2026-10-08"))
 
     def test_unknown_gamma_is_null_in_four_dimensional_arrays(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -205,19 +186,6 @@ class GammaViewsTests(unittest.TestCase):
         result = diagnostic.calc_greeks(rows, 190)
         self.assertEqual(result["gex_call"], [None, None])
         self.assertEqual(result["gex_net"], [None, None])
-
-    def test_reported_zero_gamma_remains_numeric_zero(self):
-        with tempfile.TemporaryDirectory() as folder:
-            path = write_csv(folder)
-            with open(path, encoding="latin-1") as fh:
-                content = fh.read().replace("0,02", "0,0000")
-            with open(path, "w", encoding="latin-1") as fh:
-                fh.write(content)
-            market_result = market.to_curve_payload(market.parse_gamma_curve(path, "16 out Mensal", 190), 190)
-            history_result = history.compute_gex_for_tag(folder, "8out", 190)
-        self.assertEqual(market_result["gamma_atual"], 0)
-        self.assertEqual(history_result["total_gex_b"], 0)
-        self.assertEqual(history_result["gamma_coverage"], 1)
 
 
     @staticmethod
@@ -246,14 +214,6 @@ class GammaViewsTests(unittest.TestCase):
             module.main()
         return buffer.getvalue()
 
-    def test_history_static_aggregate_excludes_expired_chain(self):
-        with tempfile.TemporaryDirectory() as folder:
-            write_csv(folder, iv="20,0")
-            expected = history.compute_gex_for_tag(folder, "8out", 190)
-            self.add_expired_chain(folder)
-            result = history.compute_gex_for_tag(folder, "8out", 190)
-        self.assertAlmostEqual(result["total_gex_b"], expected["total_gex_b"])
-        self.assertEqual(result["expired_expiries"], ["8 out Mensal"])
 
     def test_market_static_aggregate_excludes_expired_chain(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -282,7 +242,6 @@ class GammaViewsTests(unittest.TestCase):
             os.rename(previous, os.path.join(folder, "venc 8 out Mensal fechamento (7out).csv"))
             write_csv(folder, tag="8out")
             self.assertEqual(market.missing_previous_expiries(folder, "8out")["missing_expiries"], [])
-
 
 
 if __name__ == "__main__":

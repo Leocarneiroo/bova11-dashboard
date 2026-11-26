@@ -1,18 +1,15 @@
 """Poda o site gerado antes da publicação, para o repositório e o Pages ficarem leves.
 
-Mantém as N sessões mais recentes de cada série datada, os N arquivos mais recentes de
-`arquivos/` (com o manifest coerente) e remove artefatos de debug/teste. As páginas do
-run atual nunca são removidas, porque são as mais recentes por data.
+Mantém as N sessões mais recentes de cada série datada e remove artefatos de debug/teste.
+As páginas do run atual nunca são removidas, porque são as mais recentes por data.
 """
 
-import json
 import re
 import sys
 from pathlib import Path
 
 DATED_FAMILIES = ("gex_pro", "rankings_pro", "insights", "trade_score", "tex_dex_vex", "convexity")
 KEEP_SESSIONS = 5
-KEEP_ARCHIVES = 3
 
 _SESSION_NAME = re.compile(r"^bova11_[a-z_]+_(\d{1,2})([a-z]{3})_vs_(\d{1,2})([a-z]{3})\.html$")
 _MONTHS = {
@@ -35,27 +32,7 @@ def session_key(path: Path):
     return (month, int(match.group(3)))
 
 
-def _prune_archives(archive_dir: Path, keep: int) -> list:
-    manifest_path = archive_dir / "manifest.json"
-    if not manifest_path.exists():
-        return []
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    entries = sorted(manifest.get("files", []), key=lambda entry: entry.get("ref_date", ""), reverse=True)
-    removed = []
-    for entry in entries[keep:]:
-        for key in ("json_path", "markdown_path"):
-            target = archive_dir.parent / entry[key]
-            for suffix in ("", ".gz"):
-                path = target.with_name(target.name + suffix)
-                if path.exists():
-                    path.unlink()
-                    removed.append(path.name)
-    manifest["files"] = entries[:keep]
-    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
-    return removed
-
-
-def prune_site(output_dir, keep_sessions: int = KEEP_SESSIONS, keep_archives: int = KEEP_ARCHIVES) -> list:
+def prune_site(output_dir, keep_sessions: int = KEEP_SESSIONS) -> list:
     root = Path(output_dir)
     removed = []
 
@@ -69,8 +46,6 @@ def prune_site(output_dir, keep_sessions: int = KEEP_SESSIONS, keep_archives: in
         for path in files[keep_sessions:]:
             path.unlink()
             removed.append(path.name)
-
-    removed.extend(_prune_archives(root / "arquivos", keep_archives))
     return removed
 
 

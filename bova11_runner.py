@@ -1137,14 +1137,6 @@ def main():
             f"--strike-min={strike_min}",
             f"--strike-max={strike_max}",
         ],
-        "bova11_bandas_vol.py": [
-            f"--data-dir={DATA_DIR}",
-            f"--output={os.path.join(OUTPUT_DIR, 'bova11_bandas_vol.html')}",
-            f"--ref-date={ref_date}",
-            f"--ref-tag={TAG_D}",
-            f"--spot={SPOT_D}",
-            f"--spot-history-file={SPOT_HISTORY_FILE}",
-        ],
         "bova11_diagnostico_4d.py": [
             f"--data-dir={DATA_DIR}",
             f"--output={os.path.join(OUTPUT_DIR, 'bova11_diagnostico_4d.html')}",

@@ -11,13 +11,13 @@ Este é o único repositório do projeto. Ele tem duas branches:
 | Branch | Conteúdo |
 |---|---|
 | `main` | código (`bova11_runner.py`, `scripts/`, `tests/`, `docs/`), dados de mercado (`data/`) e histórico acumulado (`history/`) |
-| `gh-pages` | apenas o site gerado (HTML/CSS/JS + `arquivos/`), podado para os últimos dias |
+| `gh-pages` | apenas o site gerado (HTML/CSS/JS), podado para as últimas sessões |
 
-O `output/` local é um worktree da `gh-pages`: o runner gera ali e publica com `git push origin gh-pages`. O site é montado pelo workflow `Publish dashboard`, que comprime `arquivos/` e garante o limite de 1 GB do GitHub Pages.
+O `output/` local é um worktree da `gh-pages`: o runner gera ali e publica com `git push origin gh-pages`. O site é montado pelo workflow `Publish dashboard`, que valida o limite de 1 GB do GitHub Pages.
 
 ```
 bova11_runner.py            ponto de entrada
-scripts/                    módulos de análise + bova11_prune_site.py (poda da publicação)
+scripts/                    12 módulos de análise + shared/helper + bova11_prune_site.py
 tests/                      suíte de testes
 data/                       CSVs diários da B3 (entrada)
 history/                    JSONs acumulados (não apagar)
@@ -48,9 +48,9 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 
 Cada execução publicada:
 
-1. poda `output/` (últimas 5 sessões por série, últimos 3 arquivos de `arquivos/`, sem `_debug_*`);
+1. poda `output/` (últimas 5 sessões por série, sem `_debug_*`);
 2. commita na `gh-pages`;
-3. o workflow comprime os arquivos de `arquivos/`, valida o tamanho e faz o deploy.
+3. o workflow valida o tamanho e faz o deploy.
 
 ## Aviso
 

@@ -1,6 +1,5 @@
 import contextlib
 import io
-import os
 from pathlib import Path
 import sys
 import tempfile
@@ -9,7 +8,6 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
-import bova11_flow_history as flow
 import bova11_insights_auto as insights
 
 
@@ -20,52 +18,6 @@ def option(strike=203, iv=25, gamma=.01):
                     f'{side}_gamma': gamma, f'{side}_delta': .5 if side == 'c' else -.5,
                     f'{side}_theta': -.1, f'{side}_vega': .2})
     return row
-
-
-class FlowFixes(unittest.TestCase):
-    def test_fractional_strikes_and_volumes_keep_distinct_keys(self):
-        rows = [{'strike': 79, 'c_oi': 10, 'p_oi': 20},
-                {'strike': 79.5, 'c_oi': 30, 'p_oi': 40}]
-        info = dict(fech_d='day.csv', fech_d1=None, vol_d=None, vol_d1=None)
-        with patch.object(flow, 'parse_fech_csv', return_value=rows):
-            result = flow.compute_strike_flows(info, '25mai', None)
-        self.assertEqual(set(result), {'79', '79.5'})
-        self.assertEqual(sum(x['co2'] + x['po2'] for x in result.values()), 100)
-        html = flow.generate_html({'25/mai': {'17 jul Mensal': result}})
-        self.assertNotIn('parseInt(strike)', html)
-        self.assertIn('filtered[entry.key]', html)
-
-    def test_missing_oi_remains_unknown_in_flow_and_ranking(self):
-        info = dict(fech_d='day.csv', fech_d1=None, vol_d=None, vol_d1=None)
-        with patch.object(flow, 'parse_fech_csv', return_value=[{'strike': 79.5, 'c_oi': None, 'p_oi': 10}]):
-            result = flow.compute_strike_flows(info, '25mai', None)
-        self.assertIsNone(result['79.5']['co2'])
-        self.assertIsNone(result['79.5']['dco'])
-        html = flow.generate_html({'25/mai': {'17 jul Mensal': result}})
-        self.assertNotIn('entry.dco || 0', html)
-
-    def test_real_may_chain_conserves_oi(self):
-        filename = 'venc 17 jul Mensal fechamento (25mai).csv'
-        if not (ROOT / 'data' / filename).exists():
-            self.skipTest('CSV de controle não disponível')
-        with patch.object(flow, 'CSV_DIR', str(ROOT / 'data')):
-            result = flow.compute_strike_flows(dict(fech_d=filename, fech_d1=None,
-                vol_d=None, vol_d1=None), '25mai', None)
-        self.assertEqual(len(result), 165)
-        self.assertEqual(sum(x['co2'] + x['po2'] for x in result.values()), 50812939)
-
-    def test_main_preserves_dates_without_source(self):
-        old = {'31/dez': {'legacy': {'79': {'co2': 1}}}}
-        with tempfile.TemporaryDirectory() as folder, \
-             patch.object(flow, 'OUTPUT_DIR', folder), \
-             patch.object(flow, 'discover_all_date_tags', return_value=[('8out', None)]), \
-             patch.object(flow, 'discover_expirations_for_tag', return_value=[]), \
-             patch.object(flow, 'load_history', return_value=old), \
-             patch.object(flow, 'save_history') as save, \
-             patch.object(flow, 'generate_html', return_value='<html/>'), \
-             contextlib.redirect_stdout(io.StringIO()):
-            flow.main()
-        self.assertIn('31/dez', save.call_args.args[0])
 
 
 class InsightsFixes(unittest.TestCase):

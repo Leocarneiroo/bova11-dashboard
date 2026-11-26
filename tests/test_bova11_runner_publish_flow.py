@@ -27,14 +27,14 @@ class RunnerPublishFlowTests(unittest.TestCase):
             builtins.input = fake_input
             runner.publish_output_dashboard = lambda: self.fail("publish should not run")
             with contextlib.redirect_stdout(output):
-                runner.finalize_dashboard_run(["bova11_demand_flow.py"])
+                runner.finalize_dashboard_run(["bova11_max_pain.py"])
         finally:
             builtins.input = old_input
             runner.publish_output_dashboard = old_publish
 
         self.assertEqual(len(prompts), 1)
         self.assertIn("atualização parcial", prompts[0].lower())
-        self.assertIn("bova11_demand_flow.py", output.getvalue())
+        self.assertIn("bova11_max_pain.py", output.getvalue())
 
     def test_publish_output_dashboard_runs_git_sequence(self):
         calls = []

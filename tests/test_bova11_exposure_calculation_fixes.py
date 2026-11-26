@@ -1,4 +1,3 @@
-import os
 import sys
 import tempfile
 import unittest
@@ -10,7 +9,6 @@ import bova11_expiry_family as family
 import bova11_tex_dex_vex as profiles
 import bova11_max_pain as pain
 import bova11_gravity as gravity
-import bova11_historical_data as history
 
 
 def frame():
@@ -35,8 +33,9 @@ def write_csv(folder, tag='8out', missing=True, duplicate=False, label='16 out M
 
 
 class ExposureFixTests(unittest.TestCase):
+
     def test_numeric_parsers_preserve_unknown(self):
-        for parser in (profiles.parse_num, pain._parse_br_number, gravity._p, history._p):
+        for parser in (profiles.parse_num, pain._parse_br_number, gravity._p):
             for raw in (None, '-', 'NaN', float('nan')):
                 self.assertIsNone(parser(raw), (parser.__name__, raw))
 
@@ -157,40 +156,6 @@ class ExposureFixTests(unittest.TestCase):
         self.assertIsNone(pain.score_pcr(0, 10).raw_value)
         self.assertEqual(pain.score_pcr(0, 0).detail, 'N/A')
 
-    def test_published_rounded_totals_close_to_published_sides(self):
-        with tempfile.TemporaryDirectory() as folder:
-            path = write_csv(folder, missing=False)
-            lines = path.read_text(encoding='latin-1').splitlines()
-            row = lines[1].split(';')
-            row[2] = row[20] = '0,5'
-            lines[1] = ';'.join(row)
-            path.write_text('\n'.join(lines)+'\n', encoding='latin-1')
-            volume = ['0'] * 11
-            volume[0], volume[10], volume[5] = 'BOVAJ190', 'BOVAV190', '190'
-            volume[1] = volume[9] = '0,5'
-            (Path(folder) / 'venc 16 out Mensal fechamento (8out Volume).csv').write_text(';'.join(['header']*11)+'\n'+';'.join(volume)+'\n', encoding='latin-1')
-            result = history.build_snapshot(folder, '8out', 2026, {'2026-10-08':190}, '', {})
-        self.assertEqual(result['oi_total'], result['oi_call'] + result['oi_put'])
-        self.assertEqual(result['vol_total'], result['vol_call'] + result['vol_put'])
-
-    def test_historical_missing_greek_and_duplicate(self):
-        with tempfile.TemporaryDirectory() as folder:
-            write_csv(folder, duplicate=True)
-            result = history.build_snapshot(folder, '8out', 2026, {'2026-10-08':190}, '', {})
-        self.assertEqual(result['oi_call'], 10)
-        self.assertIsNone(result['gex_net'])
-        self.assertEqual(result['iv_atm'], .2)
-
-    def test_historical_excludes_expired_and_reports_previous_missing(self):
-        with tempfile.TemporaryDirectory() as folder:
-            write_csv(folder, missing=False)
-            write_csv(folder, missing=False, label='8 out Mensal')
-            write_csv(folder, tag='7out', label='23 out W4')
-            result = history.build_snapshot(folder, '8out', 2026, {'2026-10-08':190}, '', {})
-        self.assertIsNone(result['oi_total'])
-        self.assertIsNone(result['gex_net'])
-        self.assertIn('23 out W4', result['missing_expiries'])
-        self.assertEqual(result['partial_oi_call'], 10)
 
     def test_incomplete_analysis_html_has_null_and_na(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -250,24 +215,6 @@ class ExposureFixTests(unittest.TestCase):
         self.assertEqual(payload['model_regime'], 'Short Gamma')
         self.assertEqual(payload['model_iv_coverage'], 1)
         self.assertEqual(payload['gex_flips'], [185.25,194.75])
-
-    def test_historical_html_shows_collection_warning_and_coverage(self):
-        import re
-        import subprocess
-        snapshot = {'date':'2026-10-08', 'display':'8/Out', 'warnings':['Vencimento ativo ausente: 23 out W4'], 'expiry_coverage':.5, 'gamma_coverage':.25, 'delta_coverage':.75}
-        html = history.build_html([snapshot], '2026-10-08')
-        script = re.findall(r'<script>(.*?)</script>', html, re.S)[-1]
-        prelude = "const elements = {}; global.document = {getElementById:id => elements[id] ||= {innerHTML:'', textContent:''}, querySelectorAll:()=>[]}; global.Chart = class {destroy(){}};"
-        assertions = "if (!elements['coverage-status']?.textContent.includes('23 out W4')) throw Error('Warning hidden'); if (!elements['rows'].innerHTML.includes('50.0%')) throw Error('Coverage hidden');"
-        result = subprocess.run(['node', '-e', prelude + script + assertions], capture_output=True, text=True)
-        self.assertEqual(result.returncode, 0, result.stderr)
-
-    def test_historical_no_oi_requires_both_atm_ivs(self):
-        with tempfile.TemporaryDirectory() as folder:
-            path = write_csv(folder, missing=False)
-            path.write_text(path.read_text(encoding='latin-1').replace(';10;', ';0;'), encoding='latin-1')
-            result = history.build_snapshot(folder, '8out', 2026, {'2026-10-08':190}, '', {})
-        self.assertIsNone(result['iv_atm'])
 
 
 if __name__ == '__main__':

@@ -1,6 +1,3 @@
-import re
-import shutil
-import subprocess
 import sys
 import tempfile
 import unittest
@@ -14,27 +11,9 @@ import pandas as pd
 SCRIPTS = Path(__file__).resolve().parents[1] / 'scripts'
 sys.path.insert(0, str(SCRIPTS))
 import bova11_oi_stats_light as oi
-import bova11_hunter_walls as hunter
-import bova11_options_tape_flow as tape
-import bova11_options_contract_premium as premium
 
 
-def leg(delta=None, side='call'):
-    return tape.summarize_trades([
-        {'qty': 40, 'price': 2.5, 'side': 'buy', 'time_s': 1, 'row': 1},
-        {'qty': 10, 'price': 2.0, 'side': 'sell', 'time_s': 2, 'row': 2},
-    ], 'BOVAQ200', 200., side, delta)
-
-
-def expiry():
-    return tape.combine_expiry('15 Mai Mensal', [leg(.5)], [leg(None, 'put')], '', '', {}, {})
-
-
-def groups(exp=None):
-    return [{'date': '24/04/2026', 'iso': '2026-04-24', 'expiries': [exp or expiry()]}]
-
-
-class StatisticsAndTapeFixTests(unittest.TestCase):
+class StatisticsFixTests(unittest.TestCase):
     def test_oi_parser_preserves_missing_cells_and_observed_zero(self):
         columns = ['0'] * 23
         columns[0], columns[22], columns[11] = 'BOVAJ200', 'BOVAV200', '200'
@@ -126,83 +105,6 @@ class StatisticsAndTapeFixTests(unittest.TestCase):
         self.assertNotIn('Rejeita H₀', doc)
         self.assertNotIn('p-valor', doc)
         self.assertIn('descritivo', doc.lower())
-
-    def test_pcr_put_only_is_undefined_and_labelled_at_every_level(self):
-        stats = hunter.compute_expiry_stats({200.: {'call_vol': 0., 'put_vol': 300.}})
-        self.assertIsNone(stats['pcr'])
-        doc = hunter.build_html('2026-04-24', '24abr', 200., [('15 Mai Mensal', stats)])
-        self.assertIn('Somente puts', doc)
-        self.assertNotIn('Bullish (&lt; 0.8)', doc)
-        self.assertNotIn('Bullish (< 0.8)', doc)
-
-    def test_pcr_empty_is_na_and_positive_calls_keeps_ratio(self):
-        empty = hunter.compute_expiry_stats({200.: {'call_vol': 0., 'put_vol': 0.}})
-        self.assertIsNone(empty['pcr'])
-        self.assertIn('N/A', hunter.build_html('2026-04-24', '', 200., [('Empty', empty)]))
-        finite = hunter.compute_expiry_stats({200.: {'call_vol': 100., 'put_vol': 200.}})
-        self.assertEqual(finite['pcr'], 2.)
-
-    def test_tape_known_delta_cannot_certify_underlying_units(self):
-        row = leg(.5)
-        self.assertEqual(row['volume'], 50.)
-        self.assertEqual(row['financial'], 120.)
-        self.assertAlmostEqual(row['vwap'], 2.4)
-        for key in ('delta_volume', 'delta_volume_buy', 'delta_volume_sell'):
-            self.assertIsNone(row[key])
-
-    def test_tape_missing_delta_remains_unknown_in_totals(self):
-        summary = expiry()['summary']
-        for key in ('call_delta_volume', 'put_delta_volume', 'total_delta_volume'):
-            self.assertIsNone(summary[key])
-
-    def test_history_masks_uncertified_legacy_delta_without_changing_raw_qty(self):
-        old = expiry()
-        old['summary'].update(call_delta_volume=1500., put_delta_volume=0., total_delta_volume=1500.)
-        old['rows'][0]['call'].update(delta_volume=1500., delta_volume_buy=2000., delta_volume_sell=-500.)
-        with tempfile.TemporaryDirectory() as directory:
-            path = str(Path(directory) / 'history.json')
-            tape.save_options_history(path, groups(old))
-            loaded = tape.load_options_history(path)
-        result = loaded[0]['expiries'][0]
-        self.assertIsNone(result['summary']['total_delta_volume'])
-        self.assertIsNone(result['rows'][0]['call']['delta_volume'])
-        self.assertEqual(result['rows'][0]['call']['volume'], 50.)
-        self.assertEqual(result['quantity_unit'], 'uncertified')
-
-    def test_tape_html_marks_units_and_displays_unknown_delta(self):
-        doc = tape.build_html(groups(), [], '2026-04-24', '24abr', 200., 0.)
-        self.assertIn('unidades não certificadas', doc)
-        self.assertNotIn('contratos × 100 × delta', doc)
-        self.assertNotIn('eq. ações', doc)
-        self.assertNotIn('R$ por contrato', doc)
-        self.assertRegex(doc, r'id="top-net-dv">N/A</div>')
-
-    @unittest.skipUnless(shutil.which('node'), 'Node needed for generated dashboard JS')
-    def test_js_date_totals_and_detail_keep_null_as_na(self):
-        doc = tape.build_html(groups(), [], '2026-04-24', '24abr', 200., 0.)
-        script = re.findall(r'<script>([\s\S]*?)</script>', doc)[0]
-        script = script[:script.index("document.querySelectorAll('.date-tab')")]
-        check = """
-let totals = totalsFor([{summary:{call_delta_volume:5,put_delta_volume:null,total_delta_volume:null}},
-                        {summary:{call_delta_volume:null,put_delta_volume:3,total_delta_volume:null}}]);
-if (totals.call_delta_volume !== null || totals.put_delta_volume !== null || totals.total_delta_volume !== null)
-  throw Error('Unknown delta became zero or partial aggregate');
-if (fSigned(null) !== 'N/A') throw Error('Null display lost');
-const elements = {};
-global.document = {getElementById:id => elements[id] ||= {classList:{remove(){},add(){}}}};
-global.Chart = function() { this.destroy = () => {}; };
-render();
-const cells = elements['detail-body'].innerHTML.match(/<td>[\\s\\S]*?<\\/td>/g);
-if (!cells.slice(10,13).every(cell => cell.includes('N/A'))) throw Error('Missing row delta became zero');
-"""
-        result = subprocess.run(['node', '-e', script + check], capture_output=True, text=True)
-        self.assertEqual(result.returncode, 0, result.stderr)
-
-    def test_premium_caller_labels_raw_price_quantity_without_currency(self):
-        doc = premium.build_html(groups(), '2026-04-24', '24abr')
-        self.assertIn('unidades não certificadas', doc)
-        self.assertIn('Preço × qtd', doc)
-        self.assertNotIn('fBRL(r.total_financial)', doc)
 
 
 if __name__ == '__main__':
