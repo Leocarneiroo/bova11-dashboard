@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOVA11 Skew History — Todos os Vencimentos</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="shared.js"></script>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --bg2: #f6f8fa;
+            --bg3: #eaeef2;
+            --text: #1f2328;
+            --text2: #636c76;
+            --border: #d0d7de;
+            --red: #cf222e;
+            --grn: #1a7f37;
+            --blu: #0969da;
+            --yel: #9a6700;
+            --pur: #8250df;
+        }
+        [data-theme="dark"] {
+            --bg: #0d1117;
+            --bg2: #161b22;
+            --bg3: #21262d;
+            --text: #c9d1d9;
+            --text2: #8b949e;
+            --border: #30363d;
+            --red: #f85149;
+            --grn: #3fb950;
+            --blu: #58a6ff;
+            --yel: #d29922;
+            --pur: #bc8cff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, var(--bg2), var(--bg3));
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .header h1 { font-size: 1.8em; margin-bottom: 8px; }
+        .header .meta { color: var(--text2); font-size: 0.95em; }
+        .header .filter { color: var(--blu); font-weight: bold; }
+        .header .range { color: var(--grn); }
+        
+        .controls {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        .controls-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .controls-header h3 { color: var(--text); font-size: 1em; margin: 0; }
+        .controls-info { color: var(--text2); font-size: 0.85em; }
+
+        /* ── Calendar ── */
+        .cal-wrap {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+        .cal-month {
+            flex: 0 0 auto;
+            min-width: 200px;
+        }
+        .cal-month-title {
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.9em;
+            color: var(--blu);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            padding: 6px;
+            background: rgba(88,166,255,0.08);
+            border-radius: 6px;
+        }
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+        }
+        .cal-dow {
+            text-align: center;
+            font-size: 0.7em;
+            color: var(--text2);
+            padding: 4px 2px;
+            font-weight: 600;
+        }
+        .cal-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.82em;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+            user-select: none;
+            position: relative;
+        }
+        .cal-day.has-data {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        .cal-day.has-data:hover { background: rgba(88,166,255,0.15); border-color: var(--blu); }
+        .cal-day.selected {
+            background: var(--blu) !important;
+            color: #000 !important;
+            border-color: var(--blu) !important;
+            font-weight: 700;
+        }
+        .cal-day.empty { cursor: default; }
+        .cal-day.in-range {
+            background: rgba(88,166,255,0.18);
+            border-radius: 2px;
+        }
+        .cal-day.range-start { border-radius: 6px 2px 2px 6px; }
+        .cal-day.range-end   { border-radius: 2px 6px 6px 2px; }
+
+        .cal-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            background: var(--blu);
+            color: #000;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: opacity 0.15s;
+        }
+        .btn:hover { opacity: 0.85; }
+        .btn.secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+        .btn.danger    { background: rgba(248,81,73,0.15); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+        .range-hint { font-size: 0.78em; color: var(--text2); margin-top: 8px; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+        .stat-card .label { color: var(--text2); font-size: 0.85em; margin-bottom: 8px; }
+        .stat-card .value { font-size: 1.6em; font-weight: bold; }
+        .stat-card .sub { font-size: 0.8em; color: var(--text2); margin-top: 4px; }
+        
+        .chart-container {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            height: 380px;
+        }
+        .chart-title {
+            font-size: 1.1em;
+            margin-bottom: 16px;
+            color: var(--text2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 24px;
+        }
+        
+        .data-table {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+        th { color: var(--text2); font-weight: 600; }
+        tr:hover { background: var(--bg3); }
+        .positive { color: var(--grn); }
+        .negative { color: var(--red); }
+        
+        @media (max-width: 768px) {
+            .chart-grid { grid-template-columns: 1fr; }
+            .date-filters { max-height: 200px; overflow-y: auto; }
+        }
+    </style>
+</head>
+<body>
+    <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="position:fixed;top:12px;right:16px;z-index:9999;background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:1rem;line-height:1;transition:all 0.2s;">◐</button>
+    <div class="header">
+        <h1>📊 BOVA11 Skew History</h1>
+        <div class="meta">
+            Filtro: <span class="filter">Todos os Vencimentos</span> | 
+            Strikes: <span class="range">140 - 180</span> | 
+            Total de datas: <span id="total-dates">144</span> | 
+            Selecionadas: <span id="selected-count">144</span>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <div class="controls-header">
+            <h3>📅 Filtrar por Data</h3>
+            <span class="controls-info"><span id="selected-count">0</span> de <span id="total-dates">144</span> datas selecionadas</span>
+        </div>
+        <div class="cal-wrap" id="calWrap"></div>
+        <div class="cal-actions">
+            <button class="btn" onclick="selectAll()">✓ Selecionar Todas</button>
+            <button class="btn secondary" onclick="selectLast30()">Últimos 30 dias</button>
+            <button class="btn secondary" onclick="selectLast7()">Últimos 7 dias</button>
+            <button class="btn danger" onclick="deselectAll()">✕ Limpar</button>
+            <button class="btn" onclick="applyFilter()">▶ Aplicar</button>
+        </div>
+        <div class="range-hint">Dica: clique em uma data para selecioná-la · arraste ou clique + Shift para selecionar um intervalo</div>
+    </div>
+    
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+            <div class="label">IV Média Calls (último)</div>
+            <div class="value" id="statCallIv" style="color: var(--grn)">-</div>
+            <div class="sub" id="statCallChange"></div>
+        </div>
+        <div class="stat-card">
+            <div class="label">IV Média Puts (último)</div>
+            <div class="value" id="statPutIv" style="color: var(--red)">-</div>
+            <div class="sub" id="statPutChange"></div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Skew (Put - Call)</div>
+            <div class="value" id="statSkew" style="color: var(--yel)">-</div>
+            <div class="sub" id="statSkewChange"></div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Variação Skew (1d)</div>
+            <div class="value" id="statSkewDelta">-</div>
+        </div>
+    </div>
+    
+    <div class="chart-grid">
+        <div class="chart-container">
+            <div class="chart-title">
+                <span>📈 CALL — Evolução da Volatilidade Implícita</span>
+                <span style="font-size: 0.8em; color: var(--grn)">▼ Média filtrada</span>
+            </div>
+            <canvas id="callChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <div class="chart-title">
+                <span>📉 PUT — Evolução da Volatilidade Implícita</span>
+                <span style="font-size: 0.8em; color: var(--red)">▼ Média filtrada</span>
+            </div>
+            <canvas id="putChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="chart-container" style="height: 320px;">
+        <div class="chart-title">📊 SKEW — Diferença Put vs Call</div>
+        <canvas id="skewChart"></canvas>
+    </div>
+    
+    <div class="data-table">
+        <h3 style="margin-bottom: 16px; color: var(--text2)">📋 Dados Detalhados</h3>
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>IV Call (%)</th>
+                    <th>IV Put (%)</th>
+                    <th>Skew (%)</th>
+                    <th>Δ Call</th>
+                    <th>Δ Put</th>
+                    <th>Δ Skew</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+        <div style="text-align:center; margin-top:16px;">
+            <button id="btnExpandTable" onclick="toggleTableExpand()"
+                style="background:var(--bg3); border:1px solid var(--border); color:var(--text2);
+                       padding:8px 20px; border-radius:8px; cursor:pointer; font-size:0.85rem;
+                       transition: all 0.2s; display:none;">
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // Dados completos do servidor
+        const allData = [{"label": "3/Mar", "date_key": "03/mar", "call_iv": 30.44, "put_iv": 27.11, "skew": -3.33}, {"label": "4/Mar", "date_key": "04/mar", "call_iv": 25.42, "put_iv": 26.41, "skew": 0.99}, {"label": "5/Mar", "date_key": "05/mar", "call_iv": 31.04, "put_iv": 30.41, "skew": -0.63}, {"label": "6/Mar", "date_key": "06/mar", "call_iv": 28.09, "put_iv": 28.18, "skew": 0.09}, {"label": "9/Mar", "date_key": "09/mar", "call_iv": 26.79, "put_iv": 27.38, "skew": 0.59}, {"label": "10/Mar", "date_key": "10/mar", "call_iv": 24.42, "put_iv": 26.85, "skew": 2.43}, {"label": "11/Mar", "date_key": "11/mar", "call_iv": 23.5, "put_iv": 30.66, "skew": 7.16}, {"label": "12/Mar", "date_key": "12/mar", "call_iv": 32.58, "put_iv": 29.71, "skew": -2.87}, {"label": "13/Mar", "date_key": "13/mar", "call_iv": 31.03, "put_iv": 28.51, "skew": -2.52}, {"label": "16/Mar", "date_key": "16/mar", "call_iv": 26.43, "put_iv": 26.98, "skew": 0.55}, {"label": "17/Mar", "date_key": "17/mar", "call_iv": 26.74, "put_iv": 27.37, "skew": 0.63}, {"label": "18/Mar", "date_key": "18/mar", "call_iv": 28.69, "put_iv": 28.91, "skew": 0.22}, {"label": "19/Mar", "date_key": "19/mar", "call_iv": 28.09, "put_iv": 30.03, "skew": 1.94}, {"label": "20/Mar", "date_key": "20/mar", "call_iv": 30.7, "put_iv": 29.41, "skew": -1.29}, {"label": "23/Mar", "date_key": "23/mar", "call_iv": 27.07, "put_iv": 28.54, "skew": 1.47}, {"label": "24/Mar", "date_key": "24/mar", "call_iv": 27.41, "put_iv": 28.68, "skew": 1.28}, {"label": "25/Mar", "date_key": "25/mar", "call_iv": 27.42, "put_iv": 28.62, "skew": 1.2}, {"label": "26/Mar", "date_key": "26/mar", "call_iv": 27.89, "put_iv": 31.56, "skew": 3.67}, {"label": "27/Mar", "date_key": "27/mar", "call_iv": 30.94, "put_iv": 31.09, "skew": 0.15}, {"label": "30/Mar", "date_key": "30/mar", "call_iv": 29.07, "put_iv": 30.13, "skew": 1.06}, {"label": "31/Mar", "date_key": "31/mar", "call_iv": 27.57, "put_iv": 30.67, "skew": 3.1}, {"label": "1/Abr", "date_key": "01/abr", "call_iv": 27.33, "put_iv": 28.69, "skew": 1.37}, {"label": "2/Abr", "date_key": "02/abr", "call_iv": 23.3, "put_iv": 26.97, "skew": 3.66}, {"label": "6/Abr", "date_key": "06/abr", "call_iv": 23.49, "put_iv": 28.01, "skew": 4.52}, {"label": "7/Abr", "date_key": "07/abr", "call_iv": 29.04, "put_iv": 30.06, "skew": 1.02}, {"label": "8/Abr", "date_key": "08/abr", "call_iv": 20.31, "put_iv": 29.34, "skew": 5.43}, {"label": "9/Abr", "date_key": "09/abr", "call_iv": 20.23, "put_iv": 26.84, "skew": 6.61}, {"label": "10/Abr", "date_key": "10/abr", "call_iv": 18.62, "put_iv": 24.55, "skew": 5.93}, {"label": "13/Abr", "date_key": "13/abr", "call_iv": 18.68, "put_iv": 25.81, "skew": 7.13}, {"label": "14/Abr", "date_key": "14/abr", "call_iv": 18.36, "put_iv": 25.25, "skew": 6.9}, {"label": "15/Abr", "date_key": "15/abr", "call_iv": 21.17, "put_iv": 22.12, "skew": 0.95}, {"label": "16/Abr", "date_key": "16/abr", "call_iv": 21.58, "put_iv": 24.66, "skew": 1.85}, {"label": "17/Abr", "date_key": "17/abr", "call_iv": 22.79, "put_iv": 22.2, "skew": -0.59}, {"label": "20/Abr", "date_key": "20/abr", "call_iv": 19.73, "put_iv": 21.17, "skew": 1.45}, {"label": "22/Abr", "date_key": "22/abr", "call_iv": 21.83, "put_iv": 20.43, "skew": -1.41}, {"label": "23/Abr", "date_key": "23/abr", "call_iv": 24.84, "put_iv": 23.87, "skew": -0.97}, {"label": "24/Abr", "date_key": "24/abr", "call_iv": 20.9, "put_iv": 20.87, "skew": -0.03}, {"label": "27/Abr", "date_key": "27/abr", "call_iv": 22.65, "put_iv": 19.7, "skew": -2.94}, {"label": "28/Abr", "date_key": "28/abr", "call_iv": 22.8, "put_iv": 21.89, "skew": -0.92}, {"label": "29/Abr", "date_key": "29/abr", "call_iv": 25.57, "put_iv": 21.99, "skew": -3.59}, {"label": "30/Abr", "date_key": "30/abr", "call_iv": 15.73, "put_iv": 19.84, "skew": 4.11}, {"label": "4/Mai", "date_key": "04/mai", "call_iv": 21.35, "put_iv": 20.57, "skew": -0.79}, {"label": "5/Mai", "date_key": "05/mai", "call_iv": 18.08, "put_iv": 20.12, "skew": 1.49}, {"label": "6/Mai", "date_key": "06/mai", "call_iv": 19.33, "put_iv": 19.97, "skew": 0.83}, {"label": "14/Mai", "date_key": "14/mai", "call_iv": 21.81, "put_iv": 24.6, "skew": 2.79}, {"label": "18/Mai", "date_key": "18/mai", "call_iv": 14.77, "put_iv": 20.82, "skew": 6.04}, {"label": "20/Mai", "date_key": "20/mai", "call_iv": 16.16, "put_iv": 23.41, "skew": 7.25}, {"label": "21/Mai", "date_key": "21/mai", "call_iv": 24.69, "put_iv": 25.79, "skew": 1.1}, {"label": "25/Mai", "date_key": "25/mai", "call_iv": 12.34, "put_iv": 23.05, "skew": 10.7}, {"label": "26/Mai", "date_key": "26/mai", "call_iv": 14.26, "put_iv": 23.98, "skew": 9.73}, {"label": "27/Mai", "date_key": "27/mai", "call_iv": 27.47, "put_iv": 23.73, "skew": -3.74}, {"label": "28/Mai", "date_key": "28/mai", "call_iv": 34.19, "put_iv": 24.88, "skew": -9.3}, {"label": "29/Mai", "date_key": "29/mai", "call_iv": 21.4, "put_iv": 22.85, "skew": 1.45}, {"label": "1/Jun", "date_key": "01/jun", "call_iv": 18.18, "put_iv": 21.06, "skew": 2.88}, {"label": "2/Jun", "date_key": "02/jun", "call_iv": 15.74, "put_iv": 24.0, "skew": 8.26}, {"label": "3/Jun", "date_key": "03/jun", "call_iv": 21.37, "put_iv": 25.56, "skew": 4.19}, {"label": "5/Jun", "date_key": "05/jun", "call_iv": 25.33, "put_iv": 22.38, "skew": -2.94}, {"label": "8/Jun", "date_key": "08/jun", "call_iv": 19.9, "put_iv": 22.6, "skew": 2.69}, {"label": "9/Jun", "date_key": "09/jun", "call_iv": 21.7, "put_iv": 24.51, "skew": 2.81}, {"label": "10/Jun", "date_key": "10/jun", "call_iv": 20.69, "put_iv": 23.73, "skew": 3.05}, {"label": "11/Jun", "date_key": "11/jun", "call_iv": 19.48, "put_iv": 28.96, "skew": 9.47}, {"label": "12/Jun", "date_key": "12/jun", "call_iv": 19.16, "put_iv": 24.03, "skew": 4.87}, {"label": "15/Jun", "date_key": "15/jun", "call_iv": 18.42, "put_iv": 22.75, "skew": 4.32}, {"label": "16/Jun", "date_key": "16/jun", "call_iv": 25.06, "put_iv": 22.41, "skew": -2.65}, {"label": "17/Jun", "date_key": "17/jun", "call_iv": 42.54, "put_iv": 21.66, "skew": -20.88}, {"label": "19/Jun", "date_key": "19/jun", "call_iv": 20.34, "put_iv": 20.83, "skew": 0.49}, {"label": "22/Jun", "date_key": "22/jun", "call_iv": 19.15, "put_iv": 20.85, "skew": 1.7}, {"label": "23/Jun", "date_key": "23/jun", "call_iv": 17.34, "put_iv": 22.11, "skew": 4.77}, {"label": "24/Jun", "date_key": "24/jun", "call_iv": 14.72, "put_iv": 22.89, "skew": 8.16}, {"label": "26/Jun", "date_key": "26/jun", "call_iv": 18.78, "put_iv": 23.53, "skew": 4.75}, {"label": "29/Jun", "date_key": "29/jun", "call_iv": 15.06, "put_iv": 23.89, "skew": 8.83}, {"label": "30/Jun", "date_key": "30/jun", "call_iv": 23.79, "put_iv": 24.05, "skew": 0.25}, {"label": "1/Jul", "date_key": "01/jul", "call_iv": 20.16, "put_iv": 25.01, "skew": 4.85}, {"label": "2/Jul", "date_key": "02/jul", "call_iv": 15.36, "put_iv": 27.93, "skew": 12.57}, {"label": "6/Jul", "date_key": "06/jul", "call_iv": 19.14, "put_iv": 23.36, "skew": 4.22}, {"label": "7/Jul", "date_key": "07/jul", "call_iv": 18.76, "put_iv": 24.22, "skew": 5.46}, {"label": "8/Jul", "date_key": "08/jul", "call_iv": 42.39, "put_iv": 25.63, "skew": -16.76}, {"label": "13/Jul", "date_key": "13/jul", "call_iv": 27.66, "put_iv": 24.34, "skew": -3.32}, {"label": "14/Jul", "date_key": "14/jul", "call_iv": 13.4, "put_iv": 27.26, "skew": 13.85}, {"label": "15/Jul", "date_key": "15/jul", "call_iv": 28.75, "put_iv": 26.85, "skew": -1.9}, {"label": "16/Jul", "date_key": "16/jul", "call_iv": 23.71, "put_iv": 33.92, "skew": 10.22}, {"label": "17/Jul", "date_key": "17/jul", "call_iv": 21.54, "put_iv": 22.92, "skew": 1.39}, {"label": "21/Jul", "date_key": "21/jul", "call_iv": 20.22, "put_iv": 23.43, "skew": 3.21}, {"label": "23/Jul", "date_key": "23/jul", "call_iv": null, "put_iv": null, "skew": null}, {"label": "28/Jul", "date_key": "28/jul", "call_iv": 13.41, "put_iv": 25.77, "skew": 12.36}, {"label": "29/Jul", "date_key": "29/jul", "call_iv": 37.3, "put_iv": 26.09, "skew": -11.21}, {"label": "30/Jul", "date_key": "30/jul", "call_iv": 10.82, "put_iv": 31.74, "skew": 20.92}, {"label": "3/Ago", "date_key": "03/ago", "call_iv": 12.11, "put_iv": 23.58, "skew": 11.47}, {"label": "4/Ago", "date_key": "04/ago", "call_iv": 25.4, "put_iv": 25.45, "skew": 0.05}, {"label": "5/Ago", "date_key": "05/ago", "call_iv": 29.67, "put_iv": 25.58, "skew": -4.09}, {"label": "6/Ago", "date_key": "06/ago", "call_iv": 42.93, "put_iv": 25.95, "skew": -16.99}, {"label": "11/Ago", "date_key": "11/ago", "call_iv": 23.81, "put_iv": 24.67, "skew": 0.86}, {"label": "12/Ago", "date_key": "12/ago", "call_iv": 24.09, "put_iv": 23.52, "skew": -0.56}, {"label": "13/Ago", "date_key": "13/ago", "call_iv": 28.39, "put_iv": 25.61, "skew": -2.78}, {"label": "18/Ago", "date_key": "18/ago", "call_iv": 21.72, "put_iv": 23.21, "skew": 1.49}, {"label": "20/Ago", "date_key": "20/ago", "call_iv": 23.8, "put_iv": 28.53, "skew": 4.73}, {"label": "24/Ago", "date_key": "24/ago", "call_iv": 21.8, "put_iv": 26.93, "skew": 5.13}, {"label": "25/Ago", "date_key": "25/ago", "call_iv": 14.46, "put_iv": 25.83, "skew": 11.37}, {"label": "31/Ago", "date_key": "31/ago", "call_iv": 20.78, "put_iv": 29.49, "skew": 8.7}, {"label": "1/Set", "date_key": "01/set", "call_iv": 23.05, "put_iv": 30.6, "skew": 7.54}, {"label": "2/Set", "date_key": "02/set", "call_iv": 22.0, "put_iv": 36.57, "skew": 14.58}, {"label": "3/Set", "date_key": "03/set", "call_iv": 32.17, "put_iv": 39.51, "skew": 7.35}, {"label": "4/Set", "date_key": "04/set", "call_iv": 30.9, "put_iv": 30.09, "skew": -0.81}, {"label": "8/Set", "date_key": "08/set", "call_iv": 23.07, "put_iv": 33.18, "skew": 10.11}, {"label": "9/Set", "date_key": "09/set", "call_iv": 17.07, "put_iv": 32.8, "skew": 15.74}, {"label": "10/Set", "date_key": "10/set", "call_iv": 26.26, "put_iv": 38.3, "skew": 12.04}, {"label": "17/Set", "date_key": "17/set", "call_iv": 45.85, "put_iv": 39.85, "skew": -5.99}, {"label": "21/Set", "date_key": "21/set", "call_iv": 23.7, "put_iv": 33.86, "skew": 10.16}, {"label": "22/Set", "date_key": "22/set", "call_iv": 29.49, "put_iv": 35.89, "skew": 6.4}, {"label": "23/Set", "date_key": "23/set", "call_iv": 39.6, "put_iv": 36.57, "skew": -3.03}, {"label": "24/Set", "date_key": "24/set", "call_iv": 41.72, "put_iv": 33.47, "skew": -8.25}, {"label": "28/Set", "date_key": "28/set", "call_iv": 34.33, "put_iv": 33.32, "skew": -1.02}, {"label": "30/Set", "date_key": "30/set", "call_iv": 26.02, "put_iv": 40.52, "skew": 14.5}, {"label": "1/Out", "date_key": "01/out", "call_iv": 23.49, "put_iv": 28.55, "skew": 5.06}, {"label": "5/Out", "date_key": "05/out", "call_iv": null, "put_iv": null, "skew": null}, {"label": "6/Out", "date_key": "06/out", "call_iv": 37.53, "put_iv": 23.71, "skew": -13.82}, {"label": "7/Out", "date_key": "07/out", "call_iv": 53.01, "put_iv": 23.3, "skew": -29.71}, {"label": "8/Out", "date_key": "08/out", "call_iv": null, "put_iv": null, "skew": null}, {"label": "9/Out", "date_key": "09/out", "call_iv": null, "put_iv": null, "skew": null}, {"label": "13/Out", "date_key": "13/out", "call_iv": 57.03, "put_iv": 54.92, "skew": 1.18}, {"label": "14/Out", "date_key": "14/out", "call_iv": 43.17, "put_iv": 58.92, "skew": 15.75}, {"label": "20/Out", "date_key": "20/out", "call_iv": 46.75, "put_iv": 63.72, "skew": 20.49}, {"label": "21/Out", "date_key": "21/out", "call_iv": 72.99, "put_iv": 69.01, "skew": -0.16}, {"label": "22/Out", "date_key": "22/out", "call_iv": 95.46, "put_iv": 73.41, "skew": -17.24}, {"label": "23/Out", "date_key": "23/out", "call_iv": 62.63, "put_iv": 66.6, "skew": 10.78}, {"label": "26/Out", "date_key": "26/out", "call_iv": 30.42, "put_iv": 32.94, "skew": 2.52}, {"label": "27/Out", "date_key": "27/out", "call_iv": 32.66, "put_iv": 35.57, "skew": 2.91}, {"label": "28/Out", "date_key": "28/out", "call_iv": 34.73, "put_iv": 31.62, "skew": -3.12}, {"label": "29/Out", "date_key": "29/out", "call_iv": 36.69, "put_iv": 29.87, "skew": -6.83}, {"label": "30/Out", "date_key": "30/out", "call_iv": 28.17, "put_iv": 27.88, "skew": -0.29}, {"label": "3/Nov", "date_key": "03/nov", "call_iv": 23.01, "put_iv": 29.33, "skew": 6.33}, {"label": "4/Nov", "date_key": "04/nov", "call_iv": 18.73, "put_iv": 33.21, "skew": 14.48}, {"label": "5/Nov", "date_key": "05/nov", "call_iv": 32.53, "put_iv": 27.14, "skew": -5.39}, {"label": "9/Nov", "date_key": "09/nov", "call_iv": 10.9, "put_iv": 27.08, "skew": 16.18}, {"label": "10/Nov", "date_key": "10/nov", "call_iv": 16.12, "put_iv": 23.38, "skew": 7.26}, {"label": "11/Nov", "date_key": "11/nov", "call_iv": 25.27, "put_iv": 23.55, "skew": -1.72}, {"label": "12/Nov", "date_key": "12/nov", "call_iv": 17.64, "put_iv": 22.82, "skew": 5.18}, {"label": "13/Nov", "date_key": "13/nov", "call_iv": 20.4, "put_iv": 22.96, "skew": 2.55}, {"label": "16/Nov", "date_key": "16/nov", "call_iv": 21.98, "put_iv": 24.76, "skew": 2.79}, {"label": "17/Nov", "date_key": "17/nov", "call_iv": 20.85, "put_iv": 27.83, "skew": 6.98}, {"label": "18/Nov", "date_key": "18/nov", "call_iv": 35.14, "put_iv": 25.75, "skew": -9.39}, {"label": "19/Nov", "date_key": "19/nov", "call_iv": 25.16, "put_iv": 23.67, "skew": -1.49}, {"label": "23/Nov", "date_key": "23/nov", "call_iv": 22.25, "put_iv": 23.42, "skew": 1.16}, {"label": "25/Nov", "date_key": "25/nov", "call_iv": 22.26, "put_iv": 25.48, "skew": 3.22}];
+        let selectedDates = allData.map(d => d.label);
+        let charts = {};
+        
+        // ══════════════════════════════════════════
+        // CALENDAR ENGINE
+        // ══════════════════════════════════════════
+
+        // Map label ("2/Fev") → {year, month (0-idx), day}
+        const MONTHS_PT = {'Jan':0,'Fev':1,'Mar':2,'Abr':3,'Mai':4,'Jun':5,'Jul':6,'Ago':7,'Set':8,'Out':9,'Nov':10,'Dez':11};
+        const MONTHS_NAME = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+        function labelToDate(label) {
+            const [d, m] = label.split('/');
+            // pick year: if month is before current month in a year-wrap context use next year cautiously
+            const mo = MONTHS_PT[m];
+            return new Date(2025, mo, parseInt(d));  // year fixed to data year
+        }
+
+        function dateToKey(dt) {
+            return dt.getFullYear() + '-' + dt.getMonth() + '-' + dt.getDate();
+        }
+
+        // Build lookup: dateKey → label
+        const keyToLabel = {};
+        const labelToKey = {};
+        allData.forEach(d => {
+            const dt = labelToDate(d.label);
+            const k  = dateToKey(dt);
+            keyToLabel[k] = d.label;
+            labelToKey[d.label] = k;
+        });
+
+        // ── State ──
+        let isDragging   = false;
+        let dragStart    = null;  // dateKey
+        let lastAnchor   = null;  // for shift-click
+
+        function renderCalendar() {
+            const wrap = document.getElementById('calWrap');
+            wrap.innerHTML = '';
+
+            // Group available dates by year+month
+            const months = {};
+            allData.forEach(d => {
+                const dt  = labelToDate(d.label);
+                const key = dt.getFullYear() + '-' + dt.getMonth();
+                if (!months[key]) months[key] = { year: dt.getFullYear(), month: dt.getMonth(), days: [] };
+                months[key].days.push({ day: dt.getDate(), label: d.label, k: dateToKey(dt) });
+            });
+
+            const DOW = ['D','S','T','Q','Q','S','S'];
+
+            Object.values(months).sort((a,b) => a.year - b.year || a.month - b.month).forEach(m => {
+                const col = document.createElement('div');
+                col.className = 'cal-month';
+
+                const title = document.createElement('div');
+                title.className = 'cal-month-title';
+                title.textContent = MONTHS_NAME[m.month] + ' ' + m.year;
+                col.appendChild(title);
+
+                const grid = document.createElement('div');
+                grid.className = 'cal-grid';
+
+                // Day-of-week headers
+                DOW.forEach(h => {
+                    const dh = document.createElement('div');
+                    dh.className = 'cal-dow';
+                    dh.textContent = h;
+                    grid.appendChild(dh);
+                });
+
+                // Offset: first day of month
+                const firstDow = new Date(m.year, m.month, 1).getDay();
+                for (let i = 0; i < firstDow; i++) {
+                    const empty = document.createElement('div');
+                    empty.className = 'cal-day empty';
+                    grid.appendChild(empty);
+                }
+
+                // Days of month
+                const daysInMonth = new Date(m.year, m.month + 1, 0).getDate();
+                const dayMap = {};
+                m.days.forEach(d => { dayMap[d.day] = d; });
+
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const cell = document.createElement('div');
+                    const info = dayMap[d];
+                    if (info) {
+                        cell.className = 'cal-day has-data' + (selectedDates.includes(info.label) ? ' selected' : '');
+                        cell.textContent = d;
+                        cell.dataset.k = info.k;
+                        cell.dataset.label = info.label;
+
+                        // Mouse events for drag-select
+                        cell.addEventListener('mousedown', e => {
+                            if (e.shiftKey && lastAnchor) {
+                                rangeSelect(lastAnchor, info.k);
+                            } else {
+                                isDragging = true;
+                                dragStart  = info.k;
+                                lastAnchor = info.k;
+                                toggleLabel(info.label);
+                                cell.classList.toggle('selected', selectedDates.includes(info.label));
+                            }
+                            updateCount();
+                            e.preventDefault();
+                        });
+                        cell.addEventListener('mouseenter', e => {
+                            if (isDragging) {
+                                const sel = !selectedDates.includes(dragStart ? keyToLabel[dragStart] : info.label);
+                                if (sel && !selectedDates.includes(info.label)) {
+                                    selectedDates.push(info.label);
+                                } else if (!sel && selectedDates.includes(info.label)) {
+                                    selectedDates = selectedDates.filter(l => l !== info.label);
+                                }
+                                cell.classList.toggle('selected', selectedDates.includes(info.label));
+                                updateCount();
+                            }
+                        });
+                    } else {
+                        cell.className = 'cal-day empty';
+                        cell.textContent = d;
+                        cell.style.color = 'var(--text2)';
+                        cell.style.opacity = '0.25';
+                    }
+                    grid.appendChild(cell);
+                }
+                col.appendChild(grid);
+                wrap.appendChild(col);
+            });
+
+            document.addEventListener('mouseup', () => { isDragging = false; }, { once: false });
+        }
+
+        function toggleLabel(label) {
+            if (selectedDates.includes(label))
+                selectedDates = selectedDates.filter(l => l !== label);
+            else
+                selectedDates.push(label);
+        }
+
+        function rangeSelect(fromKey, toKey) {
+            // Collect all available sorted dates in range
+            const sorted = allData.map(d => ({ label: d.label, dt: labelToDate(d.label) })).sort((a,b) => a.dt - b.dt);
+            const fromDt = new Date(...fromKey.split('-').map((v,i)=>i===1?+v:+v));
+            const toDt   = new Date(...toKey.split('-').map((v,i)=>i===1?+v:+v));
+            const [lo, hi] = fromDt <= toDt ? [fromDt, toDt] : [toDt, fromDt];
+            sorted.forEach(item => {
+                if (item.dt >= lo && item.dt <= hi && !selectedDates.includes(item.label))
+                    selectedDates.push(item.label);
+            });
+            renderCalendar();
+        }
+
+        function updateCount() {
+            document.getElementById('selected-count').textContent = selectedDates.length;
+        }
+
+        function selectAll() {
+            selectedDates = allData.map(d => d.label);
+            renderCalendar();
+            updateCount();
+        }
+
+        function deselectAll() {
+            selectedDates = [];
+            renderCalendar();
+            updateCount();
+        }
+
+        function selectLast(n) {
+            const sorted = allData.map(d => ({ label: d.label, dt: labelToDate(d.label) })).sort((a,b) => b.dt - a.dt);
+            selectedDates = sorted.slice(0, n).map(d => d.label);
+            renderCalendar();
+            updateCount();
+        }
+        function selectLast7()  { selectLast(7);  }
+        function selectLast30() { selectLast(30); }
+
+        function applyFilter() {
+            updateDashboard();
+        }
+
+        // Obter dados filtrados
+        function getFilteredData() {
+            // Return in chronological order
+            return allData.filter(d => selectedDates.includes(d.label));
+        }
+        
+        // Atualizar dashboard
+        function updateDashboard() {
+            const data = getFilteredData();
+            
+            if (data.length === 0) return;
+            
+            // Atualizar estatísticas
+            const last = data[data.length - 1];
+            const prev = data.length > 1 ? data[data.length - 2] : null;
+            
+            document.getElementById('statCallIv').textContent = last.call_iv ? last.call_iv.toFixed(2) + '%' : 'N/A';
+            document.getElementById('statPutIv').textContent = last.put_iv ? last.put_iv.toFixed(2) + '%' : 'N/A';
+            document.getElementById('statSkew').textContent = last.skew ? last.skew.toFixed(2) + '%' : 'N/A';
+            
+            // Variações
+            if (prev && last.call_iv && prev.call_iv) {
+                const change = last.call_iv - prev.call_iv;
+                const el = document.getElementById('statCallChange');
+                el.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+                el.className = 'sub ' + (change >= 0 ? 'positive' : 'negative');
+            }
+            
+            if (prev && last.put_iv && prev.put_iv) {
+                const change = last.put_iv - prev.put_iv;
+                const el = document.getElementById('statPutChange');
+                el.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+                el.className = 'sub ' + (change >= 0 ? 'positive' : 'negative');
+            }
+            
+            if (prev && last.skew && prev.skew) {
+                const change = last.skew - prev.skew;
+                const el = document.getElementById('statSkewChange');
+                el.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+                el.className = 'sub ' + (change >= 0 ? 'positive' : 'negative');
+            }
+            
+            if (prev && last.skew && prev.skew) {
+                const delta = last.skew - prev.skew;
+                const el = document.getElementById('statSkewDelta');
+                el.textContent = (delta >= 0 ? '+' : '') + delta.toFixed(2) + '%';
+                el.style.color = delta >= 0 ? 'var(--red)' : 'var(--grn)';
+            }
+            
+            // Atualizar gráficos
+            updateCharts(data);
+            
+            // Atualizar tabela
+            updateTable(data);
+        }
+        
+        // Atualizar gráficos
+        function updateCharts(data) {
+            const labels = data.map(d => d.label);
+            const callData = data.map(d => d.call_iv);
+            const putData = data.map(d => d.put_iv);
+            const skewData = data.map(d => d.skew);
+            
+            // Destruir gráficos anteriores
+            Object.values(charts).forEach(c => c.destroy());
+            
+            // CALL Chart
+            charts.call = new Chart(document.getElementById('callChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'IV Call (%)',
+                        data: callData,
+                        borderColor: '#3fb950',
+                        backgroundColor: 'rgba(63, 185, 80, 0.1)',
+                        tension: 0.3,
+                        fill: true,
+                        pointRadius: 4,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#8b949e', maxRotation: 45 }, grid: { color: '#30363d' } },
+                        y: { ticks: { color: '#8b949e' }, grid: { color: '#30363d' }, title: { display: true, text: 'IV (%)', color: '#8b949e' } }
+                    }
+                }
+            });
+            
+            // PUT Chart
+            charts.put = new Chart(document.getElementById('putChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'IV Put (%)',
+                        data: putData,
+                        borderColor: '#f85149',
+                        backgroundColor: 'rgba(248, 81, 73, 0.1)',
+                        tension: 0.3,
+                        fill: true,
+                        pointRadius: 4,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#8b949e', maxRotation: 45 }, grid: { color: '#30363d' } },
+                        y: { ticks: { color: '#8b949e' }, grid: { color: '#30363d' }, title: { display: true, text: 'IV (%)', color: '#8b949e' } }
+                    }
+                }
+            });
+            
+            // SKEW Chart
+            charts.skew = new Chart(document.getElementById('skewChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Skew (Put - Call) %',
+                        data: skewData,
+                        borderColor: '#d29922',
+                        backgroundColor: 'rgba(210, 153, 34, 0.15)',
+                        tension: 0.3,
+                        fill: true,
+                        pointRadius: 5,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#8b949e', maxRotation: 45 }, grid: { color: '#30363d' } },
+                        y: { 
+                            ticks: { color: '#8b949e' }, 
+                            grid: { color: '#30363d' }, 
+                            title: { display: true, text: 'Skew (%)', color: '#8b949e' },
+                            suggestedMin: -2,
+                            suggestedMax: 5
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Atualizar tabela
+        const TABLE_DEFAULT_ROWS = 7;
+        let tableShowAll = false;
+        let lastTableData = [];
+
+        function toggleTableExpand() {
+            tableShowAll = !tableShowAll;
+            renderTable(lastTableData);
+        }
+
+        function renderTable(data) {
+            lastTableData = data;
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            // Mais recente primeiro
+            const reversed = [...data].reverse();
+            const visible = tableShowAll ? reversed : reversed.slice(0, TABLE_DEFAULT_ROWS);
+
+            visible.forEach((row, i) => {
+                const origIdx = data.indexOf(row);
+                const prev = origIdx > 0 ? data[origIdx - 1] : null;
+
+                const tr = document.createElement('tr');
+
+                let dCall = '-', dPut = '-', dSkew = '-';
+                let cCall = '', cPut = '', cSkew = '';
+
+                if (prev) {
+                    if (row.call_iv && prev.call_iv) {
+                        const d = row.call_iv - prev.call_iv;
+                        dCall = (d >= 0 ? '+' : '') + d.toFixed(2) + '%';
+                        cCall = d >= 0 ? 'positive' : 'negative';
+                    }
+                    if (row.put_iv && prev.put_iv) {
+                        const d = row.put_iv - prev.put_iv;
+                        dPut = (d >= 0 ? '+' : '') + d.toFixed(2) + '%';
+                        cPut = d >= 0 ? 'positive' : 'negative';
+                    }
+                    if (row.skew && prev.skew) {
+                        const d = row.skew - prev.skew;
+                        dSkew = (d >= 0 ? '+' : '') + d.toFixed(2) + '%';
+                        cSkew = d >= 0 ? 'positive' : 'negative';
+                    }
+                }
+
+                tr.innerHTML = `
+                    <td><strong>${row.label}</strong></td>
+                    <td>${row.call_iv ? row.call_iv.toFixed(2) : '-'}</td>
+                    <td>${row.put_iv ? row.put_iv.toFixed(2) : '-'}</td>
+                    <td>${row.skew ? row.skew.toFixed(2) : '-'}</td>
+                    <td class="${cCall}">${dCall}</td>
+                    <td class="${cPut}">${dPut}</td>
+                    <td class="${cSkew}">${dSkew}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Botão expandir
+            const btn = document.getElementById('btnExpandTable');
+            if (data.length <= TABLE_DEFAULT_ROWS) {
+                btn.style.display = 'none';
+            } else {
+                btn.style.display = 'inline-block';
+                btn.textContent = tableShowAll
+                    ? '▲ Mostrar menos'
+                    : `▼ Ver todos os ${data.length} dias`;
+            }
+        }
+
+        function updateTable(data) {
+            tableShowAll = false;
+            renderTable(data);
+        }
+        
+        // Iniciar
+        renderCalendar();
+        updateCount();
+        updateDashboard();
+    </script>
+</body>
+</html>

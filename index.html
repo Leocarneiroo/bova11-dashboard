@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOVA11 Dashboard - 23/Nov vs 25/Nov</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f3f5f7;
+            --surface: #ffffff;
+            --surface-2: #f7f9fb;
+            --surface-3: #eef3f8;
+            --border: #dce2e8;
+            --border-strong: #c9d3dd;
+            --text: #111827;
+            --muted: #5f6b7a;
+            --soft: #7a8696;
+            --accent: #2563eb;
+            --accent-soft: rgba(37, 99, 235, 0.08);
+            --danger: #c33c31;
+            --shadow: 0 18px 45px rgba(17, 24, 39, 0.06);
+            --sidebar-w: 330px;
+            --topbar-h: 56px;
+            --font: 'Instrument Sans', system-ui, sans-serif;
+            --mono: 'JetBrains Mono', monospace;
+        }
+        [data-theme="dark"] {
+            --bg: #0f141b;
+            --surface: #141b23;
+            --surface-2: #19212b;
+            --surface-3: #1f2933;
+            --border: #273240;
+            --border-strong: #334155;
+            --text: #e5ebf3;
+            --muted: #a3afbf;
+            --soft: #7d8a9b;
+            --accent: #6ea8ff;
+            --accent-soft: rgba(110, 168, 255, 0.12);
+            --danger: #f87171;
+            --shadow: 0 22px 50px rgba(0, 0, 0, 0.28);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+        }
+        button { font: inherit; }
+        .mono { font-family: var(--mono); }
+        .topbar {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            min-height: var(--topbar-h);
+            padding: 12px 16px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            z-index: 180;
+        }
+        .hamburger, .theme-toggle {
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            border-radius: 999px;
+            padding: 9px 12px;
+            cursor: pointer;
+            transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+        }
+        .hamburger:hover, .theme-toggle:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .topbar-title {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .topbar-title strong {
+            font-size: 0.98rem;
+            line-height: 1.2;
+        }
+        .topbar-title span {
+            font-size: 0.72rem;
+            color: var(--muted);
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(2px);
+            z-index: 190;
+        }
+        .overlay.open { display: block; }
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            min-height: 100%;
+            box-shadow: inset -1px 0 0 rgba(255,255,255,0.02);
+        }
+        @media (min-width: 981px) {
+            body.sidebar-collapsed .sidebar { display: none; }
+        }
+        .brand {
+            padding: 28px 24px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .brand-kicker {
+            font-size: 0.7rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--soft);
+            margin-bottom: 10px;
+            font-family: var(--mono);
+        }
+        .brand h1 {
+            font-size: 1.18rem;
+            letter-spacing: -0.03em;
+            margin-bottom: 6px;
+        }
+        .brand p {
+            font-size: 0.88rem;
+            color: var(--muted);
+            line-height: 1.5;
+            max-width: 28ch;
+        }
+        .menu {
+            padding: 18px 16px 22px;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 0;
+        }
+        .menu-group + .menu-group {
+            margin-top: 10px;
+        }
+        .group-toggle {
+            width: 100%;
+            border: none;
+            background: transparent;
+            color: var(--text);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 10px 10px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+        .group-toggle:hover {
+            background: var(--surface-2);
+        }
+        .group-toggle::after {
+            content: '+';
+            color: var(--muted);
+            font-weight: 500;
+        }
+        .group-toggle.expanded::after {
+            content: '−';
+        }
+        .group-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 28px;
+            height: 22px;
+            padding: 0 8px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 0.74rem;
+            font-family: var(--mono);
+        }
+        .group-items {
+            display: none;
+            gap: 6px;
+            padding: 6px 0 4px;
+        }
+        .group-items.expanded {
+            display: grid;
+        }
+        .menu-item {
+            border: 1px solid transparent;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+            padding: 12px 14px;
+            border-radius: 14px;
+            cursor: pointer;
+            display: grid;
+            gap: 4px;
+            color: var(--text);
+            transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+        }
+        .menu-item:hover {
+            background: var(--surface-2);
+            border-color: var(--border);
+            transform: translateY(-1px);
+        }
+        .menu-item.active {
+            background: var(--accent-soft);
+            border-color: rgba(37, 99, 235, 0.2);
+        }
+        .mi-title {
+            font-size: 0.92rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+        .mi-desc {
+            font-size: 0.76rem;
+            line-height: 1.45;
+            color: var(--muted);
+        }
+        .content {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .content-shell {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 18px 20px 20px;
+            height: 100%;
+            min-height: 0;
+        }
+        .context-bar {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 18px;
+            box-shadow: var(--shadow);
+        }
+        .sidebar-toggle {
+            flex-shrink: 0;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            border-radius: 999px;
+            padding: 9px 12px;
+            cursor: pointer;
+        }
+        .sidebar-toggle:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .context-meta {
+            min-width: 0;
+            display: grid;
+            gap: 8px;
+        }
+        .context-kicker {
+            font-size: 0.72rem;
+            font-family: var(--mono);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--soft);
+        }
+        .context-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 12px;
+        }
+        .context-head h2 {
+            font-size: 1.38rem;
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+        }
+        .context-desc {
+            font-size: 0.92rem;
+            color: var(--muted);
+            line-height: 1.5;
+            max-width: 68ch;
+        }
+        .context-time {
+            font-size: 0.76rem;
+            color: var(--soft);
+            white-space: nowrap;
+        }
+        .context-side {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .update-badge {
+            font-size: 0.72rem;
+            color: var(--soft);
+            padding: 7px 10px;
+            border-radius: 999px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            white-space: nowrap;
+        }
+        .quick-switch {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 2px;
+        }
+        .quick-link {
+            flex: 0 0 auto;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--muted);
+            border-radius: 999px;
+            padding: 10px 14px;
+            cursor: pointer;
+            transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+        }
+        .quick-link:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+        .quick-link.active {
+            background: var(--accent-soft);
+            border-color: rgba(37, 99, 235, 0.2);
+            color: var(--accent);
+        }
+        .frame-shell {
+            flex: 1;
+            min-height: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+        }
+        .frame-shell iframe {
+            border: none;
+            width: 100%;
+            height: 100%;
+            flex: 1;
+            background: var(--surface);
+        }
+        .missing-file {
+            display: none;
+            height: 100%;
+            padding: 48px 28px;
+            color: var(--danger);
+            text-align: center;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .missing-file h2 {
+            font-size: 1.1rem;
+        }
+        .missing-file p {
+            max-width: 42ch;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+        @media (max-width: 980px) {
+            body {
+                flex-direction: column;
+            }
+            .topbar {
+                display: flex;
+            }
+            .sidebar-toggle { display: none; }
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                transform: translateX(-100%);
+                transition: transform 0.24s ease;
+                z-index: 200;
+                width: min(92vw, var(--sidebar-w));
+                box-shadow: var(--shadow);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .content {
+                height: calc(100dvh - var(--topbar-h));
+            }
+            .content-shell {
+                padding: 14px 14px 16px;
+            }
+            .frame-shell {
+                flex: 1;
+            }
+            body.mobile-header-hidden .topbar,
+            body.mobile-header-hidden .context-bar,
+            body.mobile-header-hidden .quick-switch { display: none; }
+            body.mobile-header-hidden .content { height: 100dvh; }
+            .context-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .context-side {
+                align-items: stretch;
+            }
+            .update-badge {
+                white-space: normal;
+            }
+        }
+        @media (max-width: 720px) {
+            .context-head h2 {
+                font-size: 1.12rem;
+            }
+            .quick-link {
+                padding: 9px 12px;
+                font-size: 0.84rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <button class="hamburger" onclick="toggleSidebar()" aria-label="Abrir navegação">Menu</button>
+        <div class="topbar-title">
+            <strong id="topbar-title">Rankings &amp; Overview</strong>
+            <span id="topbar-desc">Panorama agregado de OI, IV e volume por vencimento.</span>
+        </div>
+        <button class="theme-toggle" onclick="toggleTheme()" title="Alternar tema">Tema</button>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="brand">
+            <div class="brand-kicker">BOVA11 Analytics</div>
+            <h1>Painel quantitativo unificado</h1>
+            <p>Leitura rápida do dia, estrutura por vencimento e módulos de apoio organizados por tarefa.</p>
+        </div>
+        <div class="menu">
+            
+            <section class="menu-group">
+                <button class="group-toggle expanded" data-group="hoje" onclick="toggleGroup('hoje')" aria-expanded="true">
+                    <span>Hoje</span>
+                    <span class="group-count">4</span>
+                </button>
+                <div class="group-items expanded" id="group-hoje">
+                    
+                <button class="menu-item active" data-file="bova11_rankings_pro_23nov_vs_25nov.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">Rankings &amp; Overview</span>
+                    <span class="mi-desc">Panorama agregado de OI, IV e volume por vencimento.</span>
+                </button>
+                <button class="menu-item" data-file="bova11_gex_pro_23nov_vs_25nov.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">GEX &amp; MaxPain</span>
+                    <span class="mi-desc">Regime gamma, flip e strikes dominantes do dia.</span>
+                </button>
+                <button class="menu-item" data-file="bova11_insights_23Nov_vs_25Nov.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">Insights Analíticos</span>
+                    <span class="mi-desc">Leitura operacional por vencimento com foco no que mudou.</span>
+                </button>
+                <button class="menu-item" data-file="bova11_trade_score_23nov_vs_25nov.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">Trade Score &amp; Bias</span>
+                    <span class="mi-desc">Score por strike e viés institucional estimado.</span>
+                </button>
+                </div>
+            </section>
+            <section class="menu-group">
+                <button class="group-toggle expanded" data-group="estrutura" onclick="toggleGroup('estrutura')" aria-expanded="true">
+                    <span>Estrutura</span>
+                    <span class="group-count">5</span>
+                </button>
+                <div class="group-items expanded" id="group-estrutura">
+                    
+                <button class="menu-item" data-file="bova11_oi_stats_light.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">OI Stats</span>
+                    <span class="mi-desc">Distribuição estatística do OI e concentração por vencimento.</span>
+                </button>
+                <button class="menu-item" data-file="bova11_tex_dex_vex_23nov_vs_25nov.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">GEX DEX VEX TEX CEX</span>
+                    <span class="mi-desc">Perfis por spot para GEX, DEX, VEX, TEX e CEX com Merton + forward implícito via put-call parity.</span>
+                </button>
+                <button class="menu-item" data-file="bova11_max_pain.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">Max Pain Relevance</span>
+                    <span class="mi-desc">Força relativa do pinning considerando prazo e OI.</span>
+                </button>
+                <button class="menu-item" data-file="bova11_gravity_map.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">Mapa Gravitacional</span>
+                    <span class="mi-desc">Centros de massa de OI, GEX e DEX no mesmo painel.</span>
+                </button>
+                <button class="menu-item" data-file="bova11_market_gamma.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">Market Gamma</span>
+                    <span class="mi-desc">Curva gamma líquida agregada e por vencimento.</span>
+                </button>
+                </div>
+            </section>
+            <section class="menu-group">
+                <button class="group-toggle" data-group="hist-rico" onclick="toggleGroup('hist-rico')" aria-expanded="false">
+                    <span>Histórico</span>
+                    <span class="group-count">2</span>
+                </button>
+                <div class="group-items" id="group-hist-rico">
+                    
+                <button class="menu-item" data-file="bova11_skew_history.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">Skew &amp; IV History</span>
+                    <span class="mi-desc">Evolução histórica de skew e IV média.</span>
+                </button>
+                <button class="menu-item" data-file="bova11_quant_institucional.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">Quant Institucional</span>
+                    <span class="mi-desc">Força relativa, momentum e leitura institucional.</span>
+                </button>
+                </div>
+            </section>
+            <section class="menu-group">
+                <button class="group-toggle" data-group="laborat-rio" onclick="toggleGroup('laborat-rio')" aria-expanded="false">
+                    <span>Laboratório</span>
+                    <span class="group-count">1</span>
+                </button>
+                <div class="group-items" id="group-laborat-rio">
+                    
+                <button class="menu-item" data-file="bova11_diagnostico_4d.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">Diagnóstico 4D</span>
+                    <span class="mi-desc">Leitura cruzada entre GEX, DEX, VEX e TEX.</span>
+                </button>
+                </div>
+            </section>
+            <section class="menu-group">
+                <button class="group-toggle expanded" data-group="varia-es" onclick="toggleGroup('varia-es')" aria-expanded="true">
+                    <span>Variações</span>
+                    <span class="group-count">1</span>
+                </button>
+                <div class="group-items expanded" id="group-varia-es">
+                    
+                <button class="menu-item" data-file="bova11_chain_oi_changes.html" onclick="loadPage(this.dataset.file)">
+                    <span class="mi-title">Chain OI Changes</span>
+                    <span class="mi-desc">Variação diária de OI por contrato e vencimento.</span>
+                </button>
+                </div>
+            </section>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="content-shell">
+            <section class="context-bar">
+                <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleDesktopSidebar()" aria-controls="sidebar" aria-expanded="true" aria-label="Ocultar menu" title="Ocultar menu">☰</button>
+                <div class="context-meta">
+                    <div class="context-kicker" id="context-group">Hoje</div>
+                    <div class="context-head">
+                        <h2 id="context-title">Rankings &amp; Overview</h2>
+                        <span class="context-time mono">Atualizado em 26/11/2026 10:46:12</span>
+                    </div>
+                    <p class="context-desc" id="context-desc">Panorama agregado de OI, IV e volume por vencimento.</p>
+                </div>
+                <div class="context-side">
+                    <div class="update-badge mono" title="Momento em que os dados do dashboard foram gerados">26/11/2026 10:46:12</div>
+                    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Alternar tema">Tema</button>
+                </div>
+            </section>
+
+            <div class="quick-switch">
+                <button class="quick-link active" data-file="bova11_rankings_pro_23nov_vs_25nov.html" onclick="loadPage(this.dataset.file)">Rankings &amp; Overview</button><button class="quick-link" data-file="bova11_gex_pro_23nov_vs_25nov.html" onclick="loadPage(this.dataset.file)">GEX &amp; MaxPain</button><button class="quick-link" data-file="bova11_insights_23Nov_vs_25Nov.html" onclick="loadPage(this.dataset.file)">Insights Analíticos</button>
+            </div>
+
+            <section class="frame-shell">
+                <iframe id="main-frame" src="bova11_rankings_pro_23nov_vs_25nov.html?v=26/11/2026 10:46:12" onload="checkIframe()"></iframe>
+                <div id="error-msg" class="missing-file">
+                    <h2>Arquivo não encontrado</h2>
+                    <p>Este módulo pode não ter sido processado ainda ou o nome do arquivo gerado está incorreto.</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        const MODULES = [{"title": "Rankings & Overview", "file": "bova11_rankings_pro_23nov_vs_25nov.html", "group": "Hoje", "priority": 1, "description": "Panorama agregado de OI, IV e volume por vencimento.", "quick": true}, {"title": "GEX & MaxPain", "file": "bova11_gex_pro_23nov_vs_25nov.html", "group": "Hoje", "priority": 2, "description": "Regime gamma, flip e strikes dominantes do dia.", "quick": true}, {"title": "Insights Analíticos", "file": "bova11_insights_23Nov_vs_25Nov.html", "group": "Hoje", "priority": 3, "description": "Leitura operacional por vencimento com foco no que mudou.", "quick": true}, {"title": "Trade Score & Bias", "file": "bova11_trade_score_23nov_vs_25nov.html", "group": "Hoje", "priority": 4, "description": "Score por strike e viés institucional estimado.", "quick": false}, {"title": "OI Stats", "file": "bova11_oi_stats_light.html", "group": "Estrutura", "priority": 1, "description": "Distribuição estatística do OI e concentração por vencimento.", "quick": false}, {"title": "GEX DEX VEX TEX CEX", "file": "bova11_tex_dex_vex_23nov_vs_25nov.html", "group": "Estrutura", "priority": 2, "description": "Perfis por spot para GEX, DEX, VEX, TEX e CEX com Merton + forward implícito via put-call parity.", "quick": false}, {"title": "Max Pain Relevance", "file": "bova11_max_pain.html", "group": "Estrutura", "priority": 3, "description": "Força relativa do pinning considerando prazo e OI.", "quick": false}, {"title": "Mapa Gravitacional", "file": "bova11_gravity_map.html", "group": "Estrutura", "priority": 4, "description": "Centros de massa de OI, GEX e DEX no mesmo painel.", "quick": false}, {"title": "Market Gamma", "file": "bova11_market_gamma.html", "group": "Estrutura", "priority": 5, "description": "Curva gamma líquida agregada e por vencimento.", "quick": false}, {"title": "Skew & IV History", "file": "bova11_skew_history.html", "group": "Histórico", "priority": 1, "description": "Evolução histórica de skew e IV média.", "quick": false}, {"title": "Quant Institucional", "file": "bova11_quant_institucional.html", "group": "Histórico", "priority": 2, "description": "Força relativa, momentum e leitura institucional.", "quick": false}, {"title": "Diagnóstico 4D", "file": "bova11_diagnostico_4d.html", "group": "Laboratório", "priority": 1, "description": "Leitura cruzada entre GEX, DEX, VEX e TEX.", "quick": false}, {"title": "Chain OI Changes", "file": "bova11_chain_oi_changes.html", "group": "Variações", "priority": 1, "description": "Variação diária de OI por contrato e vencimento.", "quick": false}];
+        const DASHBOARD_VERSION = "26/11/2026 10:46:12";
+        const MODULE_MAP = Object.fromEntries(MODULES.map(module => [module.file, module]));
+
+        function setActiveModule(url) {
+            document.querySelectorAll('.menu-item, .quick-link').forEach(el => {
+                el.classList.toggle('active', el.dataset.file === url);
+            });
+        }
+
+        function updateContext(url) {
+            const module = MODULE_MAP[url];
+            if (!module) return;
+            document.title = `BOVA11 - ${module.title}`;
+            document.getElementById('context-group').textContent = module.group;
+            document.getElementById('context-title').textContent = module.title;
+            document.getElementById('context-desc').textContent = module.description;
+            document.getElementById('topbar-title').textContent = module.title;
+            document.getElementById('topbar-desc').textContent = module.description;
+        }
+
+        function loadPage(url) {
+            const frame = document.getElementById('main-frame');
+            document.body.classList.remove('mobile-header-hidden');
+            document.getElementById('error-msg').style.display = 'none';
+            frame.style.display = 'block';
+            frame.src = `${url}?v=${encodeURIComponent(DASHBOARD_VERSION)}`;
+            setActiveModule(url);
+            updateContext(url);
+            closeSidebar();
+        }
+
+        function toggleGroup(groupId) {
+            const toggle = document.querySelector(`.group-toggle[data-group="${groupId}"]`);
+            const group = document.getElementById(`group-${groupId}`);
+            if (!toggle || !group) return;
+            const expanded = group.classList.toggle('expanded');
+            toggle.classList.toggle('expanded', expanded);
+            toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const open = sidebar.classList.toggle('open');
+            document.getElementById('overlay').classList.toggle('open', open);
+        }
+
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('overlay').classList.remove('open');
+        }
+
+        function toggleDesktopSidebar() {
+            const collapsed = document.body.classList.toggle('sidebar-collapsed');
+            const button = document.getElementById('sidebar-toggle');
+            button.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+            button.setAttribute('aria-label', collapsed ? 'Mostrar menu' : 'Ocultar menu');
+            button.title = collapsed ? 'Mostrar menu' : 'Ocultar menu';
+        }
+
+        function watchMobileHeaderScroll(doc) {
+            const view = doc.defaultView;
+            let previousY = view.scrollY;
+            view.addEventListener('scroll', () => {
+                if (!window.matchMedia('(max-width: 980px)').matches) {
+                    document.body.classList.remove('mobile-header-hidden');
+                    return;
+                }
+                const currentY = view.scrollY;
+                if (currentY <= 0) document.body.classList.remove('mobile-header-hidden');
+                else if (currentY > previousY + 4) document.body.classList.add('mobile-header-hidden');
+                else if (currentY < previousY - 4) document.body.classList.remove('mobile-header-hidden');
+                if (Math.abs(currentY - previousY) > 4) previousY = currentY;
+            }, { passive: true });
+        }
+
+        function checkIframe() {
+            const iframe = document.getElementById('main-frame');
+            try {
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                if (!doc || !doc.body || doc.body.innerHTML.trim() === '') {
+                    iframe.style.display = 'none';
+                    document.getElementById('error-msg').style.display = 'flex';
+                    return;
+                }
+                doc.querySelectorAll('#theme-toggle, #theme-btn, button.theme-toggle, button.theme-btn').forEach(btn => {
+                    btn.style.display = 'none';
+                });
+                watchMobileHeaderScroll(doc);
+                syncThemeToIframe();
+                requestAnimationFrame(syncThemeToIframe);
+            } catch(e) {
+                // Ignorar quando o contexto não permitir inspeção do iframe.
+            }
+        }
+
+        function refreshCurrentFrame() {
+            const iframe = document.getElementById('main-frame');
+            if (!iframe || iframe.style.display === 'none') return;
+            const currentSrc = iframe.getAttribute('src');
+            if (!currentSrc) return;
+            iframe.setAttribute('src', currentSrc);
+        }
+
+        function syncThemeToIframe() {
+            try {
+                const iframe = document.getElementById('main-frame');
+                if (!iframe || !iframe.contentWindow) return;
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                iframe.contentWindow.postMessage({ type: 'bova11-theme', dark: isDark }, '*');
+            } catch(e) {}
+        }
+
+        (function applySavedTheme() {
+            try {
+                const saved = localStorage.getItem('bova11-theme');
+                if (saved === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                }
+            } catch(e) {}
+        })();
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            if (next === 'light') html.removeAttribute('data-theme');
+            else html.setAttribute('data-theme', 'dark');
+            try { localStorage.setItem('bova11-theme', next); } catch(e) {}
+            syncThemeToIframe();
+        }
+    </script>
+</body>
+</html>
