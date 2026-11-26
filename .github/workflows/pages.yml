@@ -15,8 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Compress historical archives
-        run: python3 .github/prepare_pages.py
       - name: Check published size
         run: |
           size=$(du -sb --exclude=.git --exclude=.github . | cut -f1)
