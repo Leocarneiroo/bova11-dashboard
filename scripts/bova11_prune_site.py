@@ -46,6 +46,15 @@ def prune_site(output_dir, keep_sessions: int = KEEP_SESSIONS) -> list:
         for path in files[keep_sessions:]:
             path.unlink()
             removed.append(path.name)
+
+    reports = {}
+    for path in root.glob("bova11_tex_dex_vex_*.expiry-*.js"):
+        report = root / (path.name.split(".expiry-", 1)[0] + ".html")
+        if report not in reports:
+            reports[report] = report.read_text(encoding="utf-8") if report.is_file() else ""
+        if f'"{path.name}"' not in reports[report]:
+            path.unlink()
+            removed.append(path.name)
     return removed
 
 

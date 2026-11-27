@@ -22,6 +22,9 @@ Uso:
 
 import os, re, glob, sys, json, math
 from datetime import datetime
+from hashlib import sha256
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from bova11_shared import (
     bs_charm_delta,
@@ -625,8 +628,8 @@ def fmt_num(v):
         return f"{sign}{abs_v/1e3:.0f}k"
     return f"{sign}{abs_v:.0f}"
 
-def generate_html(agg, iv_ctx, tag_d1, tag_d, label_d1, label_d, spot_d1, spot_d, per_exp_data, exp_keys, missing_expiries=(), estimated=None):
-    """Gera o HTML completo com perfis unificados por spot."""
+def generate_html(agg, iv_ctx, tag_d1, tag_d, label_d1, label_d, spot_d1, spot_d, per_exp_data, exp_keys, missing_expiries=(), estimated=None, *, output_file=None):
+    """Gera o HTML e, com output_file, grava um script de dados por vencimento."""
 
     PALETTE = ["#f85149", "#58a6ff", "#3fb950", "#d29922", "#bc8cff", "#ffa657", "#79c0ff"]
 
@@ -656,7 +659,22 @@ def generate_html(agg, iv_ctx, tag_d1, tag_d, label_d1, label_d, spot_d1, spot_d
         {'spot': float(r['spot']), 'iv_coverage': r.get('iv_coverage', 0), 'oi_total': r.get('oi_total'), 'oi_with_iv':r.get('oi_with_iv'), **{k:v for k,v in r.items() if k.startswith('partial_')}, **{k: round(float(r[k]), 6) if r.get(k) is not None else None for k in PROFILE_VALUE_KEYS}}
         for r in agg
     ]
+    estimated = estimated or {}
     per_exp_serialized = serialize_profile_data(per_exp_data)
+    expiry_profiles = {
+        name: {'observed': per_exp_serialized.get(name, []), 'estimated': estimated.get(name)}
+        for name in exp_keys
+    }
+    expiry_files = {}
+    if output_file is not None:
+        for index, (name, profile) in enumerate(expiry_profiles.items(), start=1):
+            payload = json.dumps(profile, separators=(',', ':'), allow_nan=False)
+            script = f'document.currentScript.profileData = {payload};\n'
+            digest = sha256(script.encode('utf-8')).hexdigest()[:12]
+            filename = f'{output_file.stem}.expiry-{index}-{digest}.js'
+            output_file.with_name(filename).write_text(script, encoding='utf-8')
+            expiry_files[name] = filename
+        expiry_profiles = {}
 
     cur_row = closest_row(agg, spot_d)
 
@@ -956,6 +974,7 @@ def generate_html(agg, iv_ctx, tag_d1, tag_d, label_d1, label_d, spot_d1, spot_d
             color: #fff;
             border-color: #3949ab;
         }}
+        #expStatus:empty {{ display: none; }}
     </style>
 </head>
 <body>
@@ -971,6 +990,7 @@ def generate_html(agg, iv_ctx, tag_d1, tag_d, label_d1, label_d, spot_d1, spot_d
     <div class="header-meta">Vencimentos ativos ausentes: {', '.join(missing_expiries) if missing_expiries else 'nenhum detectado'}. Agregado indisponível se a coleta estiver incompleta.</div>
     <div class="header-meta">GEX estimado sob hipótese call+/put−; R$ por movimento de 1%. Posições dos dealers não são observadas. DEX: cotas; VEX: Vanna por variação unitária de IV; TEX: R$/dia; CEX: cotas/dia.</div>
     <div class="exp-tabs" id="expTabs"></div>
+    <p class="header-meta" id="expStatus" role="status"></p>
 
     <section class="chart-section" id="estimatedSection" style="display:none">
         <h2>Perfis com IV interpolada — estimativas</h2>
@@ -1263,14 +1283,20 @@ def generate_html(agg, iv_ctx, tag_d1, tag_d, label_d1, label_d, spot_d1, spot_d
             }};
         }}
 
-        const PER_EXP = {json.dumps(per_exp_serialized)};
+        const EXPIRY_FILES = {json.dumps(expiry_files)};
         const EXP_KEYS = {json.dumps(exp_keys)};
         const PALETTE = {json.dumps(PALETTE)};
-        const AGG_DATA = {json.dumps(agg_serialized)};
-        const ESTIMATED = {json.dumps(estimated or {}, allow_nan=False)};
+        const AGG_PROFILE = {{
+            observed: {json.dumps(agg_serialized)},
+            estimated: {json.dumps(estimated.get('AGG'), allow_nan=False)}
+        }};
+        const profileLoads = new Map(Object.entries({json.dumps(expiry_profiles, allow_nan=False)})
+            .map(([name, profile]) => [name, Promise.resolve(profile)]));
+        profileLoads.set('AGG', Promise.resolve(AGG_PROFILE));
         const SPOT_CURRENT = {float(spot_d)};
 
         let curExp = 'AGG';
+        let requestedExp = curExp;
         let chartGEX = null;
         let chartDEXRetail = null;
         let chartDEXFM = null;
@@ -1279,8 +1305,7 @@ def generate_html(agg, iv_ctx, tag_d1, tag_d, label_d1, label_d, spot_d1, spot_d
         let chartCEX = null;
         let chartsEstimated = [];
 
-        function updateEstimated() {{
-            const entry = ESTIMATED[curExp];
+        function updateEstimated(entry) {{
             const section = document.getElementById('estimatedSection');
             if (!entry || !entry.profile.length) {{ section.style.display = 'none'; return; }}
             section.style.display = '';
@@ -1307,16 +1332,47 @@ def generate_html(agg, iv_ctx, tag_d1, tag_d, label_d1, label_d, spot_d1, spot_d
                 `<div class="exp-tab ${{k === curExp ? 'on' : ''}}" style="${{k === curExp ? 'background:' + PALETTE[i % PALETTE.length] : ''}}" data-k="${{k}}">${{k}}</div>`
             ).join('') +
                 `<div class="exp-tab agg ${{curExp === 'AGG' ? 'on' : ''}}" data-k="AGG">🔗 AGREGADO</div>`;
-            el.querySelectorAll('.exp-tab').forEach(t => t.onclick = () => {{
-                curExp = t.dataset.k;
-                renderExpTabs();
-                updateCharts();
-            }});
+            el.querySelectorAll('.exp-tab').forEach(t => t.onclick = () => selectExpiry(t.dataset.k));
         }}
 
-        function getDataForExp(expName) {{
-            if (expName === 'AGG') return AGG_DATA;
-            return PER_EXP[expName] || [];
+        function loadExpiryProfile(exp) {{
+            if (!profileLoads.has(exp)) {{
+                const loading = new Promise((resolve, reject) => {{
+                    const script = document.createElement('script');
+                    // Use a classic script so the report also works when opened from disk.
+                    script.src = EXPIRY_FILES[exp];
+                    script.onload = script.onerror = () => {{
+                        script.remove();
+                        if (script.profileData) resolve(script.profileData);
+                        else reject(new Error('Dados do vencimento indisponíveis'));
+                    }};
+                    document.head.appendChild(script);
+                }}).catch(error => {{
+                    profileLoads.delete(exp);
+                    throw error;
+                }});
+                profileLoads.set(exp, loading);
+            }}
+            return profileLoads.get(exp);
+        }}
+
+        async function selectExpiry(exp) {{
+            requestedExp = exp;
+            const status = document.getElementById('expStatus');
+            status.textContent = exp === curExp ? '' : `Carregando ${{exp}}…`;
+            let profile;
+            try {{
+                profile = await loadExpiryProfile(exp);
+            }} catch {{
+                if (requestedExp === exp) status.textContent = `Falha ao carregar ${{exp}}. Selecione o vencimento para tentar novamente.`;
+                return;
+            }}
+            if (requestedExp !== exp) return;
+            status.textContent = '';
+            if (curExp === exp) return;
+            curExp = exp;
+            renderExpTabs();
+            updateCharts(profile);
         }}
 
         function unpack(data) {{
@@ -1437,8 +1493,7 @@ def generate_html(agg, iv_ctx, tag_d1, tag_d, label_d1, label_d, spot_d1, spot_d
             cards[14].textContent = formatSpot(minSpot('cex_net'));
         }}
 
-        function updateCharts() {{
-            const data = getDataForExp(curExp);
+        function updateCharts({{observed: data, estimated}}) {{
             const p = unpack(data);
 
             if (chartGEX) {{
@@ -1485,10 +1540,10 @@ def generate_html(agg, iv_ctx, tag_d1, tag_d, label_d1, label_d, spot_d1, spot_d
             }}
 
             updateSummaryCards(data);
-            updateEstimated();
+            updateEstimated(estimated);
         }}
 
-        const initial = unpack(AGG_DATA);
+        const initial = unpack(AGG_PROFILE.observed);
 
         chartGEX = new Chart(document.getElementById('chartGEX').getContext('2d'), {{
             type: 'line',
@@ -1527,7 +1582,7 @@ def generate_html(agg, iv_ctx, tag_d1, tag_d, label_d1, label_d, spot_d1, spot_d
         }});
 
         renderExpTabs();
-        updateCharts();
+        updateCharts(AGG_PROFILE);
     </script>
 </body>
 </html>'''
@@ -1649,22 +1704,21 @@ def main():
             'per_strike_delta_iv': {},
         }
 
-    # 7) Generate HTML
-    html_content = generate_html(
-        agg,
-        iv_ctx_final,
-        tag_d1, tag_d,
-        label_d1, label_d,
-        spot_d1, spot_d,
-        per_exp_data, exp_keys, missing_expiries=missing_expiries,
-        estimated=estimated_profile_bundle(per_exp_rows_d, tag_d, spot_d, spot_grid, missing_expiries)
-    )
-
-    # 8) Save output
+    # 7) Grava os scripts de dados antes de apontar o HTML para eles.
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    output_file = os.path.join(OUTPUT_DIR, f"bova11_tex_dex_vex_{tag_d1}_vs_{tag_d}.html")
-    with open(output_file, 'w', encoding='utf-8') as f:
-        f.write(html_content)
+    output_file = Path(OUTPUT_DIR) / f"bova11_tex_dex_vex_{tag_d1}_vs_{tag_d}.html"
+    estimated = estimated_profile_bundle(per_exp_rows_d, tag_d, spot_d, spot_grid, missing_expiries)
+    with TemporaryDirectory(dir=OUTPUT_DIR) as directory:
+        staged_report = Path(directory) / output_file.name
+        html_content = generate_html(
+            agg, iv_ctx_final, tag_d1, tag_d, label_d1, label_d, spot_d1, spot_d,
+            per_exp_data, exp_keys, missing_expiries=missing_expiries,
+            estimated=estimated, output_file=staged_report,
+        )
+        staged_report.write_text(html_content, encoding='utf-8')
+        for script in staged_report.parent.glob('*.js'):
+            script.replace(output_file.with_name(script.name))
+        staged_report.replace(output_file)
 
     print(f"  ✅ Arquivo gerado: {output_file}")
     print()

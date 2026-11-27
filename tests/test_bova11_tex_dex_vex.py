@@ -1,6 +1,10 @@
+import json
 import math
 import os
+from pathlib import Path
+import re
 import sys
+from tempfile import TemporaryDirectory
 import unittest
 
 
@@ -10,6 +14,62 @@ if SCRIPTS not in sys.path:
     sys.path.insert(0, SCRIPTS)
 
 import bova11_tex_dex_vex as mod
+from bova11_prune_site import prune_site
+
+
+class TexDexVexReportTests(unittest.TestCase):
+    def test_report_stores_each_expiry_in_its_own_script(self):
+        context = {'avg_iv_d': None, 'avg_iv_d1': None, 'iv_direction': None}
+        first, second = '16 out Mensal', '23 out W4'
+        estimates = {
+            'AGG': {'profile': [{'spot': 190, 'gex_net': 9}]},
+            first: {'profile': [{'spot': 190, 'gex_net': 123459}]},
+        }
+        with TemporaryDirectory() as directory:
+            report = Path(directory) / 'bova11_tex_dex_vex_7out_vs_8out.html'
+            html = mod.generate_html(
+                [{'spot': 190, 'gex_net': 8}], context, '7out', '8out',
+                '7/out', '8/out', 189, 190,
+                {
+                    first: [{'spot': 190, 'gex_net': 123458}],
+                    second: [{'spot': 190, 'gex_net': 0}],
+                },
+                [first, second], estimated=estimates, output_file=report,
+            )
+            files = json.loads(re.search(r'const EXPIRY_FILES = (.*);', html)[1])
+            self.assertEqual(set(files), {first, second})
+            self.assertNotIn('123458', html)
+            self.assertNotIn('123459', html)
+            self.assertIn('"gex_net": 9', html)
+            self.assertEqual(len(set(files.values())), 2)
+            payloads = {
+                name: json.loads((report.parent / filename).read_text(encoding='utf-8')
+                                 .removeprefix('document.currentScript.profileData = ').rstrip(';\n'))
+                for name, filename in files.items()
+            }
+            self.assertEqual(payloads[first]['observed'][0]['gex_net'], 123458)
+            self.assertEqual(payloads[first]['estimated'], estimates[first])
+            self.assertEqual(payloads[second]['observed'][0]['gex_net'], 0)
+            self.assertIsNone(payloads[second]['observed'][0]['dex_fm_net'])
+            self.assertIsNone(payloads[second]['estimated'])
+
+    def test_pruning_removes_only_expiry_scripts_not_used_by_retained_reports(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            current = root / 'bova11_tex_dex_vex_7out_vs_8out.html'
+            keep = root / f'{current.stem}.expiry-1-123.js'
+            stale = root / f'{current.stem}.expiry-1-456.js'
+            current.write_text(json.dumps({'16 out Mensal': keep.name}), encoding='utf-8')
+            previous = root / 'bova11_tex_dex_vex_6out_vs_7out.html'
+            old = root / f'{previous.stem}.expiry-1-123.js'
+            previous.write_text(json.dumps({'16 out Mensal': old.name}), encoding='utf-8')
+            for script in (keep, stale, old):
+                script.touch()
+
+            removed = prune_site(root, keep_sessions=1)
+
+            self.assertCountEqual(removed, [previous.name, old.name, stale.name])
+            self.assertCountEqual(root.iterdir(), [current, keep])
 
 
 def _manual_charm_tau(spot, strike, sigma, t, rate=0.0):
